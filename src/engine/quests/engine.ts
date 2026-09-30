@@ -580,13 +580,19 @@ export function triggers(world: World, host: QuestHost, on: { talk?: string; at?
  * check where the action has one.
  */
 export function questAction(world: World, host: QuestHost, input: string): Output[] | undefined {
-  const text = input.trim().toLowerCase().replace(/[.!]+$/, '')
+  const typed = input.trim().toLowerCase().replace(/[.!]+$/, '')
+  // The Now line as it stands (M10.33 AE): "copy the original recordings in the Orison Listening Room" is the deed, the
+  // place after it the place where you stand.
+  const here = world.content.locations.get(world.state.player.location)
+  const names = here ? [here.name, ...here.aliases].map((n) => n.toLowerCase().replace(/^the\s+/, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) : []
+  const text = names.length ? typed.replace(new RegExp(`\\s+(?:at|in|on|aboard|inside|by|up at|down at)\\s+(?:the\\s+)?(?:${names.join('|')})$`), '') : typed
   // The one it is meant for is elsewhere (found in the M9.4 playtest: "give rye to mirte" in her empty bakery said you had no rye).
   let away: string | undefined
   for (const [quest, q] of active(world)) {
     for (const action of quest.actions ?? []) {
       if (action.once && q.done.includes(action.id)) continue
-      if (!action.say.some((p) => new RegExp(`^(?:${p})$`, 'i').test(text))) continue
+      // The line as typed, or without the place where you stand after it (SPY ON THE CAMP names the camp as its thing).
+      if (!action.say.some((p) => new RegExp(`^(?:${p})$`, 'i').test(typed) || new RegExp(`^(?:${p})$`, 'i').test(text))) continue
       const refusal = actionBlocked(world, quest.id, action)
       if (refusal !== undefined) {
         if (refusal) return [{ kind: 'narration', text: refusal }]

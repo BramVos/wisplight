@@ -70,6 +70,10 @@ Zelf spelen met een model, in de app: kies een lijn, begin een nieuw spel, en no
 - Invloed: ja. Teruggeven kan; Maren bedankte de dief eerst voor haar eigen pek, nu herkent ze het en weet ze wie het was. "I am sorry" werd gelezen als het commando I (inventaris); nu is het een zin.
 - Afloop: klein. Haar houding verschuift, verder wordt er niets verteld.
 
+## Elke quest als nieuwe speler (M10.33 AE)
+
+Naast de geschreven lijnen speelt `npm run playtest` elke quest van de Nethermarch, Skerrow, The Quiet Reach en Deepwell als nieuwe speler, met het mockmodel en met per stadium alleen de "Now"-regel als aanwijzing: het script gaat naar de plek van de daad (`@goto`, een snelkoppeling voor afstand) en haalt de persoon erbij (`@bring`), typt de "Now"-regel zoals hij er staat, wacht een uur als de daad "nog niet" zegt en probeert een mislukte worp opnieuw. Een stadium dat niet verder gaat, staat als STUCK in `docs/playtest/quests.txt`, en de test `tests/m1033quests.test.ts` faalt erop. Een stadium dat verder gaat door een gesprek, iets dat je brengt of de tijd, heeft geen daad om te typen; die spelen de geschreven lijnen hierboven.
+
 ## Wat de speeltest repareerde
 
 Mensen en plaatsen die een quest noemt, en de plek van gehoord nieuws, komen in het dagboek. Een quest-actie voor iemand die er niet is, zegt dat. Vragen waar iemand is zonder iemand in de buurt, zegt dat er niemand is om te vragen. In een gesprek bereikt "ask about the cat" de quest van wie je spreekt. WAIT stopt als iemand komt die een quest nodig heeft, en WAIT FOR wacht op iemand tot die er is en wakker is. Het dagboek houdt één regel per naam. "What's new" vertelt de vreemdeling niet zijn eigen komst. `tell` in content kan zeggen wie iets ontdekte. Nieuws voor een streek wordt verteld, en een plek die verandert waar de speler staat ook. De speler kan doorgeven wat hij hoorde. Wie iemand noemt die elders is, spreekt niet de eerste de beste aan. TAKE ALL werkt. Naar een dode gevraagd, begint het antwoord met de dood. Wie gestolen goed terugkrijgt, herkent het.

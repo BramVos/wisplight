@@ -35,8 +35,8 @@ describe('M10.33 E: the giver says what they want', () => {
     for (const c of ['@goto loc_medical_bay', '@bring ilyan', 'talk ilyan']) await engine.handle(c)
     const chosen = text(await engine.handle('9'))
     expect(chosen).toMatch(SAYS)
-    expect(chosen).toMatch(/Now: Ask Niko Serrin about the listening station/)
-    expect(text(await engine.handle('"What should I do?'))).toMatch(/Now: Ask Niko Serrin/)
+    expect(chosen).toMatch(/Now: Ask Niko about the station/)
+    expect(text(await engine.handle('"What should I do?'))).toMatch(/Now: Ask Niko about the station/)
   })
 
   it('gives the voice what they want of the stranger now', async () => {
@@ -55,7 +55,7 @@ describe('M10.33 E: the giver says what they want', () => {
     engine.start()
     for (const c of ['@goto loc_medical_bay', '@bring ilyan']) await engine.handle(c)
     expect(text(await engine.handle('talk ilyan'))).not.toMatch(SAYS)
-    expect(text(await engine.handle('9'))).toMatch(/Ask \[?Niko Serrin\]? about \[?the listening station\]?\. That is what I need from you now\./)
+    expect(text(await engine.handle('9'))).toMatch(/Ask \[?Niko\]? about \[?the station\]?\. That is what I need from you now\./)
     // Check names each such stage.
     expect(questWarnings({ ...quiet, quests }).join('\n')).toMatch(/quest story_the_orison_recordings, stage s1: the giver never says what they want here \(asks\)/)
   })

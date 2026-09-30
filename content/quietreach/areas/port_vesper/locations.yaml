@@ -36,6 +36,13 @@ locations:
       - words: [desk, check-in desk, counter]
         look: A narrow desk of scuffed composite by the inner door, with a tablet stand, a coffee ring and a clip of printed arrival forms.
         take: The desk is bolted to the deck.
+      # The manifests a story sends the stranger to compare (M10.33 AE: "there is no manifest there").
+      - words: [manifests, manifest, cargo manifests, tablet, tablet stand]
+        look: A scuffed tablet in the stand on the desk, holding the cargo manifests of every supply run, crate by crate and line by line.
+        take: It is the port's record, and it stays at the desk. You can read it here.
+        verbs:
+          read: "Supply run after supply run: food, filters, seals, cable. Most lines are plain. A few near the end have been corrected by hand, and the corrections are initialled."
+          compare: You set run beside run. They agree line for line, but for a few near the end, corrected by hand and initialled.
       - words: [scanner, assignment scanner, reader]
         look: A palm-sized reader on a flexible arm. Its small screen asks for an assignment code or a contract chip.
         take: It is cabled to the desk, and someone would miss it at once.
@@ -169,6 +176,10 @@ locations:
       - words: [blankets, blanket]
         look: Thin grey blankets, clean and rough, smelling of disinfectant.
         take: The blankets belong to the quarters. You may use them, but not keep them.
+      # The notes a story has the stranger read (M10.33 AE).
+      - words: [notes, test notes, tessa's notes, folder]
+        look: A folder of test notes on the shelf by Tessa's bunk, pages of pencilled readings in her tight, square hand.
+        take: They are Tessa's. Reading them here is one thing; walking off with them is another.
     objects:
       - id: quarters_tap
         type: water_tap

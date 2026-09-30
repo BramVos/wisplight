@@ -1,4 +1,5 @@
 import { unsolvable } from './quests/solvable'
+import { playableWarnings } from './quests/playable'
 import { callName, isNameTitle, type Content } from './content'
 import { regionMap } from './map/region'
 import { questWarnings } from './quests/check'
@@ -143,7 +144,8 @@ export function idlePlaces(content: Content): string[] {
 
 export function warnings(content: Content): string[] {
   // A quest with a stage that has no way on, or no way to end (M10.30 (6)).
-  const out: string[] = [...questWarnings(content), ...unsolvable(content)]
+  // A deed done to a thing that is not there, a Now line the player cannot type (M10.33 AE).
+  const out: string[] = [...questWarnings(content), ...unsolvable(content), ...playableWarnings(content)]
   // A world with people and no storyline (M10.30: The Quiet Reach had none, so every voice made the plot up as it talked).
   if (!content.quests.size && content.npcs.size) out.push('This world has no stories: people make the plot up as they talk, and nothing can be solved. The step Stories of the world build writes them.')
   // Places of the stories with nothing to do (M10.33 N).

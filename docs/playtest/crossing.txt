@@ -204,7 +204,7 @@ Here: Eluned the steward (at work).
 > talk eluned
 You are talking with Eluned the steward. Type what you want to say, pick a number, or BYE to stop.
 Eluned greets you in the Old Tongue. You have none of it, beyond the greeting.
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > Where am I?
 Eluned speaks in the Old Tongue, and you have no words in common: only hands, and a patient look.
@@ -220,7 +220,7 @@ Eluned lifts a hand. "Go on, then."
 > talk eluned
 You are talking with Eluned the steward. Type what you want to say, pick a number, or BYE to stop.
 Eluned nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > Where am I?
 Eluned shrugs. "You have come a long way, child of the short years. Sit. There is no hurry here."
@@ -347,7 +347,7 @@ Here: Brannoc the boatman (at work), a fisherwoman (at work).
 > talk brannoc the boatman
 You are talking with Brannoc the boatman. Type what you want to say, pick a number, or BYE to stop.
 Brannoc nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -360,7 +360,7 @@ Brannoc lifts a hand. "Go on, then."
 > talk a fisherwoman
 You are talking with a fisherwoman. Type what you want to say, pick a number, or BYE to stop.
 Wenna nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"

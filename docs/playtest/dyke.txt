@@ -89,7 +89,7 @@ Here: Kobus the pedlar (at work).
 > talk kobus the pedlar
 You are talking with Kobus the pedlar. Type what you want to say, pick a number, or BYE to stop.
 Kobus nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -117,7 +117,7 @@ Here: Teunis the horse-miller (at work).
 > talk teunis the horse-miller
 You are talking with Teunis the horse-miller. Type what you want to say, pick a number, or BYE to stop.
 Teunis nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -139,7 +139,7 @@ What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, cha
 > talk teunis
 You are talking with Teunis the horse-miller. Type what you want to say, pick a number, or BYE to stop.
 Teunis nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 8
 You: "Will you come with me?"
@@ -180,7 +180,7 @@ Teunis calls after you: "Not that way! North, this way!"
 The Dyke House
 A square brick house with small windows, built into the side of the dyke so that its back wall is earth. Inside, a long table is covered with rolled plans of dykes and ditches, held flat at the corners with stones. It smells of lamp oil and damp plaster, and somewhere behind the back wall water ticks. The door opens south onto the sluice.
 Exits: south
-Here: Sijbrand, Heemraad Sijbrand; Teunis Ros, Teunis the horse-miller (waiting for you).
+Here: Sijbrand, Heemraad Sijbrand; Teunis Ros, the horse-miller (waiting for you).
 +10 experience: you found The Dyke House.
 Teunis brought you to The Dyke House, and Sijbrand was there.
 
@@ -397,7 +397,7 @@ Here: Kobus the pedlar (at work).
 > talk kobus the pedlar
 You are talking with Kobus the pedlar. Type what you want to say, pick a number, or BYE to stop.
 Kobus nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -425,7 +425,7 @@ Here: Teunis the horse-miller (at work).
 > talk teunis the horse-miller
 You are talking with Teunis the horse-miller. Type what you want to say, pick a number, or BYE to stop.
 Teunis nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -457,7 +457,7 @@ The old people say a blow is coming in from the sea, and the eel men have pulled
 The Horse Mill
 Under a thatched roof an old grey horse walks a patient circle, turning a millstone that grumbles like a sleeping dog. The air is warm and smells of horse and flour. Canal Street is west; the East Gate is east.
 Exits: west, east
-Here: Teunis Ros, Teunis the horse-miller (at work).
+Here: Teunis Ros, the horse-miller (at work).
 
 > journal
 People: Harmen, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.

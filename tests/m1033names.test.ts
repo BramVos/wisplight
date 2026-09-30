@@ -65,7 +65,7 @@ describe('M10.33 C: the goal in view', () => {
     const engine = new Engine(quiet, { seed: 3, builder: true })
     engine.start()
     const open = engine.status().journal.quests.find((q) => q.group === 'Open')!
-    expect(open).toMatchObject({ name: 'The Orison Recordings', now: 'Ask Niko Serrin about the listening station' })
+    expect(open).toMatchObject({ name: 'The Orison Recordings', now: 'Ask Niko about the station' })
     const page = questPage(engine.world, 'story_the_orison_recordings')!
     expect(page.lines).toContain('Given by [Dr Ilyan Sorell].')
     expect(page.lines.join('\n')).toMatch(/Where: \[Orison Listening Room\]\./)

@@ -528,3 +528,28 @@ for (const line of LINES.filter((l) => !only || l.id === only)) {
   const first = acted.split('\n').findIndex((l) => line.words.test(l) && !l.startsWith('>'))
   stdout.write(`${line.id}: transcript written; the problem is first named on line ${first + 1}${byRule}\n`)
 }
+
+// Every quest of every world played as a new player (M10.33 AE): by its Now lines alone, with build commands only as
+// shortcuts for distance and time. A stage that does not move on is where a new player would be stuck.
+if (!only || only === 'quests') {
+  const { stuckQuests } = await import('../src/engine/newplayer')
+  const report: string[] = ['Every quest played as a new player, by its Now lines alone (M10.33 AE; protocol: docs/PLAYTEST.md).', '']
+  let stuck = 0
+  for (const world of ['base', 'isle', 'quietreach', 'other']) {
+    const content = await loadContentFromDir(worldDir(world), world)
+    report.push(`## ${content.world.name} (${world})`)
+    for (const { quest, runs } of await stuckQuests(content, new MockLlm('good'))) {
+      if (!runs.length) {
+        report.push(`${quest}: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)`)
+        continue
+      }
+      for (const r of runs) {
+        if (!r.moved) stuck++
+        report.push(`${quest}, stage ${r.stage}: ${r.moved ? 'moves on' : `STUCK (${r.why})`}${r.now ? `; Now: "${r.now}"` : ''}; typed: ${r.steps.map((s) => (s.startsWith('@') ? `${s} [shortcut]` : s)).join(' | ')}`)
+      }
+    }
+    report.push('')
+  }
+  writeFileSync(resolve(dir, 'quests.txt'), report.join('\n'))
+  stdout.write(`quests: every quest played by its Now lines; ${stuck} stage${stuck === 1 ? '' : 's'} stuck (docs/playtest/quests.txt)\n`)
+}

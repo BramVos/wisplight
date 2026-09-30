@@ -1,0 +1,32 @@
+Every quest played as a new player, by its Now lines alone (M10.33 AE; protocol: docs/PLAYTEST.md).
+
+## The Nethermarch (base)
+grey_cat_on_the_doorstep: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+the_vissers_to_safety: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+flour_for_veenhoek: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+the_surveyors_lights, stage lights: moves on; Now: "Watch the lights in Harmen's Field"; typed: @goto loc_molenend_field [shortcut] | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | Watch the lights in Harmen's Field | Watch the lights in Harmen's Field
+what_the_haakman_wants: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+milk_for_the_kabouters: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+the_goat_riders_toll: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+the_white_womens_riddle: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+the_drainage_question: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+a_stall_at_the_market: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+the_honest_scale: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+the_brotherhoods_charter: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+the_apprentices_debt: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+a_boat_and_a_bride: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+the_bell_of_kloosterveen: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+the_road_to_graafhaven: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+
+## Skerrow (isle)
+off_skerrow: no stage moves by a deed to type (it moves by talks, things brought or time: see the scripted lines)
+
+## The Quiet Reach (quietreach)
+story_short_on_the_count, stage s1: moves on; Now: "Compare the cargo manifests at the Arrival Lock"; typed: @goto loc_arrival_lock [shortcut] | Compare the cargo manifests at the Arrival Lock
+story_short_on_the_count, stage s2: moves on; Now: "Ask Sorell about the spares"; typed: @goto loc_guest_quarters [shortcut] | @bring npc_ilyan_sorell [shortcut] | Ask Sorell about the spares
+story_a_second_opinion, stage s1: moves on; Now: "Hear Tessa out in the Commons"; typed: @goto loc_commons [shortcut] | @bring npc_tessa_rook [shortcut] | Hear Tessa out in the Commons
+story_the_orison_recordings, stage s1: moves on; Now: "Ask Niko about the station"; typed: @goto loc_orison_listening_room [shortcut] | @bring npc_niko_serrin [shortcut] | Ask Niko about the station
+story_the_orison_recordings, stage s2: moves on; Now: "Copy the original recordings in the Orison Listening Room"; typed: @goto loc_orison_listening_room [shortcut] | Copy the original recordings in the Orison Listening Room
+story_the_orison_recordings, stage s3: STUCK (the Now line typed as it stands does not do the deed); Now: "Trace the fault in the station's antenna system"; typed: @goto loc_orison_listening_room [shortcut] | Trace the fault in the station's antenna system
+
+## Deepwell (other)

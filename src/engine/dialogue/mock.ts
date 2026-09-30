@@ -246,7 +246,7 @@ export class MockLlm implements LlmClient {
         ? [
             line('main', a, 'The Long Silence', [
               // With a game under way (M10.30), the first stage is lived already: the stranger talked it through.
-              { ...stage('Something went quiet that should not have.', 'ask about the silence', at(0), a, 'You learn when it began, and the code of the record room: 4471.', `Ask ${first(a)} when it began.`, [a]), ...(played ? { lived: { who: played.key, words: played.words } } : {}) },
+              { ...stage('Something went quiet that should not have.', `ask ${first(a).toLowerCase()} about the silence`, at(0), a, 'You learn when it began, and the code of the record room: 4471.', `Ask ${first(a)} about the silence.`, [a]), ...(played ? { lived: { who: played.key, words: played.words } } : {}) },
               // A code as the deed (M10.31 C): typed at the place, given in the deed before.
               { ...stage('Someone kept a record of it.', '', at(1), undefined, 'The lock gives. A ledger, with a page cut out.', 'Type the code of the record room.', [a, b!]), word: '4471' },
               stage('The cut page says who.', `ask ${first(b).toLowerCase()} about the page`, at(2), b, 'The page is found, and with it the name.', `Ask ${first(b)} about the missing page.`, [b!]),
@@ -255,7 +255,7 @@ export class MockLlm implements LlmClient {
         : [
             line('request', a, `${first(a)}'s Errand`, [stage(`${first(a)} needs something fetched.`, 'fetch the parcel', at(1), undefined, 'The parcel is in your hands.', 'Fetch the parcel.', [a])]),
             ...(fullness !== 'outline'
-              ? [line('mystery', b!, 'The Moved Crate', [stage('A crate was moved in the night.', 'search the store', at(0), undefined, 'Marks lead to the door.', 'Search the store.', [b!]), stage('The marks lead out.', `ask ${first(a).toLowerCase()} about the crate`, at(0), a, 'It was only moved for the damp.', `Ask ${first(a)} about the crate.`, [a, b!])])]
+              ? [line('mystery', b!, 'The Moved Crate', [stage('A crate was moved in the night.', 'search the place', at(0), undefined, 'Marks lead to the door.', 'Search the place.', [b!]), stage('The marks lead out.', `ask ${first(a).toLowerCase()} about the crate`, at(0), a, 'It was only moved for the damp.', `Ask ${first(a)} about the crate.`, [a, b!])])]
               : []),
             ...(fullness === 'full' ? [line('personal', c!, `What ${first(c)} Keeps`, [stage(`${first(c)} keeps something to themselves.`, `talk to ${first(c).toLowerCase()} about home`, at(0), c, `${first(c)} tells you, a little.`, `Talk to ${first(c)} about home.`, [c!])])] : []),
           ]

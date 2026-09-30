@@ -510,7 +510,7 @@ magic, spells, mana, divine healing, telepathy, antigravity, gravity plates, ine
 | Port Coordinator | 07:00-09:00, 09:00-12:30, 13:15-16:00 |
 | Research Lead | 09:00-12:00, 13:00-17:00, 17:00-18:00, 09:00-12:00, 13:00-18:00 |
 | Chief Engineer | 08:00-12:00, 13:00-17:30, 17:30-18:00 |
-| Signal Technician | 07:30-12:00, 12:30-16:30, 16:30-17:30 |
+| Signal Technician | 07:45-12:00, 12:30-16:30, 16:30-17:30 |
 | Pilot-Navigator | 09:00-12:00, 13:00-15:00, 13:00-18:00 |
 | Field Mechanic | 07:30-12:00, 13:00-15:30, 07:30-12:00, 13:00-16:30 |
 | Medic | 08:00-12:00, 14:00-17:00 |

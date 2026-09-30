@@ -121,6 +121,10 @@ locations:
         look: A small round airlock in the ship's flank, its outer door standing open onto a dim inner chamber.
       - words: [door, workshop door]
         look: The sliding door back to the Workshop, with its keypad on this side too.
+      # The crates a story has the stranger carry back (M10.33 AE).
+      - words: [crates, stacked crates, stores crates]
+        look: A stack of crates against the hangar wall, stencilled with the port's stores marks and taped over with fresh labels in another hand.
+        take: They are heavy, and they belong to somebody. Whose is the question.
 
   - id: loc_peregrine_common_deck
     name: Peregrine — Common Deck

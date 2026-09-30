@@ -92,7 +92,7 @@ It is Windsday 3 Leaffall 412 SF, 09:32 (morning).
 > talk garrick
 You are talking with Garrick the lightkeeper. Type what you want to say, pick a number, or BYE to stop.
 Garrick nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -115,7 +115,7 @@ You carry a cutlass, a knife, 2 casks of lamp oil, a coil of rope, a bolt of sai
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle (at work).
+Here: Maren Holt, of the Salt Kettle (at work).
 +10 experience: you found The Salt Kettle.
 +30 experience: you came to Skerrow Hythe.
 
@@ -134,7 +134,7 @@ You buy a cask of lamp oil from Maren for 3 sp.
 The Headland
 The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 Exits: south, west, north
-Here: Garrick Stone, Garrick the lightkeeper (eating).
+Here: Garrick Stone, the lightkeeper (eating).
 
 > fill the beacon
 One cask after another, you pour the oil into the great bronze bowl until it shines black to the brim. The whole gallery stinks of seal.
@@ -206,7 +206,7 @@ Down at the Hythe, thin across the water, the harbour bell rings for six.
 The Headland
 Above you the Lamp of Skerrow burns, and its long green beam sweeps out over the sea and back, over and over. The tower hums faintly with the heat. Tracks go south to the hamlet and west to the grove; north, the ruined tower shows in each pass of the light.
 Exits: south, west, north
-Here: Garrick Stone, Garrick the lightkeeper (staying at The Headland).
+Here: Garrick Stone, the lightkeeper (staying at The Headland).
 
 > journal
 People: Garrick Stone, Maren Holt.
@@ -327,7 +327,7 @@ Down at the Hythe, thin across the water, the harbour bell rings for six.
 The Headland
 Above you the Lamp of Skerrow burns, and its long green beam sweeps out over the sea and back, over and over. The tower hums faintly with the heat. Tracks go south to the hamlet and west to the grove; north, the ruined tower shows in each pass of the light.
 Exits: south, west, north
-Here: Garrick Stone, Garrick the lightkeeper (asleep).
+Here: Garrick Stone, the lightkeeper (asleep).
 
 ==== END (Windsday 15 Mistmoon 412 SF, 23:26 (night))
 Quests: off_skerrow: a_ship_for_the_light

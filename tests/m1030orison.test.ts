@@ -14,7 +14,7 @@ const said = (outs: { text: string }[]) => outs.map((o) => o.text).join('\n')
 
 /** The steps of the main line, with what each must show; the playtest plays the same. */
 export const ORISON: { step: string; shows?: RegExp }[] = [
-  { step: 'journal the orison recordings', shows: /Ask Niko Serrin about the listening station/ },
+  { step: 'journal the orison recordings', shows: /Ask Niko about the station/ },
   { step: '@goto loc_orison_listening_room' },
   { step: 'wait for niko' },
   { step: 'ask niko about the station', shows: /access sequence/ },

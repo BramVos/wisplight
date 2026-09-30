@@ -436,6 +436,9 @@ quests:
     stages:
       - id: lights
         text: Will-o'-the-wisps dance over Harmen's field at night. Klaas says they began after the storm.
+        # What a new player types (M10.33 AE).
+        goal: Watch the lights in Harmen's Field
+        asks: "Go and see them for yourself, after dark. Stand in Harmen's field and watch where they go."
         next:
           - when: [{ flag: knows_stone_moved }]
             to: the_stone

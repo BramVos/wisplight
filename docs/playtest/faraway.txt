@@ -43,7 +43,7 @@ Here: Mirte the baker.
 > talk mirte
 You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
 Mirte nods. "Evening."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 Mirte: The mill's standing still and I've flour for two more bakes. Lubbert in Waagdam says there's no rye this side of winter, and he's asking double for what there is. Bring me flour, or rye I can have ground, before market day on Zaterdag. Or Veenhoek goes without bread.
 New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before market day on Zaterdag. The mill stands still for want of sailcloth, and Lubbert in Waagdam asks double.
 
@@ -124,7 +124,7 @@ Hendrikje stops and gives you a nod, curious about the stranger.
 > talk hendrikje the merchant
 You are talking with Hendrikje the merchant. Type what you want to say, pick a number, or BYE to stop.
 Hendrikje nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -140,7 +140,7 @@ Hendrikje lifts a hand. "Go on, then."
 The Market of Graafhaven
 You stand in the market of Graafhaven, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
 Exits: out, in, west, south, north, east, northeast
-Here: Hendrikje Hofstede, Hendrikje the merchant (at work).
+Here: Hendrikje Hofstede, the merchant (at work).
 
 > north
 The Chandlery
@@ -155,7 +155,7 @@ Hester nods. "Morning."
 "If you go home that way, tell my cousin I am well, and that I still have the knife."
 New in your journal: Word for a cousin.
 Hester asks you to look in on Grietje. YES to give your word, NO to decline.
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -174,7 +174,7 @@ Here: Joris the merchant (at work).
 > talk joris the merchant
 You are talking with Joris the merchant. Type what you want to say, pick a number, or BYE to stop.
 Joris nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -198,12 +198,12 @@ Joris puts out the lamp and goes to bed.
 The Cooper's Yard
 You stand in a yard stacked with barrels, some new and pale, some black with age. Somewhere a mallet knocks hoops onto a cask, steady as a clock. Rain has left puddles between the staves. The chandlery is back through the gate.
 Exits: south
-Here: Joris Kuipers, Joris the merchant (at work).
+Here: Joris Kuipers, the merchant (at work).
 
 > talk joris the merchant
 You are talking with Joris the merchant. Type what you want to say, pick a number, or BYE to stop.
 Joris nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -264,7 +264,7 @@ Here: Mirte the baker.
 > talk mirte
 You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
 Mirte nods. "Evening."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 Mirte: The mill's standing still and I've flour for two more bakes. Lubbert in Waagdam says there's no rye this side of winter, and he's asking double for what there is. Bring me flour, or rye I can have ground, before market day on Zaterdag. Or Veenhoek goes without bread.
 New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before market day on Zaterdag. The mill stands still for want of sailcloth, and Lubbert in Waagdam asks double.
 
@@ -297,12 +297,12 @@ The chapel bell rings for six.
 The Bakery
 Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
 Exits: west, east
-Here: Mirte Bakker, Mirte the baker.
+Here: Mirte Bakker, the baker.
 
 > talk mirte the baker
 You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
 Mirte nods. "Evening."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"

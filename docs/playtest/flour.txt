@@ -43,7 +43,7 @@ Here: Mirte the baker.
 > talk mirte
 You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
 Mirte nods. "Evening."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 Mirte: The mill's standing still and I've flour for two more bakes. Lubbert in Waagdam says there's no rye this side of winter, and he's asking double for what there is. Bring me flour, or rye I can have ground, before market day on Zaterdag. Or Veenhoek goes without bread.
 New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before market day on Zaterdag. The mill stands still for want of sailcloth, and Lubbert in Waagdam asks double.
 
@@ -116,7 +116,7 @@ The chapel bell rings for six.
 Lubbert's Grain Store
 Sacks of grain are stacked to the ceiling, and a fine dust hangs in the air and tickles your nose. A slate by the door lists today's prices; the flour price has been rubbed out and written again, higher. Canal Street is north.
 Exits: north
-Here: Lubbert, Lubbert the grain merchant (eating).
+Here: Lubbert, the grain merchant (eating).
 Sacks of flour are short in Waagdam. The merchants have put their prices up and talk of sending far afield.
 +10 experience: you found Lubbert's Grain Store.
 +30 experience: you came to Waagdam.
@@ -186,7 +186,7 @@ The chapel bell rings for noon.
 The Bakery
 Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
 Exits: west, east
-Here: Mirte Bakker, Mirte the baker (arranging the goods for sale).
+Here: Mirte Bakker, the baker (arranging the goods for sale).
 
 > give three sacks of rye to mirte
 Three sacks of rye would do it, once they're ground. You haven't got three.
@@ -232,7 +232,7 @@ The chapel bell rings for noon.
 The Bakery
 Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
 Exits: west, east
-Here: Mirte Bakker, Mirte the baker.
+Here: Mirte Bakker, the baker.
 
 ==== END (Dinsdag 21 Herfstmaand 211 AW, 12:41 (midday))
 Quests: flour_for_veenhoek: market_day_passed
@@ -280,7 +280,7 @@ Here: Mirte the baker.
 > talk mirte
 You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
 Mirte nods. "Evening."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 Mirte: The mill's standing still and I've flour for two more bakes. Lubbert in Waagdam says there's no rye this side of winter, and he's asking double for what there is. Bring me flour, or rye I can have ground, before market day on Zaterdag. Or Veenhoek goes without bread.
 New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before market day on Zaterdag. The mill stands still for want of sailcloth, and Lubbert in Waagdam asks double.
 
@@ -336,7 +336,7 @@ The chapel bell rings for six.
 The Bakery
 Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
 Exits: west, east
-Here: Mirte Bakker, Mirte the baker.
+Here: Mirte Bakker, the baker.
 
 ==== END (Maandag 20 Herfstmaand 211 AW, 18:35 (evening))
 Quests: flour_for_veenhoek: market_day_passed

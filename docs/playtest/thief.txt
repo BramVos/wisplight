@@ -30,7 +30,7 @@ New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alo
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle (at work).
+Here: Maren Holt, of the Salt Kettle (at work).
 +10 experience: you found The Salt Kettle.
 +30 experience: you came to Skerrow Hythe.
 
@@ -51,7 +51,7 @@ The harbour bell rings for six, once for the boats.
 The Salt Kettle
 The fire is banked and the benches mostly empty. The figurehead in the corner has a candle stub in her hand, and the wax has run down her wooden arm. You can hear the wind trying the shutters. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle (asleep); a fisherwoman (asleep).
+Here: Maren Holt, of the Salt Kettle (asleep); a fisherwoman (asleep).
 
 > steal pitch
 You slip a pot of pitch under your coat.
@@ -69,12 +69,13 @@ The harbour bell rings for six, once for the boats.
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle (at work).
+Here: Maren Holt, of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
 Maren smiles. "There you are again."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+"No ship will call while the beacon is dark, and the storms are close. Ask around the island for a way off. Brannoc has the only boat that could cross."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -96,7 +97,7 @@ What everyone knows: the coin of the isles, the folk of the isles, the tide, the
 > talk maren
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
 Maren smiles. "There you are again."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > give pitch to maren
 You give a pot of pitch to Maren.
@@ -128,12 +129,12 @@ The harbour bell rings for six, once for the boats.
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle (at work).
+Here: Maren Holt, of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
 Maren smiles. "There you are again."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -177,12 +178,12 @@ The harbour bell rings for six, once for the boats.
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle (at work).
+Here: Maren Holt, of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
 Maren smiles. "There you are again."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -230,7 +231,7 @@ New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alo
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle (at work).
+Here: Maren Holt, of the Salt Kettle (at work).
 +10 experience: you found The Salt Kettle.
 +30 experience: you came to Skerrow Hythe.
 
@@ -251,7 +252,7 @@ The harbour bell rings for six, once for the boats.
 The Salt Kettle
 The fire is banked and the benches mostly empty. The figurehead in the corner has a candle stub in her hand, and the wax has run down her wooden arm. You can hear the wind trying the shutters. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle (asleep); a fisherwoman (asleep).
+Here: Maren Holt, of the Salt Kettle (asleep); a fisherwoman (asleep).
 
 > steal pitch
 You slip a pot of pitch under your coat.
@@ -269,12 +270,13 @@ The harbour bell rings for six, once for the boats.
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle (at work).
+Here: Maren Holt, of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
 Maren smiles. "There you are again."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+"No ship will call while the beacon is dark, and the storms are close. Ask around the island for a way off. Brannoc has the only boat that could cross."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -309,12 +311,12 @@ The harbour bell rings for six, once for the boats.
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle (at work).
+Here: Maren Holt, of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
 Maren smiles. "There you are again."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"
@@ -358,12 +360,12 @@ The harbour bell rings for six, once for the boats.
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle (at work).
+Here: Maren Holt, of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
 Maren nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2
 You: "What's new around here?"

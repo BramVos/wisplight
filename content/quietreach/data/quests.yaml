@@ -21,7 +21,8 @@ quests:
             to: s2
       - id: s2
         text: The manifest shows that Dr Sorell relisted the emergency spares as research stock. He is the one who can say why.
-        goal: Ask Dr Sorell about the relisted spares
+        # A Now line is what the player types (M10.33 AE).
+        goal: Ask Sorell about the spares
         asks: "I'm still three crates short. If the manifests told you something, follow it, and come back to me when you have a name."
         knows:
           npc_mara_venn: Mara knows the spares are still missing from her count; she does not yet know the stranger has traced them to Sorell's entry.
@@ -153,7 +154,8 @@ quests:
       - id: a1
         say: [hear (?:(?:the|a|an) )?tessa (?:(?:the|a|an) )?out]
         intent: hear Tessa out
-        at: [loc_guest_quarters]
+        # Over a cold cup, somewhere ordinary: the Commons, where its Now line sends the stranger (M10.33 AE).
+        at: [loc_commons]
         with: npc_tessa_rook
         when:
           - { not_flag: story_a_second_opinion_1 }
@@ -232,7 +234,8 @@ quests:
     stages:
       - id: s1
         text: Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
-        goal: Ask Niko Serrin about the listening station
+        # A Now line is what the player types (M10.33 AE).
+        goal: Ask Niko about the station
         asks: "Start with Niko Serrin. He found the signal, and he knows that station better than anyone. Ask him what he has seen up there."
         knows:
           npc_ilyan_sorell: Ilyan Sorell knows he wants the recordings secured and a report on the fault; he speaks of the signal as the most important thing ever received on Nacre and says nothing of the archive's history.
@@ -279,7 +282,8 @@ quests:
             to: s4
       - id: s4
         text: "The cut segments and the missing parts point to the same place: the Peregrine and the tests nobody talks about."
-        goal: Ask Tessa Rook about the Peregrine's drive tests
+        # A Now line is what the player types (M10.33 AE).
+        goal: Ask Tessa about the drive test
         asks: "When you have something for me, bring it to me aboard the Peregrine. I'll be there."
         knows:
           npc_tessa_rook: Tessa Rook knows the drive test ran in secret on Nacre, powered with diverted heating and water parts, and she has now seen its pulse pattern in the signal; she does not know what that means and distrusts anyone who claims to.

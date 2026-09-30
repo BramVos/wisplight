@@ -31,19 +31,19 @@ Here: the port coordinator (at work).
 
 > quests
 Open:
-  The Orison Recordings: Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone. Now: Ask Niko Serrin about the listening station
+  The Orison Recordings: Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone. Now: Ask Niko about the station
 
 > journal the orison recordings
 The Orison Recordings
 - Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
 Given by [Dr Ilyan Sorell].
-Now: Ask Niko Serrin about the listening station
+Now: Ask Niko about the station
 Where: [Orison Listening Room].
 
 > talk the port coordinator
 You are talking with the port coordinator. Type what you want to say, pick a number, or BYE to stop.
 Mara nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 Mara: Three crates of heating and water spares aren't where my count says they should be. I don't have time to chase paper, and nobody here will tell me no to my face. You're new, so you owe nobody a favour. Would you look?
 New quest: Short on the Count. Mara Venn says three crates of emergency heating and water spares are missing from her count. Cargo comes in through the Arrival Lock, and the manifests are logged there.
 
@@ -86,7 +86,7 @@ The Orison Recordings: The cut segments and the missing parts point to the same 
 
 > quests
 Open:
-  The Orison Recordings: The cut segments and the missing parts point to the same place: the Peregrine and the tests nobody talks about. Now: Ask Tessa Rook about the Peregrine's drive tests
+  The Orison Recordings: The cut segments and the missing parts point to the same place: the Peregrine and the tests nobody talks about. Now: Ask Tessa about the drive test
   Short on the Count: Mara Venn says three crates of emergency heating and water spares are missing from her count. Cargo comes in through the Arrival Lock, and the manifests are logged there. Now: Compare the cargo manifests at the Arrival Lock
 
 # Shortcut: back down to the Workshop, to Tessa.
@@ -204,19 +204,19 @@ Here: the port coordinator (at work).
 
 > quests
 Open:
-  The Orison Recordings: Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone. Now: Ask Niko Serrin about the listening station
+  The Orison Recordings: Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone. Now: Ask Niko about the station
 
 > journal the orison recordings
 The Orison Recordings
 - Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
 Given by [Dr Ilyan Sorell].
-Now: Ask Niko Serrin about the listening station
+Now: Ask Niko about the station
 Where: [Orison Listening Room].
 
 > talk the port coordinator
 You are talking with the port coordinator. Type what you want to say, pick a number, or BYE to stop.
 Mara nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 Mara: Three crates of heating and water spares aren't where my count says they should be. I don't have time to chase paper, and nobody here will tell me no to my face. You're new, so you owe nobody a favour. Would you look?
 New quest: Short on the Count. Mara Venn says three crates of emergency heating and water spares are missing from her count. Cargo comes in through the Arrival Lock, and the manifests are logged there.
 
@@ -243,7 +243,7 @@ Here: Mara Venn, the port coordinator (at work).
 The Orison Recordings
 - Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
 Given by [Dr Ilyan Sorell].
-Now: Ask Niko Serrin about the listening station
+Now: Ask Niko about the station
 Where: [Orison Listening Room].
 
 ==== END (Span 19 Rainfall 186 CR, 07:07 (morning))

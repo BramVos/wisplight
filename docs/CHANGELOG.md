@@ -1,5 +1,27 @@
 # Changelog
 
+## M10.33 deel: elke quest gespeeld als nieuwe speler (AE), 30 september 2026
+
+- **Oorzaak:** de controle of een quest te doen is, keek naar plekken, vlaggen en aflopen. Of het ding dat een daad noemt er is, of dat de "Now"-regel is wat je typt, controleerde niemand. De speeltest typte de toverwoorden van de hoofdlijn letterlijk, dus die slaagde altijd.
+- **Nu speelt het spel elke quest als nieuwe speler.** Per stadium gaat het naar de plek, typt de "Now"-regel zoals die er staat, wacht als het "nog niet" hoort, en probeert een mislukte worp opnieuw. Het verslag staat in `docs/playtest/quests.txt` en de test faalt op een stadium dat vastzit. Het spel leest een "Now"-regel nu ook met de plek erachter: "Copy the original recordings in the Orison Listening Room" doet de daad.
+- **Check** noemt een daad aan iets dat er niet is, een "Now"-regel die je niet kunt typen, en een "Now"-regel die je naar een andere plek stuurt dan de daad. De stap Verhalen, de streekronde en de nachtronde vragen de "Now"-regel als het commando.
+- **The Quiet Reach:**
+  - Het manifest is er: een tablet op het bureau van de sluis, met `read` en `compare`.
+  - Er staan kratten in de hangar en Tessa's notities in de Guest Quarters.
+  - Drie "Now"-regels zijn wat je typt.
+  - Tessa's gesprek is in de Commons, waar de regel je heen stuurt.
+- **Nog vast:** alleen het spoor van de antennestoring (orison s3). Dat verhuist in AA naar de las in de Cable Gallery.
+
+Testen: `npm run playtest`, en lees `docs/playtest/quests.txt`. Speel The Short on the Count met alleen wat er bij "Now" staat. Test in `tests/m1033quests.test.ts`.
+
+Kosten: geen aanroep. De regels van de schrijvende aanroepen zijn een halve zin langer.
+
+Bekende gaten: een stadium dat verder gaat door een gesprek, iets dat je brengt of de tijd, heeft geen daad om te typen. Die stadia spelen de geschreven lijnen; de meeste quests van de Nethermarch zijn zo.
+
+Wat de editor en de kroniekverteller leerden: de "Now"-regel als het commando in de stap Verhalen, de streekronde en de nachtronde, en drie regels onder Check.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 14, alinea "Stand na M10.33: elke quest gespeeld als nieuwe speler".
+
 ## M10.33 deel: wat iemand van je vraagt komt uit het spel (V), 30 september 2026
 
 - **Geen opdracht of afspraak uit het niets (V).** Oorzaak: de regels verboden de stem om zelf mee te gaan of later iets te doen, maar niet om de speler een opdracht of een afspraak te geven. Ilyan zei zo "Meet me at the Peregrine Hangar in ten minutes" zonder dat iets in het spel het vroeg. De vaste regel zegt het nu ook voor de speler. De bewaker vraagt een antwoord opnieuw dat een afspraak geeft die geen aanbod van het spel is, of een opdracht die geen verhaal of verzoek van de spreker dekt. De weg wijzen als je erom vraagt is geen opdracht.
@@ -12,6 +34,7 @@ Kosten: geen nieuwe aanroep. De vaste regels bleven binnen 5.016 tekens met het 
 Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
 
 Ontwerp: geen wijziging; een regel en een bewaker binnen de guardrails van hoofdstuk 10, en de afspraak als aanbod van het spel staat in de alinea over AG en AC.
+
 
 ## M10.33 deel: dingen uit een beschrijving zijn er, en overal iets te doen (N), 30 september 2026
 

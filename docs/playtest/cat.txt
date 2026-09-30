@@ -77,7 +77,7 @@ Here: Mirte the baker.
 > talk mirte
 You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
 Mirte nods. "Evening."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 Mirte: The mill's standing still and I've flour for two more bakes. Lubbert in Waagdam says there's no rye this side of winter, and he's asking double for what there is. Bring me flour, or rye I can have ground, before market day on Zaterdag. Or Veenhoek goes without bread.
 New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before market day on Zaterdag. The mill stands still for want of sailcloth, and Lubbert in Waagdam asks double.
 
@@ -101,7 +101,7 @@ What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, cha
 > talk mirte
 You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
 Mirte nods. "Evening."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > where is aaltje
 You: "Where can I find aaltje?"
@@ -144,7 +144,7 @@ Here: Aaltje, Old Aaltje (eating).
 > talk aaltje
 You are talking with Old Aaltje. Type what you want to say, pick a number, or BYE to stop.
 Aaltje nods. "Evening."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > What do you know about the grey cat?
 Aaltje scratches an ear. "A [grey cat] with one white paw has sat on the [Vissers]' doorstep every day since [Fenna] vanished."
@@ -176,7 +176,7 @@ Across country you can head any way, or follow the tow path west to Oude Zijl, t
 Visser House, the doorstep
 A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
 Exits: east
-Here: Grietje, Grietje Visser; Pim.
+Here: Grietje, Visser; Pim.
 
 > drink the draught
 It tastes of valerian and mud. The edges of the world go sharp, and every small sound suddenly means something.
@@ -206,7 +206,7 @@ Here: Aaltje Hendriks, Old Aaltje.
 > talk aaltje
 You are talking with Old Aaltje. Type what you want to say, pick a number, or BYE to stop.
 Aaltje nods. "Evening."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > where is the kattenbroek
 You: "Where can I find the kattenbroek?"
@@ -340,13 +340,13 @@ What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, cha
 Visser House, the doorstep
 A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
 Exits: east
-Here: Fenna Visser (home again); Grietje, Grietje Visser (eating); Pim (eating).
+Here: Fenna Visser (home again); Grietje, Visser (eating); Pim (eating).
 
 > look
 Visser House, the doorstep
 A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
 Exits: east
-Here: Fenna Visser (home again); Grietje, Grietje Visser (eating); Pim (eating).
+Here: Fenna Visser (home again); Grietje, Visser (eating); Pim (eating).
 
 [192 hours pass]
 Flour for Veenhoek: Market day passed. Market day came and went without flour. Veenhoek bought stale bread at the Goose, dear.
@@ -391,7 +391,7 @@ The chapel bell rings for noon.
 Visser House, the doorstep
 A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
 Exits: east
-Here: Fenna Visser (eating); Grietje, Grietje Visser (eating); Jan, Jan Visser (eating); Pim (eating).
+Here: Fenna Visser (eating); Grietje, Visser (eating); Jan, Visser (eating); Pim (eating).
 
 # Shortcut: a month away, far from Veenhoek (the heath road at Reuzenrust), and back. Far off, the quest does not wait for ever (M10.6).
 
@@ -413,14 +413,14 @@ Survey of the Holleveen: full. Cornelis sends his report to Graafhaven. In sprin
 Visser House, the doorstep
 A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
 Exits: east
-Here: Fenna Visser (eating); Grietje, Grietje Visser (eating); Pim (eating).
+Here: Fenna Visser (eating); Grietje, Visser (eating); Pim (eating).
 Barrels are piling up in Veenhoek; you can have them for next to nothing.
 
 > look
 Visser House, the doorstep
 A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
 Exits: east
-Here: Fenna Visser (eating); Grietje, Grietje Visser (eating); Pim (eating).
+Here: Fenna Visser (eating); Grietje, Visser (eating); Pim (eating).
 
 > journal
 People: Fenna Visser, Aaltje Hendriks, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, Wouter, the Count.
@@ -508,7 +508,7 @@ Here: Mirte the baker.
 > talk mirte
 You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
 Mirte nods. "Evening."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 Mirte: The mill's standing still and I've flour for two more bakes. Lubbert in Waagdam says there's no rye this side of winter, and he's asking double for what there is. Bring me flour, or rye I can have ground, before market day on Zaterdag. Or Veenhoek goes without bread.
 New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before market day on Zaterdag. The mill stands still for want of sailcloth, and Lubbert in Waagdam asks double.
 
@@ -534,13 +534,13 @@ What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, cha
 Visser House, the doorstep
 A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
 Exits: east
-Here: Grietje, Grietje Visser (eating); Pim (eating).
+Here: Grietje, Visser (eating); Pim (eating).
 
 > look
 Visser House, the doorstep
 A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
 Exits: east
-Here: Grietje, Grietje Visser (eating); Pim (eating).
+Here: Grietje, Visser (eating); Pim (eating).
 
 [192 hours pass]
 There are no sacks of flour to be had in Veenhoek. People make do, and grumble about it.
@@ -579,7 +579,7 @@ The chapel bell rings for six.
 Visser House, the doorstep
 A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
 Exits: east
-Here: Grietje, Grietje Visser; Pim (playing).
+Here: Grietje, Visser; Pim (playing).
 
 # Shortcut: a month away, far from Veenhoek (the heath road at Reuzenrust), and back. Far off, the quest does not wait for ever (M10.6).
 
