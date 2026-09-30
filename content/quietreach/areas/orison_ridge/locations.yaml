@@ -21,9 +21,10 @@ locations:
       text: "Half the consoles are dark and the rest flicker fault codes, and through the window the antenna climbs into cloud. Then the speaker gives its short pattern of tones, and the silence after it, and you understand why nobody here sleeps well."
       far: "High on Orison Ridge the antenna of the listening station stands against the cloud, its cables groaning in the wind."
     exits:
-      down: { to: loc_ridge_shelter, minutes: 12 }
-      # A secret way (M10.31): not in the exits or on the plan until the hatch is found.
-      in: { to: loc_orison_cable_gallery, minutes: 2, hidden: true }
+      down: { to: loc_ridge_shelter, minutes: 12, words: [stairs, steps, steep route] }
+      # A secret way (M10.31): not in the exits or on the plan until the hatch is found; OPEN THE HATCH or CLIMB DOWN THE
+      # LADDER takes it (M10.33).
+      in: { to: loc_orison_cable_gallery, minutes: 2, hidden: true, words: [hatch, ladder] }
     hidden:
       # SEARCH may find it by a roll; SEARCH BEHIND THE CONSOLES finds it at once.
       - id: console_hatch
@@ -32,6 +33,7 @@ locations:
         exit: in
         words: [hatch, behind the consoles, behind the console, behind consoles, where the cables go, floor]
         verbs: [lift]
+        helps: The cables behind the last console drop through the floor somewhere. A closer look behind the consoles might show where.
       # Found only by someone who heard of the cairn (M10.30), never by a plain search.
       - id: survey_cache
         text: By the antenna footing a low cairn of flat stones stands where you were told it would. Under the top stone, the one with the pale painted arrow, a sealed tin holds a field lamp, still dry, and a card with the first survey crew's names in faded pencil.
@@ -80,7 +82,7 @@ locations:
     arrival:
       text: "The ladder brings you down into warm, humming dark under the floor. Cables run away from you in their trays, and somewhere along them a relay clicks, waits, and clicks again."
     exits:
-      out: { to: loc_orison_listening_room, minutes: 2 }
+      out: { to: loc_orison_listening_room, minutes: 2, words: [ladder, hatch] }
     details:
       - words: [cables, trays, cable trays, bundles]
         look: Cables of every thickness, tied into bundles and laid in steel trays, some labelled with tags gone brown with age.

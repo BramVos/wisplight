@@ -41,7 +41,7 @@ Jan nods. "Evening."
 
 > 2
 You: "What's new around here?"
-Jan nods slowly. "[The Count] wants to drain the Holleveen and make a [polder] of it. A [surveyor] from [Graafhaven] has been measuring the fen since spring. The peat-cutters are furious; the [miller] thinks it will be good for trade."
+Jan nods slowly. "[The Count] wants to drain [the Holleveen] and make a [polder] of it. A [surveyor] from [Graafhaven] has been measuring the fen since spring. The peat-cutters are furious; the [miller] thinks it will be good for trade."
 Gerrit walks on to the northeast.
 
 > bye
@@ -142,7 +142,7 @@ Teunis lifts a hand. "Go on, then."
 
 > journal
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
-Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
+Places: The Drowned Goose, the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
@@ -172,7 +172,7 @@ Across country you can head any way, or follow the east road west or the east ro
 +10 experience: you found The East Gate.
 
 > walk to oude zijl
-You make your way towards Oude Zijl for 3 hours and 18 minutes. Your boots find the old ruts, and the road carries you along. A barge horse plods past with its head down, and the rope hisses on the water. Mist hides everything more than a stone's throw off, and sounds come from nowhere. Away to the south-east you see the tower of the Waag of Waagdam. A mist has come up while you walked. You come to The Old Sluice.
+You make your way towards Oude Zijl for 3 hours and 18 minutes. Your boots find the old ruts, and the road carries you along. A barge horse plods past with its head down, and the rope hisses on the water. Mist hides everything more than a stone's throw off, and sounds come from nowhere. Away to the south-east you see the tower of the Waag of Waagdam. A mist has come up while you walked. You come to The Old Sluice, in Oude Zijl.
 The Old Sluice
 Two great sluice gates of tarred oak hold back the Vaart where it meets the dyke. Water leaks through the seams with a steady hiss, and gulls cry from the dyke top. A dyke house stands to one side with its shutters closed. The tow path runs east along the Vaart to Veenhoek.
 Exits: north, up, west
@@ -204,7 +204,7 @@ The Old Sluice
 Two great sluice gates of tarred oak hold back the Vaart where it meets the dyke. Water leaks through the seams with a steady hiss, and gulls cry from the dyke top. A dyke house stands to one side with its shutters closed. The tow path runs east along the Vaart to Veenhoek.
 Exits: north, up, west
 Across country you can head any way, or follow the tow path to Veenhoek.
-Here: Teunis Ros, Teunis the horse-miller (on the way to The Old Sluice).
+Here: Teunis Ros, Teunis the horse-miller (visiting The Old Sluice).
 Sijbrand walks on upstairs.
 Teunis arrives from the north.
 Teunis: "There he goes. Come on."
@@ -213,7 +213,7 @@ Teunis: "There he goes. Come on."
 On the Great Dyke
 From the top of the dyke you see the Holleveen spread out on one side, flat and green and lower than it has any right to be. On the other side grey water runs out to a grey sky, and the wind off it tastes of salt and leans on you without a pause. Sheep have cropped the grass short, and their droppings are everywhere. The sluice lies below you, down the slope.
 Exits: down
-Here: Heemraad Sijbrand (at work); Teunis Ros, Teunis the horse-miller (on the way to On the Great Dyke).
+Here: Sijbrand, Heemraad Sijbrand (at work); Teunis Ros, Teunis the horse-miller (visiting On the Great Dyke).
 Teunis arrives from below.
 +10 experience: you found On the Great Dyke.
 Teunis brought you to On the Great Dyke, and Sijbrand was there.
@@ -232,7 +232,7 @@ Time passes. It is Woensdag 15 Herfstmaand 211 AW, 14:04 (afternoon).
 
 > journal
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Sijbrand, Teunis Ros, Trijntje Kroes, the Count.
-Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
+Places: The Drowned Goose, the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
@@ -250,7 +250,7 @@ Here: Sijbrand, Heemraad Sijbrand (at work).
 
 > journal
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Sijbrand, Teunis Ros, Trijntje Kroes, the Count.
-Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
+Places: The Drowned Goose, the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
@@ -325,7 +325,7 @@ Here: Prior Ansfried (stopping to look at the stranger), Wouter the eel-fisher (
 
 > journal
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Sijbrand, Teunis Ros, Trijntje Kroes, the Count.
-Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
+Places: The Drowned Goose, the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
@@ -373,7 +373,7 @@ Jan nods. "Evening."
 
 > 2
 You: "What's new around here?"
-Jan nods slowly. "[The Count] wants to drain the Holleveen and make a [polder] of it. A [surveyor] from [Graafhaven] has been measuring the fen since spring. The peat-cutters are furious; the [miller] thinks it will be good for trade."
+Jan nods slowly. "[The Count] wants to drain [the Holleveen] and make a [polder] of it. A [surveyor] from [Graafhaven] has been measuring the fen since spring. The peat-cutters are furious; the [miller] thinks it will be good for trade."
 Gerrit walks on to the northeast.
 
 > bye
@@ -474,7 +474,7 @@ Teunis lifts a hand. "Go on, then."
 
 > journal
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
-Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
+Places: The Drowned Goose, the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
@@ -499,7 +499,7 @@ Here: Teunis Ros, Teunis the horse-miller (at work).
 
 > journal
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
-Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
+Places: The Drowned Goose, the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
@@ -558,7 +558,7 @@ Across country you can head any way, or follow the tow path west to Oude Zijl, t
 
 > journal
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
-Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
+Places: The Drowned Goose, the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 

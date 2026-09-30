@@ -103,13 +103,14 @@ describe('M10.31 B: a secret way', () => {
     expect(replayed.state.player.found).toContain(`exit:${room}/in`)
   })
 
-  it('a plain SEARCH finds the hatch by a roll', async () => {
+  // Without a die since M10.33 Z: a plain SEARCH says where to look, and naming the spot finds the hatch.
+  it('a plain SEARCH says where to look for the hatch', async () => {
     const engine = new Engine(quietReach, { seed: 3, builder: true })
     engine.start()
     await engine.handle(`@goto ${room}`)
-    let found = false
-    for (let i = 0; i < 12 && !found; i++) found = /a square hatch/.test(said(await engine.handle('search')))
-    expect(found).toBe(true)
+    expect(said(await engine.handle('search'))).toMatch(/something here escapes you\. The cables behind the last console drop through the floor somewhere/)
+    expect(exitsLine(await engine.handle('look'))).toBe('Exits: down')
+    expect(said(await engine.handle('search behind the consoles'))).toMatch(/a square hatch/)
     expect(exitsLine(await engine.handle('look'))).toBe('Exits: down, in')
   })
 

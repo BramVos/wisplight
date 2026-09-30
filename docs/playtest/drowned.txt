@@ -36,7 +36,7 @@ Here: Maren Holt, Maren of the Salt Kettle; a fisherwoman.
 
 > @time 12   [build command: a shortcut]
 [build] 290 minutes pass.
-Wenna leaves west.
+A fisherwoman leaves west.
 
 # Shortcut: a death comes when it comes; here Wenna the fisher drowns at once.
 
@@ -244,7 +244,7 @@ The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna. The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle (on the way to The Salt Kettle).
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
@@ -357,7 +357,7 @@ Here: Maren Holt, Maren of the Salt Kettle; a fisherwoman.
 
 > @time 12   [build command: a shortcut]
 [build] 290 minutes pass.
-Wenna leaves west.
+A fisherwoman leaves west.
 
 # Shortcut: a death comes when it comes; here Wenna the fisher drowns at once.
 

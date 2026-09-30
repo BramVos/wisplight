@@ -127,6 +127,8 @@ numbers:
   src/engine/sketches.ts:
     SEASON: 'world: calendar.season (follows the shape of the year)'
     MAX_SKETCHES: 'code: the sketches kept in the save (save size)'
+  src/engine/skills.ts:
+    SEARCH_BASE: 'code: the ten of a passive check, Perception plus ten against the DC (a rule of the d20 rules the world''s DCs are set by)'
   src/engine/stories.ts:
     KEEP_DONE: 'code: the stories kept once done (save size)'
   src/engine/storylines.ts:

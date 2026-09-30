@@ -82,3 +82,16 @@ export function secretNote(content: Pick<Content, 'locations'>, location: string
 /** The rule that goes with the notes, for every call that writes quests (M10.32). */
 export const SECRET_PLACES_RULE =
   'A PLACE MARKED secret is found in play, by searching where it is found from; nobody names it (in knows, the ask or a journal line) before a stage sends the stranger to look there, and a deed in it comes only after that stage. A place marked shut opens only once something happens there first: a deed in it needs a stage before it that opens the way.'
+
+/**
+ * The ways out of a place the words name by what they are called (M10.33 Z:
+ * "open hatch" said there was no hatch, and "go down the ladder" took the
+ * stairs, for the way was called `in`): each shown way whose own words fit.
+ */
+export function exitsByWords(world: World, location: string, words: string): Direction[] {
+  const wanted = words.toLowerCase().replace(/^(?:down|up|in|into|through|out|out of|the|a|an)\s+/g, '').replace(/^(?:the|a|an)\s+/, '').trim()
+  if (!wanted) return []
+  const exits = world.location(location).exits
+  return shownExits(world, location).filter((d) => (exits[d]!.words ?? []).some((w) => w.toLowerCase() === wanted || wanted.endsWith(` ${w.toLowerCase()}`) || w.toLowerCase().endsWith(` ${wanted}`)))
+}
+

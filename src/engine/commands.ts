@@ -44,7 +44,7 @@ import { deed } from './social/deeds'
 import { recognisedSale, refusedTrade, returnStolen } from './social/crime'
 import { lodgingLines } from './lodgings'
 import { engageFarPlace } from './outlines'
-import { exitShown, shownExits } from './exits'
+import { exitsByWords, exitShown, shownExits } from './exits'
 import { wornNow } from './carried'
 
 // Player commands that need no AI. Each returns lines of output; commands that
@@ -167,6 +167,8 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
     case 'open': {
       // What cannot be opened says what can be done with it (M10.29 T: "open cab" for a cabinet the room only names).
       const words = command.args.join(' ')
+      // OPEN THE HATCH (M10.33 Z): a way called so is gone through, when no object here is called so.
+      if (!objectHere(world, words) && exitsByWords(world, world.state.player.location, words).length) return go(host, command.args)
       if (!objectHere(world, words) || carried(world, words)) {
         const could = couldInstead(world, 'open', words)
         if (could) return [text(could)]
@@ -314,6 +316,8 @@ Lines here: ${lines.join(', ')}.` : HELP }]
       const said = command.raw.trim().split(/\s+/)[0]!.toLowerCase()
       const offered = world.location(world.state.player.location).objects.some((o) => world.content.objectTypes.get(o.type)?.affordances.some((a) => a.actors.includes('player') && a.verb === said))
       if (offered) return use(host, [said, ...command.args.filter((a) => !/^(?:from|at|on|with|in|the|a|an)$/i.test(a))])
+      // CLIMB DOWN THE LADDER, CRAWL THROUGH THE HATCH (M10.33 Z): a way called so, by a verb of moving.
+      if (MOVING.has(said) && exitsByWords(world, world.state.player.location, command.args.join(' ')).length) return go(host, command.args)
       // An act the rules do not know, on a thing that matters (M10.16): improvised, by the engine.
       const imp = improvisable(world, command)
       if (imp) return [{ kind: 'text', text: imp.def.fallback, improvise: imp }]
@@ -687,11 +691,19 @@ function examineHere(world: World, target: string): Output | undefined {
 
 // ---------------------------------------------------------------- moving
 
+/** Verbs of moving that take a way by what it is called (M10.33 Z). */
+const MOVING = new Set(['climb', 'crawl', 'descend', 'ascend', 'squeeze', 'duck'])
+
 function go(host: CommandHost, args: string[]): Output[] {
   const { world } = host
   const player = world.state.player
   const location = world.location(player.location)
   let direction = parseDirection(args[0])
+  // A way by what it is called (M10.33 Z): GO DOWN THE LADDER takes the ladder, whatever its direction; GO DOWN alone
+  // takes the way down; a word two ways share asks which.
+  const named = args.length > (direction ? 1 : 0) ? exitsByWords(world, player.location, args.join(' ')) : []
+  if (named.length > 1) return offer(world, 'Which way?', named.map((d) => ({ label: `${d}: ${world.location(location.exits[d]!.to).name}`, command: `go ${d}` })))
+  if (named.length === 1) direction = named[0]
   if (!direction && args.length > 0) {
     const wanted = args.join(' ').toLowerCase().replace(/^(the|to)\s+/, '')
     const exits = (Object.entries(location.exits) as [Direction, { to: string }][]).filter(([d]) => exitShown(world, player.location, d))
@@ -707,7 +719,7 @@ function go(host: CommandHost, args: string[]): Output[] {
   if (!direction) return [error('Go where? Try a direction such as north, or the name of a place you can see.')]
   // Out where there is no door called out (M10.29 V): the way that leads out onto the land.
   if (direction === 'out' && !location.exits.out) {
-    const open = (Object.entries(location.exits) as [Direction, { to: string }][]).find(([d, exit]) => exitShown(world, player.location, d) && isHexId(exit.to) || canSetOut(world, exit.to) || (world.content.locations.get(exit.to)?.tags ?? []).includes('outdoor'))
+    const open = (Object.entries(location.exits) as [Direction, { to: string }][]).find(([d, exit]) => exitShown(world, player.location, d) && (isHexId(exit.to) || canSetOut(world, exit.to) || (world.content.locations.get(exit.to)?.tags ?? []).includes('outdoor')))
     if (open) direction = open[0]
   }
   const exit = location.exits[direction]

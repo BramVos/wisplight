@@ -93,7 +93,7 @@ Mirte lifts a hand. "Go on, then."
 
 > journal
 People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
-Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
+Places: The Drowned Goose, the Holleveen, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, The Mill De Zwaan, On the Great Dyke, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
@@ -135,14 +135,14 @@ Exits: north, south, east, west, northwest
 Aaltje's Cottage
 Bunches of herbs hang from every beam, so you have to stoop. It smells of mint, smoke and something older. On the wall, in a frame of black wood, hangs a yellowed paper with a red seal: a certificate from the Waag of Waagdam, stating that one Aaltje Hendriks weighed as much as an honest woman should. The door opens east onto the lane.
 Exits: east
-Here: Old Aaltje (eating).
+Here: Aaltje, Old Aaltje (eating).
 +10 experience: you found Aaltje's Cottage.
 
 > look
 Aaltje's Cottage
 Bunches of herbs hang from every beam, so you have to stoop. It smells of mint, smoke and something older. On the wall, in a frame of black wood, hangs a yellowed paper with a red seal: a certificate from the Waag of Waagdam, stating that one Aaltje Hendriks weighed as much as an honest woman should. The door opens east onto the lane.
 Exits: east
-Here: Old Aaltje (eating).
+Here: Aaltje, Old Aaltje (eating).
 
 > talk aaltje
 You are talking with Old Aaltje. Type what you want to say, pick a number, or BYE to stop.
@@ -179,7 +179,7 @@ Across country you can head any way, or follow the tow path west to Oude Zijl, t
 Visser House, the doorstep
 A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
 Exits: east
-Here: Grietje Visser, Pim.
+Here: Grietje, Grietje Visser; Pim.
 
 > drink the draught
 It tastes of valerian and mud. The edges of the world go sharp, and every small sound suddenly means something.
@@ -281,7 +281,7 @@ Ways on: north, north-east, south-east, south, south-west, north-west.
 Somewhere around here, they said. You see no sign of the Kattenbroek yet.
 
 > walk to the kattenbroek
-You make your way towards the Kattenbroek for 12 minutes, over fen and the fen path. You come to The Edge of the Kattenbroek.
+You make your way towards the Kattenbroek for 12 minutes, over fen and the fen path. You come to The Edge of the Kattenbroek, in the Kattenbroek.
 The Edge of the Kattenbroek
 Reed closes in on every side, taller than a man, and the path under your feet turns to black water in places. Cats watch you from the tussocks, more of them than there should be. The air smells of rot and, strangely, of fish frying. Far in to the east, a hut on stilts shows its roof above the reeds.
 Exits: east, south
@@ -330,7 +330,7 @@ The Grey Cat on the Doorstep: Honest. Fenna is home, and one day a week all wint
 
 > journal
 People: Fenna Visser, Aaltje Hendriks, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, Wouter, the Count.
-Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Black Pools, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
+Places: The Drowned Goose, the Holleveen, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Black Pools, The Mill De Zwaan, On the Great Dyke, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
@@ -343,13 +343,13 @@ What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, cha
 Visser House, the doorstep
 A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
 Exits: east
-Here: Fenna Visser (home again), Grietje Visser (eating), Pim (eating).
+Here: Fenna Visser (home again); Grietje, Grietje Visser (eating); Pim (eating).
 
 > look
 Visser House, the doorstep
 A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
 Exits: east
-Here: Fenna Visser (home again), Grietje Visser (eating), Pim (eating).
+Here: Fenna Visser (home again); Grietje, Grietje Visser (eating); Pim (eating).
 
 [192 hours pass]
 Flour for Veenhoek: Market day passed. Market day came and went without flour. Veenhoek bought stale bread at the Goose, dear.
@@ -394,7 +394,7 @@ The chapel bell rings for noon.
 Visser House, the doorstep
 A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
 Exits: east
-Here: Fenna Visser (eating), Grietje Visser (eating), Jan Visser (eating), Pim (eating).
+Here: Fenna Visser (eating); Grietje, Grietje Visser (eating); Jan, Jan Visser (eating); Pim (eating).
 
 # Shortcut: a month away, far from Veenhoek (the heath road at Reuzenrust), and back. Far off, the quest does not wait for ever (M10.6).
 
@@ -416,18 +416,18 @@ Survey of the Holleveen: full. Cornelis sends his report to Graafhaven. In sprin
 Visser House, the doorstep
 A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
 Exits: east
-Here: Fenna Visser (eating), Grietje Visser (eating), Pim (eating).
+Here: Fenna Visser (eating); Grietje, Grietje Visser (eating); Pim (eating).
 Barrels are piling up in Veenhoek; you can have them for next to nothing.
 
 > look
 Visser House, the doorstep
 A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
 Exits: east
-Here: Fenna Visser (eating), Grietje Visser (eating), Pim (eating).
+Here: Fenna Visser (eating); Grietje, Grietje Visser (eating); Pim (eating).
 
 > journal
 People: Fenna Visser, Aaltje Hendriks, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, Wouter, the Count.
-Places: the Holleveen, Reuzenrust, Veenhoek, Waagdam, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Black Pools, The Mill De Zwaan, The Road to Hunnenloo, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
+Places: The Drowned Goose, the Holleveen, Reuzenrust, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Black Pools, The Mill De Zwaan, On the Great Dyke, The Road to Hunnenloo, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
@@ -527,7 +527,7 @@ Mirte lifts a hand. "Go on, then."
 
 > journal
 People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
-Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
+Places: The Drowned Goose, the Holleveen, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, The Mill De Zwaan, On the Great Dyke, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
@@ -540,13 +540,13 @@ What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, cha
 Visser House, the doorstep
 A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
 Exits: east
-Here: Grietje Visser (eating), Pim (eating).
+Here: Grietje, Grietje Visser (eating); Pim (eating).
 
 > look
 Visser House, the doorstep
 A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
 Exits: east
-Here: Grietje Visser (eating), Pim (eating).
+Here: Grietje, Grietje Visser (eating); Pim (eating).
 
 [192 hours pass]
 There are no sacks of flour to be had in Veenhoek. People make do, and grumble about it.
@@ -585,7 +585,7 @@ The chapel bell rings for six.
 Visser House, the doorstep
 A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
 Exits: east
-Here: Grietje Visser, Pim (playing).
+Here: Grietje, Grietje Visser; Pim (playing).
 
 # Shortcut: a month away, far from Veenhoek (the heath road at Reuzenrust), and back. Far off, the quest does not wait for ever (M10.6).
 
@@ -619,7 +619,7 @@ Here: Pim (playing).
 
 > journal
 People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
-Places: Reuzenrust, Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Road to Hunnenloo, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
+Places: The Drowned Goose, the Holleveen, Reuzenrust, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, The Mill De Zwaan, On the Great Dyke, The Road to Hunnenloo, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 

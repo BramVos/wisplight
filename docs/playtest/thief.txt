@@ -36,14 +36,14 @@ Here: Maren Holt, Maren of the Salt Kettle; a fisherwoman.
 
 > @time 2   [build command: a shortcut]
 [build] 1130 minutes pass.
-Wenna leaves west.
-Wenna arrives from the west.
-Wenna stops and gives you a nod, curious about the stranger.
-Maren nods to Wenna.
-Wenna leaves west.
-Wenna arrives from the west.
-Maren nods to Wenna.
-Wenna puts out the lamp and goes to bed.
+A fisherwoman leaves west.
+A fisherwoman arrives from the west.
+A fisherwoman stops and gives you a nod, curious about the stranger.
+Maren nods to a fisherwoman.
+A fisherwoman leaves west.
+A fisherwoman arrives from the west.
+Maren nods to a fisherwoman.
+A fisherwoman puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
 The harbour bell rings for six, once for the boats.
 
@@ -61,7 +61,7 @@ You slip a pot of pitch under your coat.
 You carry a cutlass, a knife, a pot of pitch, a sealskin jerkin and 2 ship's biscuits, and 3 sp 5 cp.
 
 > wait 6 hours
-Wenna leaves west.
+A fisherwoman leaves west.
 Time passes. It is Thornsday 4 Leaffall 412 SF, 08:00 (morning).
 The harbour bell rings for six, once for the boats.
 
@@ -111,16 +111,16 @@ Maren lifts a hand. "Mind how you go."
 ==== AFTER (Thornsday 4 Leaffall 412 SF, 08:04 (morning))
 
 [24 hours pass]
-Wenna arrives from the west.
-Wenna stops and gives you a nod, curious about the stranger.
-Maren nods to Wenna.
+A fisherwoman arrives from the west.
+A fisherwoman stops and gives you a nod, curious about the stranger.
+Maren nods to a fisherwoman.
 Maren and Wenna stand talking in The Salt Kettle. (LISTEN to catch it.)
-Wenna leaves west.
-Wenna arrives from the west.
-Maren nods to Wenna.
-Wenna puts out the lamp and goes to bed.
+A fisherwoman leaves west.
+A fisherwoman arrives from the west.
+Maren nods to a fisherwoman.
+A fisherwoman puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
-Wenna leaves west.
+A fisherwoman leaves west.
 The harbour bell rings for six, once for the boats.
 The harbour bell rings for six, once for the boats.
 
@@ -143,29 +143,29 @@ Maren thinks a moment. "A pot of pitch went missing from Maren at [The Salt Kett
 Maren lifts a hand. "Mind how you go."
 
 [72 hours pass]
-Wenna arrives from the west.
-Maren nods to Wenna.
-Wenna puts out the lamp and goes to bed.
+A fisherwoman arrives from the west.
+Maren nods to a fisherwoman.
+A fisherwoman puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
-Wenna leaves west.
-Wenna arrives from the west.
-Wenna stops and gives you a nod, curious about the stranger.
-Maren nods to Wenna.
-Wenna leaves west.
-Wenna arrives from the west.
-Maren nods to Wenna.
-Wenna puts out the lamp and goes to bed.
+A fisherwoman leaves west.
+A fisherwoman arrives from the west.
+A fisherwoman stops and gives you a nod, curious about the stranger.
+Maren nods to a fisherwoman.
+A fisherwoman leaves west.
+A fisherwoman arrives from the west.
+Maren nods to a fisherwoman.
+A fisherwoman puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
-Wenna leaves west.
-Wenna arrives from the west.
-Wenna stops and gives you a nod, curious about the stranger.
-Maren nods to Wenna.
-Wenna leaves west.
-Wenna arrives from the west.
-Maren nods to Wenna.
-Wenna puts out the lamp and goes to bed.
+A fisherwoman leaves west.
+A fisherwoman arrives from the west.
+A fisherwoman stops and gives you a nod, curious about the stranger.
+Maren nods to a fisherwoman.
+A fisherwoman leaves west.
+A fisherwoman arrives from the west.
+Maren nods to a fisherwoman.
+A fisherwoman puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
-Wenna leaves west.
+A fisherwoman leaves west.
 The harbour bell rings for six, once for the boats.
 The harbour bell rings for six, once for the boats.
 The harbour bell rings for six, once for the boats.
@@ -236,14 +236,14 @@ Here: Maren Holt, Maren of the Salt Kettle; a fisherwoman.
 
 > @time 2   [build command: a shortcut]
 [build] 1130 minutes pass.
-Wenna leaves west.
-Wenna arrives from the west.
-Wenna stops and gives you a nod, curious about the stranger.
-Maren nods to Wenna.
-Wenna leaves west.
-Wenna arrives from the west.
-Maren nods to Wenna.
-Wenna puts out the lamp and goes to bed.
+A fisherwoman leaves west.
+A fisherwoman arrives from the west.
+A fisherwoman stops and gives you a nod, curious about the stranger.
+Maren nods to a fisherwoman.
+A fisherwoman leaves west.
+A fisherwoman arrives from the west.
+Maren nods to a fisherwoman.
+A fisherwoman puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
 The harbour bell rings for six, once for the boats.
 
@@ -261,7 +261,7 @@ You slip a pot of pitch under your coat.
 You carry a cutlass, a knife, a pot of pitch, a sealskin jerkin and 2 ship's biscuits, and 3 sp 5 cp.
 
 > wait 6 hours
-Wenna leaves west.
+A fisherwoman leaves west.
 Time passes. It is Thornsday 4 Leaffall 412 SF, 08:00 (morning).
 The harbour bell rings for six, once for the boats.
 
@@ -292,16 +292,16 @@ What everyone knows: the coin of the isles, the folk of the isles, the tide, the
 ==== AFTER (Thornsday 4 Leaffall 412 SF, 08:02 (morning))
 
 [24 hours pass]
-Wenna arrives from the west.
-Wenna stops and gives you a nod, curious about the stranger.
-Maren nods to Wenna.
+A fisherwoman arrives from the west.
+A fisherwoman stops and gives you a nod, curious about the stranger.
+Maren nods to a fisherwoman.
 Maren and Wenna stand talking in The Salt Kettle. (LISTEN to catch it.)
-Wenna leaves west.
-Wenna arrives from the west.
-Maren nods to Wenna.
-Wenna puts out the lamp and goes to bed.
+A fisherwoman leaves west.
+A fisherwoman arrives from the west.
+Maren nods to a fisherwoman.
+A fisherwoman puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
-Wenna leaves west.
+A fisherwoman leaves west.
 The harbour bell rings for six, once for the boats.
 The harbour bell rings for six, once for the boats.
 
@@ -324,29 +324,29 @@ Maren thinks a moment. "A pot of pitch went missing from Maren at [The Salt Kett
 Maren lifts a hand. "Mind how you go."
 
 [72 hours pass]
-Wenna arrives from the west.
-Maren nods to Wenna.
-Wenna puts out the lamp and goes to bed.
+A fisherwoman arrives from the west.
+Maren nods to a fisherwoman.
+A fisherwoman puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
-Wenna leaves west.
-Wenna arrives from the west.
-Wenna stops and gives you a nod, curious about the stranger.
-Maren nods to Wenna.
-Wenna leaves west.
-Wenna arrives from the west.
-Maren nods to Wenna.
-Wenna puts out the lamp and goes to bed.
+A fisherwoman leaves west.
+A fisherwoman arrives from the west.
+A fisherwoman stops and gives you a nod, curious about the stranger.
+Maren nods to a fisherwoman.
+A fisherwoman leaves west.
+A fisherwoman arrives from the west.
+Maren nods to a fisherwoman.
+A fisherwoman puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
-Wenna leaves west.
-Wenna arrives from the west.
-Wenna stops and gives you a nod, curious about the stranger.
-Maren nods to Wenna.
-Wenna leaves west.
-Wenna arrives from the west.
-Maren nods to Wenna.
-Wenna puts out the lamp and goes to bed.
+A fisherwoman leaves west.
+A fisherwoman arrives from the west.
+A fisherwoman stops and gives you a nod, curious about the stranger.
+Maren nods to a fisherwoman.
+A fisherwoman leaves west.
+A fisherwoman arrives from the west.
+Maren nods to a fisherwoman.
+A fisherwoman puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
-Wenna leaves west.
+A fisherwoman leaves west.
 The harbour bell rings for six, once for the boats.
 The harbour bell rings for six, once for the boats.
 The harbour bell rings for six, once for the boats.

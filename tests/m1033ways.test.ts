@@ -84,3 +84,43 @@ describe('M10.33 AD: small things from the log', () => {
     expect(said(await engine.handle('follow tessa'))).toMatch(/^You did not see which way the chief engineer went from here\. TRACK may find the signs\.$/)
   })
 })
+
+describe('M10.33 Z: search without a die, and a way by what it is called', () => {
+  // Cause: SEARCH rolled a die on something free and endlessly repeatable, so Bram searched twenty times in a row until
+  // the number was right; and a way knew only its direction, so OPEN HATCH said there was no hatch and GO DOWN THE
+  // LADDER took the stairs. Fixed in the engine for every world (the eye is Perception plus ten; a way has words), and
+  // in the content of all three worlds (every hidden thing has words and helps; the ways that are a thing have words).
+  it('finds what the eye reaches, says where to look for what it does not, and is honest when nothing is hidden', async () => {
+    const engine = game()
+    await engine.handle('@goto loc_orison_listening_room')
+    const first = said(await engine.handle('search')).split('\n')[0]
+    expect(first).toMatch(/^You search the place well, but something here escapes you\. The cables behind the last console drop through the floor somewhere\./)
+    expect(first).not.toMatch(/\(Perception/)
+    // The same answer again: no die to try twice.
+    expect(said(await engine.handle('search')).split('\n')[0]).toBe(first)
+    expect(said(await engine.handle('open hatch'))).not.toMatch(/Cable Gallery/)
+    expect(said(await engine.handle('search behind the consoles'))).toMatch(/a square hatch/)
+    expect(said(await engine.handle('open the hatch'))).toMatch(/^Cable Gallery\n/)
+    expect(said(await engine.handle('search')).split('\n')[0]).toBe('You search the place well. Nothing here is hidden from you.')
+    expect(said(await engine.handle('climb up the ladder'))).toMatch(/^Orison Listening Room\n/)
+    expect(said(await engine.handle('go down the ladder'))).toMatch(/^Cable Gallery\n/)
+    expect(said(await engine.handle('up the ladder'))).toMatch(/^Orison Listening Room\n/)
+    // GO DOWN alone takes the way down: the stairs.
+    expect(said(await engine.handle('go down'))).toMatch(/^Ridge Shelter\n/)
+    expect(said(await engine.handle('climb the route'))).toMatch(/^Orison Listening Room\n/)
+  })
+
+  it('asks which way when a word fits two, and Check wants words for what a sharp eye alone finds', async () => {
+    const room = quiet.locations.get('loc_orison_listening_room')!
+    const locations = new Map(quiet.locations)
+    locations.set(room.id, { ...room, exits: { ...room.exits, down: { ...room.exits.down!, words: ['ladder', 'stairs'] } }, hidden: [...room.hidden, { id: 'nook', dc: 14, qty: 1, text: 'A nook.' }] } as never)
+    const twice = { ...quiet, locations }
+    expect(checkContent(twice)).toContain('loc_orison_listening_room.hidden.nook: only a sharp eye finds it (Perception plus ten against 14): give it words, what the stranger names to find it, and helps, where to look')
+    for (const world of [quiet]) expect(checkContent(world).join('\n')).not.toMatch(/only a sharp eye/)
+    const engine = new Engine(twice, { seed: 7, builder: true })
+    engine.start()
+    await engine.handle('@goto loc_orison_listening_room')
+    await engine.handle('search behind the consoles')
+    expect(said(await engine.handle('climb down the ladder'))).toMatch(/^Which way\?\n {2}1\. down: Ridge Shelter\n {2}2\. in: Cable Gallery/)
+  })
+})

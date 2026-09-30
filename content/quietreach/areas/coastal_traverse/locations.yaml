@@ -58,8 +58,9 @@ locations:
       night: |
         The heater glows orange beneath the bench, and the wind drums on the walls. The radio hisses softly on its shelf. The route board and the open, buckled relay cabinet sit in shadow, the burnt smell lingering still. The steep route climbs into the dark towards the station; the path runs southwest towards Port Vesper.
     exits:
-      up: { to: loc_orison_listening_room, minutes: 12 }
-      southwest: { to: loc_coastal_service_path, minutes: 18 }
+      # What the ways are called (M10.33): CLIMB THE ROUTE, GO UP THE STEPS.
+      up: { to: loc_orison_listening_room, minutes: 12, words: [route, steep route, steps, chain rail] }
+      southwest: { to: loc_coastal_service_path, minutes: 18, words: [path, coastal path] }
     details:
       - words: [bench]
         look: A steel bench along one wall, with a thin pad and a folded thermal blanket.

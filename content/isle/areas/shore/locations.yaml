@@ -31,6 +31,9 @@ locations:
         dc: 14
         item: lamp_oil
         text: Half-buried in the shingle above the tideline, where the storm threw it, a small cask. Lamp oil, by the smell of the bung.
+        # Without a die since M10.33: naming the spot finds it, and the game says where to look.
+        words: [shingle, tideline, above the tideline, storm line]
+        helps: The storm threw things high up the shingle. The tideline is worth a closer look.
     details:
       - words: [mast, broken mast]
         look: A broken mast from the Grey Gull, lying in the shingle with its rigging tangled round it.
@@ -73,6 +76,7 @@ locations:
         to: loc_skerrow_sea_cave
         minutes: 3
         hidden: true
+        words: [cave, cave mouth, weed]
         when: [{ flag: sea_cave_found }]
     forage: [kelp]
     details:
@@ -154,7 +158,7 @@ locations:
       night: |
         It is black as pitch in here, and you find the walls by touch, wet and ridged under your fingers. The sea booms and sucks somewhere ahead of you, closer than you like. Behind you a paler dark shows where the weed hangs across the mouth, the way back out to the pools.
     exits:
-      out: { to: loc_skerrow_tidepools, minutes: 3 }
+      out: { to: loc_skerrow_tidepools, minutes: 3, words: [weed, mouth, cave mouth] }
     details:
       - words: [driftwood, ledge, wood]
         look: Grey driftwood, bleached and dry, wedged on a ledge far above the tide line. Only a great storm throws the sea this high.

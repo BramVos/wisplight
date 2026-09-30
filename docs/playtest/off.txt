@@ -74,7 +74,7 @@ The Lamp of Skerrow, a bowl of bronze as wide as a cartwheel behind a lens of gr
 
 > journal
 People: Maren Holt.
-Places: Skerrow, the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
+Places: Skerrow, the Heights, Skerrow Hythe, the Shore, The Cliff Path, The Headland, The Salt Kettle, The Silver Grove, The Tidepools, The Wreck Strand.
 Lore: the Grey Gull.
 What everyone knows: the coin of the isles, the folk of the isles, the tide, the Tidemother.
 
@@ -406,7 +406,7 @@ The Lamp of Skerrow, a bowl of bronze as wide as a cartwheel behind a lens of gr
 
 > journal
 People: Maren Holt.
-Places: Skerrow, the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
+Places: Skerrow, the Heights, Skerrow Hythe, the Shore, The Cliff Path, The Headland, The Salt Kettle, The Silver Grove, The Tidepools, The Wreck Strand.
 Lore: the Grey Gull.
 What everyone knows: the coin of the isles, the folk of the isles, the tide, the Tidemother.
 
@@ -439,7 +439,7 @@ Here: Garrick the lightkeeper (asleep).
 
 > journal
 People: Maren Holt.
-Places: Skerrow, the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
+Places: Skerrow, the Heights, Skerrow Hythe, the Shore, The Cliff Path, The Headland, The Salt Kettle, The Silver Grove, The Tidepools, The Wreck Strand.
 Lore: the Grey Gull.
 What everyone knows: the coin of the isles, the folk of the isles, the tide, the Tidemother.
 

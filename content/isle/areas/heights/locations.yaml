@@ -103,6 +103,9 @@ locations:
       - id: scorched_stones
         dc: 15
         topic: old_skarth
+        # Without a die since M10.33: naming the spot finds it, and the game says where to look.
+        words: [inner faces, stones, standing stones, lichen]
+        helps: The two standing stones by the gap look strange on their inner faces. A closer look at them might tell you more.
         text: On the inner faces of the two standing stones the lichen is burnt away in long black tongues, and the stone is glazed like a pot, as if something breathed on them once, very hot, from below.
     details:
       - words: [gap, standing stones, stones]

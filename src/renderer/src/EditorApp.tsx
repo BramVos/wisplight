@@ -706,9 +706,10 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
         description: { day: 'Three to five sentences, in the second person. Something you hear or smell. A hint at an exit.\n' },
         // A way that opens when something holds, and a deed that opens it (M10.30); a secret way, and what finds it
         // (M10.31); leave them out where nothing waits.
-        exits: { north: { to: place }, up: { to: place, when: [{ flag: 'way_up_open' }], not_yet: 'Said while it is shut.' }, in: { to: place, hidden: true } },
+        exits: { north: { to: place }, up: { to: place, when: [{ flag: 'way_up_open' }], not_yet: 'Said while it is shut.' }, in: { to: place, hidden: true, words: ['hatch'] } },
         details: [{ words: ['thing to handle'], look: 'What it looks like.', verbs: { move: { when: [], text: 'What happens.', effects: [{ set: 'way_up_open' }] } } }],
-        hidden: [{ id: 'secret_way', dc: 12, text: 'What the stranger finds: the way in.', exit: 'in', words: ['where to look'] }],
+        // SEARCH has no die (M10.33): the eye finds what Perception plus ten reaches; words find the spot, helps says where to look.
+        hidden: [{ id: 'secret_way', dc: 12, text: 'What the stranger finds: the way in.', exit: 'in', words: ['where to look'], helps: 'Where to look, said when a search misses it.' }],
       }
     case 'area':
       return { id: 'new_area', name: 'A new area', kind: 'hamlet', summary: 'What it is, in one sentence.' }

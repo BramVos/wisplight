@@ -31,7 +31,7 @@ Exits: north, east
 
 > journal
 People: Maren Holt.
-Places: Skerrow, the Shore, The Headland, The Tidepools, The Wreck Strand.
+Places: Skerrow, Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the Grey Gull.
 What everyone knows: the coin of the isles, the folk of the isles, the tide, the Tidemother.
 
@@ -58,26 +58,26 @@ Exits: north, west, in
 > @skip 4   [build command: a shortcut]
 [build] 4 days pass.
 Brannoc arrives from inside.
-Wenna arrives from the north.
-Wenna hoists the coracle onto her back and walks it down to the water.
-Brannoc nods to Wenna.
+A fisherwoman arrives from the north.
+A fisherwoman hoists the coracle onto her back and walks it down to the water.
+Brannoc nods to a fisherwoman.
 Pip comes from inside, on his way to Skerrow Hythe, the Green.
 Pip stops and gives you a nod, curious about the stranger.
 Brannoc and Pip greet each other warmly.
-Pip nods to Wenna.
+Pip nods to a fisherwoman.
 Pip walks on to the north.
-Wenna comes back up the slip with a string of pollock, and sets to gutting and salting them.
-Wenna sets out 7 salt fish for sale.
+A fisherwoman comes back up the slip with a string of pollock, and sets to gutting and salting them.
+A fisherwoman sets out 7 salt fish for sale.
 Brannoc goes inside.
-Wenna leaves north.
+A fisherwoman leaves north.
 Pip comes from the north, on his way to The Reeds' Cottage.
 Pip walks on inside.
 Pip comes from inside, on his way to Skerrow Hythe, the Green.
 Pip walks on to the north.
 Brannoc arrives from inside.
-Wenna arrives from the north.
-Brannoc nods to Wenna.
-Wenna leaves north.
+A fisherwoman arrives from the north.
+Brannoc nods to a fisherwoman.
+A fisherwoman leaves north.
 Brannoc goes inside.
 Pip comes from the north, on his way to The Reeds' Cottage.
 Pip stops and gives you a nod, curious about the stranger.
@@ -86,24 +86,24 @@ Brannoc comes from inside, on his way to Skerrow Hythe, the Green.
 Brannoc walks on to the north.
 Brannoc comes from the north, on his way to The Reeds' Cottage.
 Brannoc walks on inside.
-Wenna arrives from the north.
+A fisherwoman arrives from the north.
 Brannoc arrives from inside.
-Brannoc nods to Wenna.
+Brannoc nods to a fisherwoman.
 Pip comes from inside, on his way to Skerrow Hythe, the Green.
 Pip stops and gives you a nod, curious about the stranger.
 Brannoc and Pip greet each other warmly.
-Pip nods to Wenna.
+Pip nods to a fisherwoman.
 Pip walks on to the north.
 Brannoc goes inside.
-Wenna leaves north.
+A fisherwoman leaves north.
 Pip comes from the north, on his way to The Reeds' Cottage.
 Pip walks on inside.
 Pip comes from inside, on his way to Skerrow Hythe, the Green.
 Pip walks on to the north.
 Brannoc arrives from inside.
-Wenna arrives from the north.
-Brannoc nods to Wenna.
-Wenna leaves north.
+A fisherwoman arrives from the north.
+Brannoc nods to a fisherwoman.
+A fisherwoman leaves north.
 Brannoc goes inside.
 Pip comes from the north, on his way to The Reeds' Cottage.
 Pip stops and gives you a nod, curious about the stranger.
@@ -112,24 +112,24 @@ Brannoc comes from inside, on his way to Skerrow Hythe, the Green.
 Brannoc walks on to the north.
 Brannoc comes from the north, on his way to The Reeds' Cottage.
 Brannoc walks on inside.
-Wenna arrives from the north.
+A fisherwoman arrives from the north.
 Brannoc arrives from inside.
-Brannoc nods to Wenna.
+Brannoc nods to a fisherwoman.
 Pip comes from inside, on his way to Skerrow Hythe, the Green.
 Pip stops and gives you a nod, curious about the stranger.
 Brannoc and Pip greet each other warmly.
-Pip nods to Wenna.
+Pip nods to a fisherwoman.
 Pip walks on to the north.
 Brannoc goes inside.
-Wenna leaves north.
+A fisherwoman leaves north.
 Pip comes from the north, on his way to The Reeds' Cottage.
 Pip walks on inside.
 Pip comes from inside, on his way to Skerrow Hythe, the Green.
 Pip walks on to the north.
 Brannoc arrives from inside.
-Wenna arrives from the north.
-Brannoc nods to Wenna.
-Wenna leaves north.
+A fisherwoman arrives from the north.
+Brannoc nods to a fisherwoman.
+A fisherwoman leaves north.
 Brannoc goes inside.
 Pip comes from the north, on his way to The Reeds' Cottage.
 Pip stops and gives you a nod, curious about the stranger.
@@ -138,24 +138,24 @@ Brannoc comes from inside, on his way to Skerrow Hythe, the Green.
 Brannoc walks on to the north.
 Brannoc comes from the north, on his way to The Reeds' Cottage.
 Brannoc walks on inside.
-Wenna arrives from the north.
+A fisherwoman arrives from the north.
 Brannoc arrives from inside.
-Brannoc nods to Wenna.
+Brannoc nods to a fisherwoman.
 Pip comes from inside, on his way to Skerrow Hythe, the Green.
 Pip stops and gives you a nod, curious about the stranger.
 Brannoc and Pip greet each other warmly.
-Pip nods to Wenna.
+Pip nods to a fisherwoman.
 Pip walks on to the north.
 Brannoc goes inside.
-Wenna leaves north.
+A fisherwoman leaves north.
 Pip comes from the north, on his way to The Reeds' Cottage.
 Pip walks on inside.
 Pip comes from inside, on his way to Skerrow Hythe, the Green.
 Pip walks on to the north.
 Brannoc arrives from inside.
-Wenna arrives from the north.
-Brannoc nods to Wenna.
-Wenna leaves north.
+A fisherwoman arrives from the north.
+Brannoc nods to a fisherwoman.
+A fisherwoman leaves north.
 Brannoc goes inside.
 Pip comes from the north, on his way to The Reeds' Cottage.
 Pip stops and gives you a nod, curious about the stranger.
@@ -164,9 +164,9 @@ Brannoc comes from inside, on his way to Skerrow Hythe, the Green.
 Brannoc walks on to the north.
 Brannoc comes from the north, on his way to The Reeds' Cottage.
 Brannoc walks on inside.
-Wenna arrives from the north.
+A fisherwoman arrives from the north.
 Brannoc arrives from inside.
-Brannoc nods to Wenna.
+Brannoc nods to a fisherwoman.
 The harbour bell rings for six, once for the boats.
 The harbour bell rings for six, once for the boats.
 The harbour bell rings for six, once for the boats.
@@ -181,7 +181,7 @@ The harbour bell rings for six, once for the boats.
 Pip comes from inside, on his way to Skerrow Hythe, the Green.
 Pip stops and gives you a nod, curious about the stranger.
 Brannoc and Pip greet each other warmly.
-Pip nods to Wenna.
+Pip nods to a fisherwoman.
 Pip walks on to the north.
 
 > take the white boat
@@ -309,18 +309,18 @@ You carry a cutlass, a knife, a sealskin jerkin and 2 ship's biscuits, and 1 gp 
 
 [24 hours pass]
 Brannoc goes inside.
-Wenna leaves north.
+A fisherwoman leaves north.
 Pip comes from the north, on his way to The Reeds' Cottage.
 Pip stops and gives you a nod, curious about the stranger.
 Pip walks on inside.
 Brannoc arrives from inside.
-Wenna arrives from the north.
+A fisherwoman arrives from the north.
 Pip comes from inside, on his way to Skerrow Hythe, the Green.
 Brannoc and Pip greet each other warmly.
-Brannoc nods to Wenna.
-Pip nods to Wenna.
+Brannoc nods to a fisherwoman.
+Pip nods to a fisherwoman.
 Pip walks on to the north.
-Wenna leaves north.
+A fisherwoman leaves north.
 Brannoc goes inside.
 Pip comes from the north, on his way to The Reeds' Cottage.
 Pip stops and gives you a nod, curious about the stranger.
@@ -329,13 +329,13 @@ Brannoc comes from inside, on his way to Skerrow Hythe, the Green.
 Brannoc walks on to the north.
 Brannoc comes from the north, on his way to The Reeds' Cottage.
 Brannoc walks on inside.
-Wenna arrives from the north.
+A fisherwoman arrives from the north.
 Brannoc arrives from inside.
-Brannoc nods to Wenna.
+Brannoc nods to a fisherwoman.
 Pip comes from inside, on his way to Skerrow Hythe, the Green.
 Pip stops and gives you a nod, curious about the stranger.
 Brannoc and Pip greet each other warmly.
-Pip nods to Wenna.
+Pip nods to a fisherwoman.
 Pip walks on to the north.
 The harbour bell rings for six, once for the boats.
 The harbour bell rings for six, once for the boats.
@@ -373,7 +373,7 @@ Wenna lifts a hand. "Go on, then."
 
 > journal
 People: Brannoc Reed, Eluned Silverstrand, Maren Holt, Wenna Dray.
-Places: Skerrow, Skerrow Hythe, the Shore, Ynys Wen, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand, The Long Hall of Ynys Wen, Ynys Wen, the Landing.
+Places: Skerrow, Skerrow Hythe, the Shore, Ynys Wen, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand, The Long Hall of Ynys Wen, Ynys Wen, the Landing.
 Lore: The long hall of Ynys Wen closed its doors to the east for a season, Off Skerrow: A ship for the light, the stranger in Skerrow Hythe, the stranger in Ynys Wen, the stranger crossed into the Western Isles, the long hall of Ynys Wen closed its doors to the east for a season, the stranger crossed into the Sundered Isles, the Grey Gull.
 What everyone knows: the coin of the isles, the folk of the isles, the tide, the Tidemother.
 
@@ -411,7 +411,7 @@ Exits: north, east
 
 > journal
 People: Maren Holt.
-Places: Skerrow, the Shore, The Headland, The Tidepools, The Wreck Strand.
+Places: Skerrow, Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the Grey Gull.
 What everyone knows: the coin of the isles, the folk of the isles, the tide, the Tidemother.
 
@@ -431,7 +431,7 @@ Exits: north, east
 
 > journal
 People: Maren Holt.
-Places: Skerrow, the Shore, The Headland, The Tidepools, The Wreck Strand.
+Places: Skerrow, Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the Grey Gull.
 What everyone knows: the coin of the isles, the folk of the isles, the tide, the Tidemother.
 

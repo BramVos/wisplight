@@ -390,22 +390,20 @@ describe('M10.5: the deeds of the other skills', () => {
     expect(said(await engine.handle('track mirte'))).toMatch(/You find no sign that Mirte passed this way lately\./)
   })
 
+  // Without a die since M10.33 Z: what the eye misses is said with where to look, and naming the spot finds it.
   it('SEARCH finds what lies hidden, once: the dry ridge at the cuttings, a cask of oil on the strand', async () => {
     const engine = new Engine(content, { seed: 7 })
     await engine.handle('create poacher fenfolk peat_cutter name=Wout')
     const world = engine.world
     world.state.player.location = 'loc_peat_cuttings'
-    rolls(engine, 5)
-    expect(said(await engine.handle('search'))).toMatch(/find nothing out of the ordinary/)
-    rolls(engine, 19)
-    expect(said(await engine.handle('search'))).toMatch(/The dry ridge, it must be/)
+    expect(said(await engine.handle('search'))).toMatch(/something here escapes you\. The old cutters talk of a dry way out into the fen/)
+    expect(said(await engine.handle('search the heather'))).toMatch(/The dry ridge, it must be/)
     expect(world.state.player.journal?.['the_dry_ridge']).toBeDefined()
-    rolls(engine, 19)
-    expect(said(await engine.handle('search'))).toMatch(/nothing more to find here/)
+    expect(said(await engine.handle('search'))).toMatch(/Nothing here is hidden from you\./)
     const island = new Engine(isle, { seed: 7 })
     await island.handle('create warden changeling lamp_hand name=Bryn')
-    rolls(island, 18)
-    expect(said(await island.handle('search'))).toMatch(/Lamp oil, by the smell of the bung\./)
+    expect(said(await island.handle('search'))).toMatch(/The tideline is worth a closer look\./)
+    expect(said(await island.handle('search the tideline'))).toMatch(/Lamp oil, by the smell of the bung\./)
     expect(island.world.state.ground['loc_skerrow_wreck_strand']?.['lamp_oil']).toBeGreaterThanOrEqual(2)
   })
 

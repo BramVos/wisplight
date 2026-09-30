@@ -61,7 +61,7 @@ Mirte lifts a hand. "Go on, then."
 
 > journal
 People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
-Places: Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
+Places: The Drowned Goose, the Holleveen, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, On the Great Dyke, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
@@ -118,7 +118,7 @@ The chapel bell rings for six.
 Lubbert's Grain Store
 Sacks of grain are stacked to the ceiling, and a fine dust hangs in the air and tickles your nose. A slate by the door lists today's prices; the flour price has been rubbed out and written again, higher. Canal Street is north.
 Exits: north
-Here: Lubbert the grain merchant (eating).
+Here: Lubbert, Lubbert the grain merchant (eating).
 Sacks of flour are short in Waagdam. The merchants have put their prices up and talk of sending far afield.
 +10 experience: you found Lubbert's Grain Store.
 +30 experience: you came to Waagdam.
@@ -150,7 +150,7 @@ There is nobody here to buy from right now.
 You carry 2 apples, a hanger, a knife and a leather jerkin, and 14 st.
 
 > walk to veenhoek
-You make your way towards Veenhoek for an hour and 12 minutes. A barge horse plods past with its head down, and the rope hisses on the water. Your boots find the old ruts, and the road carries you along. The mist beads on your sleeves, and you keep close to what you can see. Away to the west you see the roofs and the peat smoke of Veenhoek. You come to Veenhoek, the Green.
+You make your way towards Veenhoek for an hour and 12 minutes. A barge horse plods past with its head down, and the rope hisses on the water. Your boots find the old ruts, and the road carries you along. The mist beads on your sleeves, and you keep close to what you can see. Away to the west you see the roofs and the peat smoke of Veenhoek. You come to Veenhoek, the Green, in Veenhoek.
 Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
 Exits: north, east, south, west, northeast
@@ -210,7 +210,7 @@ The chapel bell rings for noon.
 
 > journal
 People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
-Places: Veenhoek, Waagdam, the Kattenbroek, Chapel Lane, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, Lubbert's Grain Store, The Market Square, Waagdam, the West Gate.
+Places: The Drowned Goose, the Holleveen, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, Chapel Lane, Molenend, the Lane, The Mill De Zwaan, On the Great Dyke, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, Lubbert's Grain Store, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
@@ -300,7 +300,7 @@ Mirte lifts a hand. "Go on, then."
 
 > journal
 People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
-Places: Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
+Places: The Drowned Goose, the Holleveen, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, On the Great Dyke, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
@@ -317,7 +317,7 @@ The chapel bell rings for six.
 
 > journal
 People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
-Places: Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
+Places: The Drowned Goose, the Holleveen, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, On the Great Dyke, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 

@@ -7,7 +7,7 @@ import { allHold } from './quests/engine'
 import { itemName, withArticle } from './items'
 import { recordFact } from './news'
 import { maxHp } from './rules/character'
-import { gainXp, playerCheck } from './rules/player'
+import { gainXp, playerCheck, playerSkill } from './rules/player'
 import { deed } from './social/deeds'
 import { weather } from './weather'
 import type { World } from './world'
@@ -166,23 +166,32 @@ export function track(host: CommandHost, words: string, npc: string | undefined)
 // ---------------------------------------------------------------- perception
 
 /**
- * SEARCH (M10.5): Perception against what lies hidden here, each thing once.
- * What is found is on the ground, or known; finding it is a small secret.
+ * SEARCH (M10.5; without a die since M10.33 Z): what the stranger's eye
+ * reaches (Perception plus ten) is found at once, each thing once. Bram,
+ * 30 September 2026: a roll on something free and endlessly repeatable only
+ * made him search twenty times until the number was right. What lies beyond
+ * the eye is said honestly, with what would help (the thing's own `helps`,
+ * or where to look): naming the spot finds it (SEARCH <words>).
  */
 export function searchHere(host: CommandHost): Output[] {
   const { world } = host
   const here = world.state.player.location
   const found = (world.state.player.found ??= [])
-  // What only someone who knows of it finds (M10.30) is never found by a roll.
-  const hidden = world.location(here).hidden.filter((h) => !found.includes(`${here}/${h.id}`) && !h.when)
-  const result = playerCheck(world, 'perception', hidden.length ? Math.min(...hidden.map((h) => h.dc)) : 15)
+  const left = world.location(here).hidden.filter((h) => !found.includes(`${here}/${h.id}`))
+  // What only someone who knows of it finds (M10.30) is never found by looking about.
+  const hidden = left.filter((h) => !h.when)
+  const eye = SEARCH_BASE + playerSkill(world, 'perception')
   const seen = host.pass(15)
-  const out: Output[] = [checkLine(result)]
-  const now = hidden.filter((h) => result.total >= h.dc || result.degree === 'critical success')
-  if (!now.length) return [...out, text(hidden.length || !world.location(here).hidden.length ? 'You look high and low, and find nothing out of the ordinary.' : 'You search again, but there is nothing more to find here.'), ...seen]
-  for (const h of now) out.push(...foundIt(world, h))
-  return [...out, ...seen]
+  const now = hidden.filter((h) => eye >= h.dc)
+  if (now.length) return [...now.flatMap((h) => foundIt(world, h)), ...seen]
+  const beyond = hidden[0]
+  if (beyond) return [text(`You search the place well, but something here escapes you. ${beyond.helps ?? (beyond.words?.length ? 'A closer look at the right spot might show it.' : 'Someone who knows this place might tell you where to look.')}`), ...seen]
+  if (left.length) return [text('You search the place well and find nothing, though you may not know where to look.'), ...seen]
+  return [text('You search the place well. Nothing here is hidden from you.'), ...seen]
 }
+
+/** The eye before its skill: SEARCH finds what Perception plus this reaches (M10.33 Z), as a passive check does. */
+const SEARCH_BASE = 10
 
 /** What is found, once: its line, the thing on the ground, the topic known. */
 function foundIt(world: World, h: Hidden): Output[] {

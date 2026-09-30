@@ -262,11 +262,14 @@ export function parseCommand(input: string): Command {
 
   const direction = parseDirection(word)
   if (direction && rest.length === 0) return { verb: 'go', args: [direction], raw }
+  // DOWN THE LADDER, UP THE STAIRS (M10.33 Z): a way by what it is called.
+  if (direction && /^(up|down|in|out)$/.test(word)) return { verb: 'go', args: [direction, ...rest], raw }
 
   const verb = VERB_ALIASES[word] ?? word
   if (verb === 'go') {
     const target = parseDirection(rest[0])
-    return { verb, args: target ? [target] : rest, raw }
+    // What follows the direction may name the way (M10.33 Z: GO DOWN THE LADDER).
+    return { verb, args: target ? [target, ...rest.slice(1)] : rest, raw }
   }
   if (verb === 'say') return { verb, args: [rest.join(' ')], raw }
   // "use a personal credit chip", "read the diary" (M10.29 N): a leading article names nothing.

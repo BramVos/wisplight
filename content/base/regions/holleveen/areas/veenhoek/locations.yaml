@@ -385,6 +385,9 @@ locations:
       - id: ridge_start
         dc: 16
         topic: the_dry_ridge
+        # Without a die since M10.33: naming the spot finds it, and the game says where to look.
+        words: [ridge, dry ridge, heather, line of heather, last cutting, where the cutting ends]
+        helps: The old cutters talk of a dry way out into the fen. Where the last cutting ends, the heather might be worth a closer look.
         text: Where the last cutting ends, a line of heather runs on into the fen, straight as a ruler, and the reeds keep back from it. Firm ground under it. The dry ridge, it must be, that the old cutters talk about.
     details:
       - words: [path]
@@ -437,6 +440,8 @@ locations:
         dc: 14
         item: iron_nails
         qty: 2
+        words: [loose brick, brick, bricks, brickwork, brick by the door]
+        helps: Old Tijs kept his things close. The brickwork by the door looks worn by a hand.
         text: Behind a loose brick by the door, wrapped in greasy leather, a store of the old cooper's nails.
     details:
       - words: [house, workshop, shutters]

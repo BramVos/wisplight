@@ -1,5 +1,21 @@
 # Changelog
 
+## M10.33 deel: zoeken zonder dobbelsteen, en een weg bij zijn naam (Z), 30 september 2026
+
+- **Zoeken zonder worp.** Oorzaak: SEARCH gooide een dobbelsteen op iets dat gratis is en eindeloos herhaald kan worden, dus je zocht tot het getal goed was. Nu vind je meteen wat je oog haalt (waarneming plus tien), en zoeken geeft telkens hetzelfde antwoord. Mis je iets, dan zegt het spel waar je moet kijken ("The tideline is worth a closer look."), en `search the tideline` vindt het meteen. Ligt er niets, dan zegt het spel dat eerlijk.
+- **Een weg bij zijn naam.** Oorzaak: een uitgang kende alleen zijn richting, zodat `open hatch` zei dat er geen luik was en `go down the ladder` de trap nam. Een uitgang heeft nu woorden: `open the hatch`, `climb down the ladder`, `down the ladder` en `climb the route` werken, `go down` neemt de weg die `down` heet, en een woord dat bij twee wegen past vraagt welke.
+- **In de bron.** Check meldt iets verborgens dat alleen een scherp oog vindt en geen woorden heeft. Het contract, de stap Plekken en het sjabloon van een plek vragen bij elk verborgen ding `words` en `helps`. De verborgen dingen van de drie werelden kregen ze.
+
+Testen: in The Quiet Reach typ je in de Listening Room `search`, dan `search behind the consoles`, `open the hatch`, `climb up the ladder` en `go down`. Op Skerrow: `search` en `search the tideline` op het Wreck Strand. Tests in `tests/m1033ways.test.ts`.
+
+Kosten: geen aanroep.
+
+Afwijking: helpen vinden gaat langs woorden en een aanwijzing, niet langs licht of een dag later; dat maakte het weer een kwestie van geluk.
+
+Wat de editor en de kroniekverteller leerden: `helps` op iets verborgens en `words` op een uitgang (contract, stap Plekken, sjabloon, `docs/NEW-WORLD.md`, een regel onder Check).
+
+Ontwerp: functioneel ontwerp, hoofdstuk 4, alinea "Stand na M10.33: zoeken zonder dobbelsteen".
+
 ## M10.33 deel: wie erbij staat, en gewone woorden (T, P), 30 september 2026
 
 - **Wie erbij staat, hoort het (T).** De stem krijgt nu te zien wie er staat, met naam als ze die persoon kent ("Also here: Tessa, the chief engineer"), en een vaste regel dat wie erbij staat meehoort. Zo praat Mara niet meer over Tessa alsof die weg is terwijl ze naast haar zit. Ook de lijst van mensen die de spreker kent, heeft nu namen; in The Quiet Reach stonden daar alleen beroepen, zodat de stem zijn buren niet bij naam kon noemen.
@@ -13,6 +29,7 @@ Kosten: geen nieuwe aanroep. De vaste regels van een gesprek bleven onder de gre
 Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
 
 Ontwerp: geen wijziging; de regels voor de stem staan in het functioneel ontwerp en worden hier waargemaakt.
+
 ## M10.33 deel: aangekomen, paden bij hun naam, een jas en iemand volgen (X, Y, AD), 30 september 2026
 
 - **Aangekomen is aangekomen (X).** Oorzaak: de laatste etappe van een wandeling zette "on the way to" de plek zelf, en pas de volgende stap van het plan wiste dat. Opgelost in de motor: wie aankomt, doet meteen wat daarna komt ("at work").

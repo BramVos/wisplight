@@ -287,6 +287,7 @@ export const HiddenSchema = z
       .describe('Found only by someone who knows of it (M10.30: a stone you heard of): with these conditions it is never found by a roll, only by SEARCH <words> or one of its verbs, once they hold ({ knows: <topic> }).'),
     words: z.array(z.string()).optional().describe('What the stranger names to find it: "loose stone", "stone". Needed with `when`; without `when` (M10.31), SEARCH <words> finds it at once and a plain SEARCH by a roll.'),
     verbs: z.array(z.string()).optional().describe('Verbs besides SEARCH that find it: [press, push].'),
+    helps: z.string().optional().describe('What would help find it, said when a SEARCH does not (M10.33, search without a die): where to look, who knows the place, a light. "The storm threw things high up the shingle; the tideline is worth a closer look." Left out, a line of the game.'),
     exit: z.enum(DIRECTIONS).optional().describe('A hidden exit of this place it reveals (M10.31), by its direction: once found, the way shows and can be taken.'),
   })
   .strict()
@@ -373,6 +374,7 @@ const Exit = z.object({
   lock: LockSchema.optional(),
   when: z.array(ConditionSchema).optional().describe('What must hold to go this way (M10.30), as in a quest: the roof, once the tree is down ({ flag: tree_down }).'),
   not_yet: z.string().optional().describe('Said when it does not hold: "The roof is out of reach."'),
+  words: z.array(z.string()).optional().describe('What the way is called besides its direction (M10.33): [hatch, ladder]. GO, CLIMB and OPEN take it by these ("open the hatch", "climb down the ladder"); a word two ways share asks which.'),
   hidden: z
     .boolean()
     .optional()
@@ -1535,6 +1537,8 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
       }
     }
     for (const h of loc.hidden) if (h.exit && !loc.exits[h.exit]) problems.push(`${loc.id}.hidden.${h.id}: it reveals the way ${h.exit}, which the place does not have`)
+    // Search has no die (M10.33 Z): what the eye may miss needs words to name its spot.
+    for (const h of loc.hidden) if (!h.when && !h.words?.length && h.dc > 10) problems.push(`${loc.id}.hidden.${h.id}: only a sharp eye finds it (Perception plus ten against ${h.dc}): give it words, what the stranger names to find it, and helps, where to look`)
     for (const obj of loc.objects) {
       if (!c.objectTypes.has(obj.type)) problems.push(`${loc.id}.${obj.id}: unknown object type ${obj.type}`)
       lock(obj.lock, `${loc.id}.${obj.id}`)
