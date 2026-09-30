@@ -12,7 +12,8 @@ type Refs = Pick<Content, 'quests' | 'locations' | 'npcs' | 'objectTypes' | 'ite
 const PREPOSITIONS = new Set(['to', 'at', 'in', 'on', 'with', 'about', 'for', 'from', 'of', 'into', 'onto', 'by', 'over', 'through', 'under', 'behind', 'past', 'across', 'along', 'round', 'around'])
 /** Words that are never a thing to find at a place: "put the matter right", "let it slide". */
 const NO_THING = new Set(['place', 'room', 'area', 'right', 'wrong', 'slide', 'straight', 'away', 'matter', 'matters', 'truth', 'word', 'words', 'news', 'story', 'way', 'work', 'business', 'problem', 'question', 'thing', 'things', 'everything', 'anything', 'something', 'nothing', 'deal', 'peace', 'case', 'help', 'time'])
-const SMALL = new Set(['the', 'a', 'an', 'to', 'at', 'in', 'on', 'with', 'about', 'for', 'from', 'of', 'into', 'onto', 'by', 'and', 'or', 'her', 'his', 'their', 'its', 'my', 'your', 'them', 'him', 'it', 'up', 'out', 'down', 'over', 'through', 'back'])
+// Words around a thing that are no part of it: "search the place AGAIN" (M10.33 AA found it).
+const SMALL = new Set(['again', 'too', 'first', 'now', 'then', 'together', 'once', 'more', 'properly', 'carefully', 'quietly', 'the', 'a', 'an', 'to', 'at', 'in', 'on', 'with', 'about', 'for', 'from', 'of', 'into', 'onto', 'by', 'and', 'or', 'her', 'his', 'their', 'its', 'my', 'your', 'them', 'him', 'it', 'up', 'out', 'down', 'over', 'through', 'back'])
 
 /** A word without its plural, to compare "manifests" with "manifest". */
 const stem = (word: string) => word.toLowerCase().replace(/(?:es|s)$/, '')
