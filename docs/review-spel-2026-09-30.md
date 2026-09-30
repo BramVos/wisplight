@@ -103,3 +103,29 @@ Twee mijlpalen, na M10.31:
 - **Later of bij een andere mijlpaal**: S4 (roosterklok), U6 (in M10.31 A), S2 en S7 (in M10.30).
 
 Wat Bram kiest, komt als criteria in `docs/ROADMAP.md`; niets hiervan is al opgenomen.
+
+## 6. Reactie op de twintig voorstellen van de bouwer
+
+De bouwsessie schreef op dezelfde dag "Voorstellen na een speelronde" (Claude Docs, twintig voorstellen met bewijs uit Brams spel van 29 en 30 september). De overlap met dit verslag is groot: vensters die niet sluiten (#11 en R1), het begin in één keer (#6 en R2), het doel in beeld (#2, #13 en S1), de gever die zegt wat hij wil (#14 en S3), dingen uit een beschrijving die er zijn (#16 en S7), niets kwijt bij herladen (#10 en R6), het smalle venster (#15 en U7).
+
+**Brams vraag: wat had de wereldmaker moeten voorkomen?** Dat vraagt aanwijzingen in de wereldgids, CHRONICLER.md of de stapregels, en geen motorwerk. Mijn sortering, tegen het ontwerp gehouden:
+
+| # | Voorstel | Wereldmaker of motor | Waarom |
+|---|---|---|---|
+| 16 | Dingen uit een beschrijving zijn er | **Wereldmaker.** | De controle "Named, but no detail" bestaat al (`builder.ts`) en de stap Test in de wereldgids eist dat hij leeg is. De stap Plekken en het contract van de schrijfhulp krijgen de regel: een zelfstandig naamwoord waar een speler naar kan kijken of aan kan zitten, krijgt een detail of blijft uit de tekst. Voor The Quiet Reach: afwerken wat de controle noemt. |
+| 7 | Bij aankomst is er iemand | **Wereldmaker, met een controle.** | Roosters zijn content. De stap Mensen zegt: de ontmoetingsplek van elke nederzetting heeft op elk uur iemand, en op het startuur is er iemand op de startplek; de controle meldt het als dat niet zo is. Mensen het eerste uur vastzetten in de motor is een lapmiddel dat de wereld onecht maakt. De stap Verhalen mag de gever van de hoofdlijn bij de aankomst zetten. |
+| 17 | Geen verzonnen plekken en afstanden | **Grotendeels wereldmaker, één klein stuk motor.** | Het stemkader kent al `not_here` (wat hier niet bestaat, en wat men in plaats daarvan zegt; de bewaker vraagt het antwoord opnieuw). De stap Stem moet vragen welke soorten plekken en dingen deze wereld niet heeft (een dok, een weg, een paard), en CHRONICLER.md krijgt "geen plekken die de wereld niet heeft". De Peregrine als onderzoeksstation is diezelfde regel. Wat de motor moet doen (S): de stem krijgt bij de plekken die ze mag noemen de looptijd mee, zoals het paneel die al toont; "five days there and back" komt doordat de regel "afstanden alleen zoals gegeven" niets gegeven kreeg. Geen L. |
+| 2 | Wie het intro noemt, ken je bij naam | **Motor, met een zin in de wereldgids.** | Dit geldt voor elke wereld gelijk: wie het intro of een lopende quest bij naam noemt, is vanaf de start bekend bij naam. Eén generieke regel in de motor is zekerder dan een aanwijzing die de kroniekschrijver moet onthouden. De stap Kader zegt dan alleen: de mensen die het intro noemt, bestaan als persoon. |
+| 20 | Gewone woorden | **Motor, als vaste regel.** | "PEOPLE speak plain English" staat al in het standaardkader. De eis "geen uitdrukking die alleen een moedertaalspreker begrijpt" hoort bij de vaste stemregels van elke wereld, niet bij één stemkader; een wereld voegt kleur toe, geen moeilijkheid. |
+| 12 | HELP kort en van deze wereld | **Motor.** | HELP moet worden opgebouwd uit wat de wereld heeft: geen pray en devote zonder geloof, geen USE OVEN BAKE zonder ambachten, de werkwoorden uit `verb_words`. De wereldmaker kan dit niet voorkomen. |
+
+De rest (1, 3, 4, 5, 9, 10, 11, 13, 14, 15, 18, 19) is motor; daar ben ik het met de bouwer eens. Bij #14 hoort één contentregel: elk stadium van een gemaakte quest heeft een zin waarmee de gever zegt wat hij wil, zodat de motor die zonder model kan geven. Bij #3 (beloftes echt): het overgeschoven ding is in M10.29 V al opgepakt; de belofte met een tijd is een afspraak (`agreements.ts`) die de stem als begrensd effect zou moeten mogen voorstellen. Dat vraagt eerst een alinea in het functioneel ontwerp, net als de bouwer zegt; #17 niet meer, als de tabel hierboven wordt gevolgd.
+
+**Mijn kijk op de voorgestelde M10.32.** De inhoud klopt; ik zou de twee lijsten tot één mijlpaal van twee tot drie dagen samenvoegen, na M10.31, en de volgorde één plek verschuiven:
+
+1. **Vensters** (#11 en R1): eerst, omdat Brams eigen log laat zien dat commando's achter een venster doorlopen. Dit is de bron van een deel van "uit het spel gegooid".
+2. **Het verhaal klopt** (#1, en #17 in de kleine vorm: looptijden in de stemprompt).
+3. **De eerste tien minuten** (#2, #6, #12, #13, #14, S1, S3, U8): één begin, het doel in beeld, de gever die spreekt, drie voorgestelde vervolgstappen.
+4. **Wereldmaker** (#7, #16, #17, #20 als vaste regel): de stapregels, de controle en CHRONICLER.md, en The Quiet Reach afgewerkt met de editor.
+
+M10.33 dan voor de afwerking: #4, #5, #9, #10, #18, #19 en U1, U2, U3, U5, S5, S6, S9. Wat #3 betreft eerst het ontwerp; #8 en #15 later, zoals de bouwer voorstelt.
