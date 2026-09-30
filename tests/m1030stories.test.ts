@@ -56,7 +56,9 @@ describe('M10.30 (1): the step Stories', () => {
     expect(draft.result?.ok).toBe(true)
     expect(draft.changes.map((c) => c.kind)).toEqual(['quest', 'quest', 'quest'])
     expect(draft.files?.[0]).toMatchObject({ path: 'CHRONICLER.md' })
-    expect(draft.files![0]!.text).toMatch(/## The hidden truth of the stories\n\nThe signal is a real message\./)
+    expect(draft.files![0]!.text).toMatch(/## The hidden truth of the stories\n\nThe designer: The signal is a real message\./)
+    // The truth the main line keeps is written down too: a fixed truth of the world from then on.
+    expect(draft.files![0]!.text).toMatch(/What the main line keeps hidden until its stage \(a fixed truth of this world\):\n- \w+ cut the page from the ledger\./)
     const grown = loadContent(draft.result!.ok ? draft.result!.files : files)
     const main = [...grown.quests.values()].find((q) => q.kind === 'main')!
     expect(main.starts).toMatchObject({ at_start: true })

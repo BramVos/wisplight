@@ -150,11 +150,21 @@ function freeId(content: Content, name: string, taken: Set<string>): string {
   return id
 }
 
-/** The truth the designer gave, as a section of the world's CHRONICLER.md: it goes in before anything is written of it. */
-function withTruth(files: ContentFile[], said: string): { path: string; text: string }[] {
-  if (!said.trim()) return []
+/**
+ * The hidden truth, as a section of the world's CHRONICLER.md: what the
+ * designer said, and the truths the main line keeps (which the chronicler
+ * chose where the designer left it to them, Bram, 30 September 2026). From
+ * then on it is a fixed truth of the world, for every later call.
+ */
+function withTruth(files: ContentFile[], said: string, truths: string[]): { path: string; text: string }[] {
+  if (!said.trim() && !truths.length) return []
   const own = files.find((f) => f.path === `${worldPrefix(files)}CHRONICLER.md`)?.text ?? ''
-  const section = `## The hidden truth of the stories\n\n${said.trim()}\n`
+  const section = [
+    '## The hidden truth of the stories',
+    '',
+    ...(said.trim() ? [`The designer: ${said.trim()}`, ''] : []),
+    ...(truths.length ? ['What the main line keeps hidden until its stage (a fixed truth of this world):', ...truths.map((t) => `- ${t}`), ''] : []),
+  ].join('\n')
   if (own.includes(section)) return []
   return [{ path: 'CHRONICLER.md', text: `${own.trimEnd()}${own.trim() ? '\n\n' : ''}${section}` }]
 }
@@ -171,6 +181,7 @@ export function readStories(files: ContentFile[], said: string, parts: { scope: 
   const made: string[] = []
   const left: string[] = []
   const problems: string[] = []
+  const truths: string[] = []
   const skills = new Set((content.rules?.skills ?? []).map((s) => s.id))
   for (const { scope, text } of parts) {
     const reply = storyReply(text)
@@ -199,10 +210,11 @@ export function readStories(files: ContentFile[], said: string, parts: { scope: 
         continue
       }
       changes.push({ kind: 'quest', id, yaml: stringify(quest) })
+      truths.push(...((quest['truths'] as { text: string }[] | undefined) ?? []).map((t) => t.text))
       made.push(`${quest['name'] as string} (${scope.name})`)
     }
   }
   const say = [`${made.length} storylines: ${made.join('; ') || 'none'}.`, ...(left.length ? [`Left out, too little of them fit: ${left.join('; ')}.`] : [])].join(' ')
-  const draft = recheckDraft(files, { say, questions: [], changes, files: withTruth(files, said) })
+  const draft = recheckDraft(files, { say, questions: [], changes, files: withTruth(files, said, truths) })
   return problems.length ? { ...draft, problems: [...problems, ...draft.problems] } : draft
 }
