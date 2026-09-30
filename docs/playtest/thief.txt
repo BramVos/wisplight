@@ -30,16 +30,16 @@ New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alo
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle; a fisherwoman.
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 +10 experience: you found The Salt Kettle.
 +30 experience: you came to Skerrow Hythe.
 
 > @time 2   [build command: a shortcut]
 [build] 1130 minutes pass.
-A fisherwoman leaves west.
 A fisherwoman arrives from the west.
 A fisherwoman stops and gives you a nod, curious about the stranger.
 Maren nods to a fisherwoman.
+Maren and Wenna stand talking in The Salt Kettle. (LISTEN to catch it.)
 A fisherwoman leaves west.
 A fisherwoman arrives from the west.
 Maren nods to a fisherwoman.
@@ -114,7 +114,7 @@ Maren lifts a hand. "Mind how you go."
 A fisherwoman arrives from the west.
 A fisherwoman stops and gives you a nod, curious about the stranger.
 Maren nods to a fisherwoman.
-Maren and Wenna stand talking in The Salt Kettle. (LISTEN to catch it.)
+Maren and Wenna stand talking in The Salt Kettle.
 A fisherwoman leaves west.
 A fisherwoman arrives from the west.
 Maren nods to a fisherwoman.
@@ -230,16 +230,16 @@ New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alo
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle; a fisherwoman.
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 +10 experience: you found The Salt Kettle.
 +30 experience: you came to Skerrow Hythe.
 
 > @time 2   [build command: a shortcut]
 [build] 1130 minutes pass.
-A fisherwoman leaves west.
 A fisherwoman arrives from the west.
 A fisherwoman stops and gives you a nod, curious about the stranger.
 Maren nods to a fisherwoman.
+Maren and Wenna stand talking in The Salt Kettle. (LISTEN to catch it.)
 A fisherwoman leaves west.
 A fisherwoman arrives from the west.
 Maren nods to a fisherwoman.
@@ -295,7 +295,7 @@ What everyone knows: the coin of the isles, the folk of the isles, the tide, the
 A fisherwoman arrives from the west.
 A fisherwoman stops and gives you a nod, curious about the stranger.
 Maren nods to a fisherwoman.
-Maren and Wenna stand talking in The Salt Kettle. (LISTEN to catch it.)
+Maren and Wenna stand talking in The Salt Kettle.
 A fisherwoman leaves west.
 A fisherwoman arrives from the west.
 Maren nods to a fisherwoman.

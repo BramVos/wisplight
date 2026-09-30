@@ -166,11 +166,13 @@ function choose(world: World, npcId: string): boolean {
 
     case 'eat': {
       const key = `eat@${startOfDay(world.now) + parseHours(`${block!.from}-${block!.to}`)[0]}`
+      // Fed, at a table the day names: stay over tea until the meal is over (M10.33 M), as people at a shared table do.
+      if (npc.dailyDone[key] && block?.at && blockEnd - world.now > 5) return setPlan(world, npcId, [...goTo(world, npcId, placeFor(world, npcId, block.at)), { kind: 'spend', minutes: Math.min(30, blockEnd - world.now), activity: 'socialize', label: 'lingering over the meal' }])
       if (npc.dailyDone[key]) break
       // Yesterday's meals are not kept (M9.1): only today's say whether this one was had.
       for (const k of Object.keys(npc.dailyDone)) if (k.startsWith('eat@') && Number(k.slice(4)) < startOfDay(world.now)) delete npc.dailyDone[k]
       npc.dailyDone[key] = world.now
-      return setPlan(world, npcId, eatPlan(world, npcId))
+      return setPlan(world, npcId, eatPlan(world, npcId, block?.at ? placeFor(world, npcId, block.at) : undefined))
     }
 
     case 'work': {
@@ -456,8 +458,11 @@ function departLater(world: World, npcId: string, steps: Step[]): Step[] {
   return [{ kind: 'spend', minutes: opening - arrival - 15, activity: 'work' }, ...steps]
 }
 
-function eatPlan(world: World, npcId: string): Step[] {
+function eatPlan(world: World, npcId: string, table?: string): Step[] {
   const npc = world.npcState(npcId)
+  // The table the day names (M10.33 M; the cause of the Commons that emptied at the stranger's arrival: every meal was
+  // eaten at home, whatever the day said): one eats there as at home.
+  if (table && world.content.locations.has(table)) return [...goTo(world, npcId, table), { kind: 'eat', at: table }]
   const hasFood = Object.keys(npc.inventory).some((item) => (world.content.items.get(item)?.food ?? 0) > 0)
   if (hasFood) return [{ kind: 'eat' }]
   // Hours from home, something to eat from the nearest open counter they can pay (found in the M10.24 simulation with
@@ -555,6 +560,24 @@ export function usualPlace(world: World, npcId: string, at = world.now): { place
     : block.activity === 'pray' ? placeFor(world, npcId, block.at ?? prayerPlace(world, npcId))
     : block.at ? placeFor(world, npcId, block.at) : def.home
   return world.content.locations.has(place) ? { place, activity: block.activity } : undefined
+}
+
+/**
+ * A new game begins with everyone where their day puts them at the start
+ * minute, not at home (M10.33 M; the cause of the Commons that emptied as the
+ * stranger came in at 08:00: everyone began at home and walked to work at
+ * that very minute). An old save keeps where people were.
+ */
+export function placeByRoutine(world: World): void {
+  const doing: Partial<Record<ScheduleBlock['activity'], string>> = { work: 'at work', socialize: 'chatting', pray: 'praying', eat: 'eating', free: 'taking it easy' }
+  for (const id of Object.keys(world.state.npcs).sort()) {
+    const s = world.state.npcs[id]!
+    if (s.dead || s.absent || !world.content.npcs.has(id)) continue
+    const usual = usualPlace(world, id)
+    if (!usual || usual.activity === 'sleep') continue
+    s.location = usual.place
+    s.activity = doing[usual.activity] ?? 'at home'
+  }
 }
 
 /** Where someone usually is now, doing what, and until when: a time fact for a conversation (M10.3: "Brannoc is back at six"). */

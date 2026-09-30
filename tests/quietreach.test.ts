@@ -48,7 +48,8 @@ describe('The Quiet Reach, as Bram built it in the app', () => {
     for (const c of ['look', 'wait', 'talk to mara', 'hello', 'bye', 'east', 'inventory', 'time']) out.push(said(await engine.handle(c)))
     expect(out[0]).toContain('This is Nacre, at the far edge of the Lantern Belt')
     expect(out[1]).toMatch(/^Arrival Lock\nSteel walls drip from the pumps/)
-    expect(out[2]).toMatch(/It is Primeday 18 Rainfall 186 CR, 08:\d\d/)
+    // The stranger comes in at breakfast (M10.33 M).
+    expect(out[2]).toMatch(/It is Primeday 18 Rainfall 186 CR, 07:\d\d/)
     expect(out[3]).toContain('You are talking with the port coordinator.')
     expect(out[6]).toMatch(/^Commons\n/)
     // The starting kit of Bram's money chapter (M10.20: proposed again once the money step could make items).

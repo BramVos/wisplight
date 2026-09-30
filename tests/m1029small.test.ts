@@ -68,6 +68,8 @@ describe('M10.29 T: small things of the commands', () => {
 
   it('(h) a verb with a number picks from the list, also one command after it was set aside', async () => {
     const engine = at('loc_workshop')
+    // Tessa at her bench (people begin where their day puts them, M10.33 M) would be the first option.
+    Object.assign(engine.state.npcs['npc_tessa_rook']!, { location: 'loc_peregrine_hangar', plan: [], busyUntil: engine.world.now + 600 })
     expect(await said(engine, 'l xyz')).toMatch(/Look at what\?\n {2}1\. electronics bench\n {2}2\. fabrication bench/)
     expect(await said(engine, 'l 2')).toMatch(/printer and cutting bed/)
     await said(engine, 'l xyz')

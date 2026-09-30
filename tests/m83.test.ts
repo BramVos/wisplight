@@ -6,7 +6,7 @@ import { shiftTension } from '../src/engine/social/realms'
 import { newcomersOf } from '../src/engine/social/groups'
 import { grudge, stories } from '../src/engine/stories'
 import { requestRun } from '../src/engine/storylines'
-import { content, runUntil } from './helpers'
+import { content, runUntil, homeStart } from './helpers'
 
 // Milestone M8.3 (docs/ROADMAP.md): the chronicler plans. Signals that touch
 // many, matter a lot or fit no intention go to him; he writes steps in the
@@ -165,7 +165,7 @@ describe('M8.3: friction in a village', () => {
 
 describe('M8.3: a warning that comes true', () => {
   it('who chased the stranger off is ashamed, and thinks better of him', async () => {
-    const engine = new Engine(content, { seed: 25, builder: true })
+    const engine = homeStart(new Engine(content, { seed: 25, builder: true }))
     runUntil(engine, 15, 8)
     const world = engine.world
     const place = (id: string, where: string) => Object.assign(engine.state.npcs[id]!, { location: where, plan: [], busyUntil: world.now + 60 })

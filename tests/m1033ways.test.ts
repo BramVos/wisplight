@@ -124,3 +124,33 @@ describe('M10.33 Z: search without a die, and a way by what it is called', () =>
     expect(said(await engine.handle('climb down the ladder'))).toMatch(/^Which way\?\n {2}1\. down: Ridge Shelter\n {2}2\. in: Cable Gallery/)
   })
 })
+
+describe('M10.33 M: someone is there when the stranger comes in', () => {
+  // Cause, in the engine: a new game put everyone at home, whatever their day said, and the Quiet Reach began at 08:00,
+  // on the minute everyone walked from the Guest Quarters through the Commons to work. Fixed for every world: a new game
+  // puts everyone where their day puts them at the start minute. In the world maker: Check says who is at the first
+  // scene and for how long, and the step Calendar asks for a start in the middle of a block. In the content: the Quiet
+  // Reach begins at 07:05, at breakfast.
+  it('begins with breakfast in the Commons and Mara at the lock, and they stay a while', async () => {
+    const engine = new Engine(quiet, { seed: 7 })
+    engine.start()
+    const at = (id: string) => engine.state.npcs[id]!.location
+    expect(at('npc_mara_venn')).toBe('loc_arrival_lock')
+    for (const id of ['npc_tessa_rook', 'npc_niko_serrin', 'npc_edda_vale', 'npc_ilyan_sorell', 'npc_sana_holt']) expect(at(id)).toBe('loc_commons')
+    expect(said(await engine.handle('east'))).toMatch(/Here: .*(Tessa|the chief engineer)/)
+    // Fed, they linger at the table until the meal is over (07:45).
+    engine.tick(30)
+    expect(engine.world.npcsAt('loc_commons').length).toBeGreaterThanOrEqual(4)
+  })
+
+  it('Check: a first scene everyone leaves within half an hour', async () => {
+    const { warnings, startScene } = await import('../src/engine/builder')
+    expect(startScene(quiet).find((s) => s.place === 'loc_commons')!.people).toHaveLength(5)
+    expect(warnings(quiet).filter((w) => /At the start/.test(w))).toEqual([])
+    const late = { ...quiet, world: { ...quiet.world, start: { ...quiet.world.start, hour: 7, minute: 40 } } }
+    // At 07:40 Mara is still at the lock for over an hour, so the scene holds; at 21:50 everyone goes to bed.
+    expect(warnings(late).filter((w) => /At the start/.test(w))).toEqual([])
+    const night = { ...quiet, world: { ...quiet.world, start: { ...quiet.world.start, hour: 23, minute: 30 } } }
+    expect(warnings(night).find((w) => /At the start/.test(w))).toMatch(/^At the start \(23:30\) nobody is at Arrival Lock or Commons: the first scene is empty\./)
+  })
+})

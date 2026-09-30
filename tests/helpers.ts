@@ -24,6 +24,19 @@ export function withNpc(id: string, change: (npc: ReturnType<Content['npcs']['ge
   return { ...content, npcs }
 }
 
+/**
+ * Everyone at home, as a new game began before M10.33 M: for the tests of
+ * stories that were set up and tuned on that start (the dyke, a passer-by at
+ * the quay). A new game now begins with everyone where their day puts them.
+ */
+export function homeStart(engine: Engine): Engine {
+  for (const [id, s] of Object.entries(engine.state.npcs)) {
+    const npc = engine.content.npcs.get(id)
+    if (npc && !s.dead && !s.absent) Object.assign(s, { location: npc.home, activity: 'at home' })
+  }
+  return engine
+}
+
 export function eventsBy(engine: Engine, actor: string): string[] {
   return engine.state.events.filter((e) => e.actor === actor).map((e) => e.text)
 }

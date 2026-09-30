@@ -31,8 +31,6 @@ Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
 Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
-Here: Jan Visser (on the way to The Drowned Goose, Common Room).
-Jan comes from the west, on his way to The Drowned Goose, Common Room.
 +10 experience: you found Veenhoek, the Green.
 
 > east
@@ -254,8 +252,6 @@ Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
 Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
-Here: Jan Visser (on the way to The Drowned Goose, Common Room).
-Jan comes from the west, on his way to The Drowned Goose, Common Room.
 +10 experience: you found Veenhoek, the Green.
 
 > east
@@ -310,14 +306,14 @@ Mirte nods. "Evening."
 
 > 2
 You: "What's new around here?"
-Mirte looks up. "The [mill] at [Molenend] is finished, they say. (You heard it from [Gerrit]. You are fairly sure. The way you heard it, it was bigger than this.)"
+Mirte looks up. "The [mill] won't turn again before winter, they say. (You heard it from [Kobus]. You are fairly sure. The way you heard it, it was bigger than this.)"
 
 > bye
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Gerrit, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
-Places: The Drowned Goose, the Holleveen, Molenend, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, On the Great Dyke, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
+People: Fenna Visser, Grietje, Harmen, Jan, Kobus, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
+Places: The Drowned Goose, the Holleveen, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, On the Great Dyke, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 

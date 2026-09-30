@@ -9,7 +9,7 @@ import { forgetWeek } from '../src/engine/forgetting'
 import { judge } from '../src/engine/belief'
 import { queueSignal } from '../src/engine/signals'
 import { startPlan } from '../src/engine/quests/plans'
-import { content, runUntil } from './helpers'
+import { content, runUntil, homeStart } from './helpers'
 
 // Milestone M8.2 (docs/ROADMAP.md): the brain plans. Standing, belief and
 // doubt, lying and asking around, strangers and warnings, forgetting and
@@ -135,7 +135,7 @@ describe('M8.2: a lie about the war, and asking around', () => {
 
 describe('M8.2: a stranger with a warning', () => {
   async function leak(seed: number, trusted: boolean) {
-    const engine = new Engine(content, { seed, builder: true })
+    const engine = homeStart(new Engine(content, { seed, builder: true }))
     runUntil(engine, 15, 8)
     const world = engine.world
     // Teunis from Waagdam finds the leak while the dyke reeve is at home.

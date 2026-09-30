@@ -44,6 +44,7 @@ import type { ChronicleOutput, ChroniclerRequest, Outline } from '../chronicler'
 import { applyOutline, engageFarPlace, farWhere, runOutline, wantOutline } from './outlines'
 import { applyRun, settleRuns, writeRun } from './chronicler'
 import { applyChoice, fromKeys, goalRequest, settleChoices } from './npc/goals'
+import { placeByRoutine } from './npc/brain'
 import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './dialogue/llm'
 import { attitude, relation } from './dialogue/relations'
 import { TopicRegistry } from './dialogue/topics'
@@ -358,6 +359,8 @@ export class Engine {
     // The opponents who do not wait for the player, from the first day or from loading an old save (M8.3).
     startWorldPlans(this.world, this.questHost)
     if (!options.state) {
+      // Everyone where their day puts them at the start minute (M10.33 M).
+      placeByRoutine(this.world)
       seedNews(this.world)
       this.arrive()
       this.lookAround()

@@ -6,8 +6,9 @@ world:
     year: 186
     month: 9
     day: 18
-    hour: 8
-    minute: 0
+    # Breakfast (M10.33 M): the Commons is full for forty minutes when the stranger comes in, and Mara is at the lock.
+    hour: 7
+    minute: 5
   player:
     money: 12000
     inventory: { field_ration: 2, credit_chip: 1, pocket_terminal: 1, communicator: 1, multitool: 1, weatherproof_coat: 1, sturdy_boots: 1, water_bottle: 1, research_bag: 1 }

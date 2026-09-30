@@ -49,7 +49,8 @@ export type Step =
   | { kind: 'use'; location: string; object: string; affordance: string; times: number }
   | { kind: 'stock'; location: string; service: string; item: string; qty: number }
   | { kind: 'repair'; location: string; object: string; consumes: Counts }
-  | { kind: 'eat' }
+  /** A meal; `at` the table the day names (M10.33 M: breakfast in the Commons), where one eats as at home. */
+  | { kind: 'eat'; at?: string }
   | { kind: 'sleep'; until: number; ready?: boolean }
   | { kind: 'spend'; minutes: number; activity: 'work' | 'socialize' | 'pray' | 'idle' | 'play'; label?: string }
   | { kind: 'askHelp'; item: string; qty: number }

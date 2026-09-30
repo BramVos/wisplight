@@ -44,12 +44,12 @@ Every kind puts what stays the same first and what changes after it (M10.26). A 
 
 | Kind | Model | In | Mark | Fixed part | Shared by every call | Minimum | Read from the cache |
 |---|---|---|---|---|---|---|---|
-| `npc_reply` | claude-haiku-4-5-20251001 | 6,435 | shared and own, an hour | 5,832 | 1,076 | 4,096 | the next line in these parts 91% for an hour, whoever speaks, and within a talk all that was said before it |
+| `npc_reply` | claude-haiku-4-5-20251001 | 6,436 | shared and own, an hour | 5,832 | 1,076 | 4,096 | the next line in these parts 91% for an hour, whoever speaks, and within a talk all that was said before it |
 | `party_reply` | claude-haiku-4-5-20251001 | 714 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `chat_line` | claude-haiku-4-5-20251001 | 528 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `journey` | claude-haiku-4-5-20251001 | 558 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `improvise` | claude-haiku-4-5-20251001 | 935 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
-| `npc_goals` | claude-sonnet-5 | 1,460 | one, an hour | 1,072 | - | 1,024 | the next call 73% |
+| `npc_goals` | claude-sonnet-5 | 1,458 | one, an hour | 1,072 | - | 1,024 | the next call 74% |
 | `chronicle` | claude-opus-5-5 | 5,585 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `spark` | claude-sonnet-5 | 853 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `read_score` | - | 557 | none | - | - | - | not marked: nothing reads it back in time, so a mark would only pay a write |
@@ -65,7 +65,7 @@ Every kind puts what stays the same first and what changes after it (M10.26). A 
 | `land` | claude-opus-5-5 | 2,794 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `tides` | claude-opus-5-5 | 645 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `builder_draft` | claude-opus-5-5 | 15,088 | one, an hour | 9,259 | - | 512 | the next call 61% |
-| `world_step` | claude-opus-5-5 | 8,186 | shared and own, an hour | 6,262 | 6,102 | 512 | the next call 76%; one about someone or something else 75% |
+| `world_step` | claude-opus-5-5 | 8,285 | shared and own, an hour | 6,262 | 6,102 | 512 | the next call 76%; one about someone or something else 74% |
 | `world_enhance` | claude-opus-5-5 | 17,803 | one, an hour | 8,973 | - | 512 | the next call 50% |
 | `world_polish` | claude-sonnet-5 | 11,439 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `map_paint` | claude-haiku-4-5-20251001 | 1,469 | one, an hour | 1,455 | - | 4,096 | nothing: the fixed part is under the minimum |

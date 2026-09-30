@@ -30,27 +30,13 @@ Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
 Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
-Here: Jan Visser (on the way to The Drowned Goose, Common Room).
-Jan comes from the west, on his way to The Drowned Goose, Common Room.
 +10 experience: you found Veenhoek, the Green.
 
-> talk jan visser
-You are talking with Jan Visser. Type what you want to say, pick a number, or BYE to stop.
-Jan nods. "Evening."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
-
-> 2
-You: "What's new around here?"
-Jan nods slowly. "[The Count] wants to drain [the Holleveen] and make a [polder] of it. A [surveyor] from [Graafhaven] has been measuring the fen since spring. The peat-cutters are furious; the [miller] thinks it will be good for trade."
-Gerrit walks on to the northeast.
-
-> bye
-Jan lifts a hand. "Go on, then."
+# Nobody here to ask.
 
 # Next morning to Waagdam, the market town, and ask around there.
 
 > wait 10 hours
-Jan walks on to the northeast.
 Mirte comes from the east, on her way to The Drowned Goose, Common Room.
 Mirte stops and gives you a nod, curious about the stranger.
 Mirte walks on to the northeast.
@@ -66,7 +52,7 @@ Jan walks on to the west.
 Gerrit walks on to the south.
 Wouter comes from the northeast, on his way to Wouter's Hut.
 Wouter walks on to the south.
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 04:33 (night).
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 04:31 (night).
 
 > wait 5 hours
 There are no sacks of flour to be had in Veenhoek. People make do, and grumble about it.
@@ -77,7 +63,7 @@ Jan comes from the west, on his way to The Peat Cuttings.
 Jan walks on to the south.
 Cornelis comes from the northeast, on his way to The Flooded Peat Pits.
 Cornelis walks on to the south.
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 09:33 (morning).
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 09:31 (morning).
 The chapel bell rings for six.
 
 # Shortcut: ask the way and walk the hour to the market square of Waagdam.
@@ -107,7 +93,7 @@ Kobus nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Kobus thinks a moment. "[De Zwaan] won't turn again before winter. [Harmen] can't pay for new sailcloth, and nobody will lend it him. (You heard it from [Lubbert].)"
+Kobus nods slowly. "[De Zwaan] won't turn again before winter. [Harmen] can't pay for new sailcloth, and nobody will lend it him. (You heard it from [Lubbert].)"
 
 > bye
 Kobus lifts a hand. "Go on, then."
@@ -135,18 +121,18 @@ Teunis nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Teunis scratches an ear. "Water is seeping through the dyke at [Oude Zijl], low down on the land side, and the seep is growing. (You saw it yourself.)"
+Teunis thinks a moment. "Water is seeping through the dyke at [Oude Zijl], low down on the land side, and the seep is growing. (You saw it yourself.)"
 
 > bye
 Teunis lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
+People: Harmen, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
 Places: The Drowned Goose, the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
-==== INFLUENCE (Woensdag 15 Herfstmaand 211 AW, 09:37 (morning))
+==== INFLUENCE (Woensdag 15 Herfstmaand 211 AW, 09:35 (morning))
 
 # Teunis saw the leak himself: a stranger alone is not believed, so ask him to take you to the dyke reeve and say it himself (M10.6).
 
@@ -194,49 +180,41 @@ Teunis calls after you: "Not that way! North, this way!"
 The Dyke House
 A square brick house with small windows, built into the side of the dyke so that its back wall is earth. Inside, a long table is covered with rolled plans of dykes and ditches, held flat at the corners with stones. It smells of lamp oil and damp plaster, and somewhere behind the back wall water ticks. The door opens south onto the sluice.
 Exits: south
-Here: Teunis Ros, Teunis the horse-miller (waiting for you).
-Sijbrand leaves south.
+Here: Sijbrand, Heemraad Sijbrand; Teunis Ros, Teunis the horse-miller (waiting for you).
 +10 experience: you found The Dyke House.
-Teunis: "There he goes. Come on."
+Teunis brought you to The Dyke House, and Sijbrand was there.
 
 > south
 The Old Sluice
 Two great sluice gates of tarred oak hold back the Vaart where it meets the dyke. Water leaks through the seams with a steady hiss, and gulls cry from the dyke top. A dyke house stands to one side with its shutters closed. The tow path runs east along the Vaart to Veenhoek.
 Exits: north, up, west
 Across country you can head any way, or follow the tow path to Veenhoek.
-Here: Teunis Ros, Teunis the horse-miller (visiting The Old Sluice).
-Sijbrand walks on upstairs.
-Teunis arrives from the north.
-Teunis: "There he goes. Come on."
 
 > up
 On the Great Dyke
 From the top of the dyke you see the Holleveen spread out on one side, flat and green and lower than it has any right to be. On the other side grey water runs out to a grey sky, and the wind off it tastes of salt and leans on you without a pause. Sheep have cropped the grass short, and their droppings are everywhere. The sluice lies below you, down the slope.
 Exits: down
-Here: Sijbrand, Heemraad Sijbrand (at work); Teunis Ros, Teunis the horse-miller (visiting On the Great Dyke).
-Teunis arrives from below.
+Here: Sijbrand, Heemraad Sijbrand (at work).
+Sijbrand arrives from below.
 +10 experience: you found On the Great Dyke.
-Teunis brought you to On the Great Dyke, and Sijbrand was there.
 On the Great Dyke
 You climb the last of the slope and the wind hits you all at once. On one side the whole Holleveen lies below you; on the other the grey water stands higher than the fields, and you understand what the dyke is holding back.
 
 > tell sijbrand about the dyke
 You: "The dyke's leaking at Oude Zijl, they say!"
-Teunis nods. "I saw it with my own eyes."
-Sijbrand listens, and takes it seriously.
-Sijbrand has sent to Veenhoek for every man with a spade. Clay and brushwood to the dyke, before the leak opens!
+Sijbrand doesn't believe a word of it, and says so.
 
 > wait 60
-Teunis sets off across country towards The Horse Mill.
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 14:04 (afternoon).
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 14:02 (afternoon).
+Sijbrand has sent to Veenhoek for every man with a spade. Clay and brushwood to the dyke, before the leak opens!
 
 > journal
-People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Sijbrand, Teunis Ros, Trijntje Kroes, the Count.
+People: Harmen, Kobus, Lubbert, Sijbrand, Teunis Ros, Trijntje Kroes, the Count.
 Places: The Drowned Goose, the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
-==== AFTER (Woensdag 15 Herfstmaand 211 AW, 14:04 (afternoon))
+==== AFTER (Woensdag 15 Herfstmaand 211 AW, 14:02 (afternoon))
 
 [24 hours pass]
 The leak is packed with clay and brushwood, and the dyke at Oude Zijl holds.
@@ -249,7 +227,7 @@ Exits: down
 Here: Sijbrand, Heemraad Sijbrand (at work).
 
 > journal
-People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Sijbrand, Teunis Ros, Trijntje Kroes, the Count.
+People: Harmen, Kobus, Lubbert, Sijbrand, Teunis Ros, Trijntje Kroes, the Count.
 Places: The Drowned Goose, the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
@@ -286,8 +264,8 @@ Aaltje comes from the northeast, on her way to Aaltje's Cottage.
 Aaltje stops and gives you a nod, curious about the stranger.
 Aaltje nods to Grietje.
 Everhard comes from the south, on his way to The Schout's House.
-Everhard walks on to the north.
 Cornelis comes from the northeast, on his way to The Flooded Peat Pits.
+Everhard walks on to the north.
 Cornelis walks on to the south.
 Grietje walks on to the west.
 Aaltje walks on to the north.
@@ -312,8 +290,6 @@ Ansfried comes from the north, on his way to The Market Square.
 Ansfried stops and gives you a nod, curious about the stranger.
 Aaltje comes from the north, on her way to The Drowned Goose, Common Room.
 Aaltje walks on to the northeast.
-Wouter comes from the south, on his way to The Drowned Goose, Common Room.
-Wouter stops and looks you over.
 The chapel bell rings for six.
 
 > look
@@ -321,15 +297,15 @@ Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
 Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
-Here: Prior Ansfried (stopping to look at the stranger), Wouter the eel-fisher (stopping to look at the stranger).
+Here: Prior Ansfried (stopping to look at the stranger).
 
 > journal
-People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Sijbrand, Teunis Ros, Trijntje Kroes, the Count.
+People: Harmen, Kobus, Lubbert, Sijbrand, Teunis Ros, Trijntje Kroes, the Count.
 Places: The Drowned Goose, the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
-==== END (Zaterdag 18 Herfstmaand 211 AW, 20:04 (evening))
+==== END (Zaterdag 18 Herfstmaand 211 AW, 20:02 (evening))
 Quests: none
 
 ######## CONTROL: THE PLAYER DOES NOTHING
@@ -362,27 +338,13 @@ Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
 Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
-Here: Jan Visser (on the way to The Drowned Goose, Common Room).
-Jan comes from the west, on his way to The Drowned Goose, Common Room.
 +10 experience: you found Veenhoek, the Green.
 
-> talk jan visser
-You are talking with Jan Visser. Type what you want to say, pick a number, or BYE to stop.
-Jan nods. "Evening."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
-
-> 2
-You: "What's new around here?"
-Jan nods slowly. "[The Count] wants to drain [the Holleveen] and make a [polder] of it. A [surveyor] from [Graafhaven] has been measuring the fen since spring. The peat-cutters are furious; the [miller] thinks it will be good for trade."
-Gerrit walks on to the northeast.
-
-> bye
-Jan lifts a hand. "Go on, then."
+# Nobody here to ask.
 
 # Next morning to Waagdam, the market town, and ask around there.
 
 > wait 10 hours
-Jan walks on to the northeast.
 Mirte comes from the east, on her way to The Drowned Goose, Common Room.
 Mirte stops and gives you a nod, curious about the stranger.
 Mirte walks on to the northeast.
@@ -398,7 +360,7 @@ Jan walks on to the west.
 Gerrit walks on to the south.
 Wouter comes from the northeast, on his way to Wouter's Hut.
 Wouter walks on to the south.
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 04:33 (night).
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 04:31 (night).
 
 > wait 5 hours
 There are no sacks of flour to be had in Veenhoek. People make do, and grumble about it.
@@ -409,7 +371,7 @@ Jan comes from the west, on his way to The Peat Cuttings.
 Jan walks on to the south.
 Cornelis comes from the northeast, on his way to The Flooded Peat Pits.
 Cornelis walks on to the south.
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 09:33 (morning).
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 09:31 (morning).
 The chapel bell rings for six.
 
 # Shortcut: ask the way and walk the hour to the market square of Waagdam.
@@ -439,7 +401,7 @@ Kobus nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Kobus thinks a moment. "[De Zwaan] won't turn again before winter. [Harmen] can't pay for new sailcloth, and nobody will lend it him. (You heard it from [Lubbert].)"
+Kobus nods slowly. "[De Zwaan] won't turn again before winter. [Harmen] can't pay for new sailcloth, and nobody will lend it him. (You heard it from [Lubbert].)"
 
 > bye
 Kobus lifts a hand. "Go on, then."
@@ -467,18 +429,18 @@ Teunis nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Teunis scratches an ear. "Water is seeping through the dyke at [Oude Zijl], low down on the land side, and the seep is growing. (You saw it yourself.)"
+Teunis thinks a moment. "Water is seeping through the dyke at [Oude Zijl], low down on the land side, and the seep is growing. (You saw it yourself.)"
 
 > bye
 Teunis lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
+People: Harmen, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
 Places: The Drowned Goose, the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
-==== AFTER (Woensdag 15 Herfstmaand 211 AW, 09:37 (morning))
+==== AFTER (Woensdag 15 Herfstmaand 211 AW, 09:35 (morning))
 
 [24 hours pass]
 Teunis puts out the lamp and goes to bed.
@@ -498,7 +460,7 @@ Exits: west, east
 Here: Teunis Ros, Teunis the horse-miller (at work).
 
 > journal
-People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
+People: Harmen, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
 Places: The Drowned Goose, the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
@@ -557,10 +519,10 @@ Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 
 > journal
-People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
+People: Harmen, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
 Places: The Drowned Goose, the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
-==== END (Zaterdag 18 Herfstmaand 211 AW, 15:37 (afternoon))
+==== END (Zaterdag 18 Herfstmaand 211 AW, 15:35 (afternoon))
 Quests: none

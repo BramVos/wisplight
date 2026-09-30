@@ -190,7 +190,7 @@ export function executeStep(world: World, npcId: string, step: Step): StepResult
       if (food) {
         add(npc.inventory, food.item, -1)
         gain = food.food
-      } else if (npc.location === world.npc(npcId).home) {
+      } else if (npc.location === world.npc(npcId).home || (step.at && npc.location === step.at)) {
         gain = 50
       } else {
         return 'failed'

@@ -135,6 +135,8 @@ describe('checks with real skills', () => {
     expect(skillBonus(content, c, 'intimidation')).toBe(6)
     // Whoever is on the green (M9.4: naming someone who is elsewhere no longer falls to whoever is here).
     await play(engine, 'north')
+    // Mirte on the green (since M10.33 M people begin where their day puts them).
+    Object.assign(engine.state.npcs['npc_mirte']!, { location: engine.state.player.location, plan: [], busyUntil: engine.world.now + 120 })
     const here = engine.world.npc(engine.world.npcsAt(engine.state.player.location)[0]!).short.toLowerCase()
     const out = await play(engine, `talk ${here}`, `intimidate ${here} to lower the price`)
     expect(out).toMatch(/\(Intimidation \d+ vs DC \d+/)

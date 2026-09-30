@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Engine, GameClock, MockLlm, type LlmClient, type LlmRejection, type MockMode } from '../src/engine'
-import { content } from './helpers'
+import { content, homeStart } from './helpers'
 
 // Milestone M2.1 (docs/ROADMAP.md): coherence after the first playtest.
 
@@ -120,8 +120,9 @@ describe('M2.1: sleep, doors and what an NPC just did', () => {
 })
 
 describe('M2.1: people notice the stranger', () => {
+  // Gerrit walks from home to work past the quay: the start before M10.33 M.
   it('lets a curious passer-by stop for a while instead of rushing through', () => {
-    const engine = new Engine(content, { seed: 1 })
+    const engine = homeStart(new Engine(content, { seed: 1 }))
     const lines = texts(engine.tick(1))
     expect(lines).toMatch(/Gerrit comes from the east, on his way to [^.]+\./)
     expect(lines).toMatch(/Gerrit stops and looks you over\./)
@@ -131,7 +132,7 @@ describe('M2.1: people notice the stranger', () => {
   })
 
   it('does not stop twice for the same stranger within a few hours', () => {
-    const engine = new Engine(content, { seed: 1 })
+    const engine = homeStart(new Engine(content, { seed: 1 }))
     engine.tick(1)
     const gerrit = engine.state.npcs['npc_gerrit']!
     expect(gerrit.noticedPlayerAt).toBe(engine.world.now)

@@ -30,13 +30,12 @@ New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alo
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle; a fisherwoman.
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 +10 experience: you found The Salt Kettle.
 +30 experience: you came to Skerrow Hythe.
 
 > @time 12   [build command: a shortcut]
 [build] 290 minutes pass.
-A fisherwoman leaves west.
 
 # Shortcut: a death comes when it comes; here Wenna the fisher drowns at once.
 
@@ -351,13 +350,12 @@ New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alo
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren Holt, Maren of the Salt Kettle; a fisherwoman.
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 +10 experience: you found The Salt Kettle.
 +30 experience: you came to Skerrow Hythe.
 
 > @time 12   [build command: a shortcut]
 [build] 290 minutes pass.
-A fisherwoman leaves west.
 
 # Shortcut: a death comes when it comes; here Wenna the fisher drowns at once.
 

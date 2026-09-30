@@ -1,5 +1,22 @@
 # Changelog
 
+## M10.33 deel: bij aankomst is er iemand (M), 30 september 2026
+
+- **Iedereen waar zijn dag hem zet.** Oorzaak in de motor: een nieuw spel zette iedereen thuis, wat de dienstregeling ook zei, en The Quiet Reach begon om 08:00, precies toen iedereen van de Guest Quarters door de Commons naar zijn werk liep. Nu staat bij een nieuw spel iedereen waar zijn dag hem op dat moment zet. Een oude save verandert niet.
+- **Eten waar de dag het zegt.** Een tweede oorzaak: een maaltijd werd altijd thuis gegeten, ook als de dag "ontbijt in de Commons" zei, dus wie ontbeet liep weg. Nu eet je aan de tafel die de dag noemt, en wie gegeten heeft blijft zitten tot de maaltijd voorbij is.
+- **Check en de wereldgids.** Check zegt wie er bij de start op de startplek en op de ontmoetingsplek van de eerste nederzetting is, en meldt het als dat niemand is of als iedereen binnen een half uur weggaat. De stap Kalender vraagt een startminuut midden in zo'n blok.
+- **The Quiet Reach** begint nu om 07:05, bij het ontbijt: Tessa, Niko, Edda, Ilyan en Sana in de Commons tot kwart voor acht, en Mara bij de sluis.
+
+Testen: begin een nieuw spel in The Quiet Reach en loop naar de Commons. Tests in `tests/m1033ways.test.ts`.
+
+Kosten: geen aanroep.
+
+Nog open: de drempel tussen de sluis en de Commons (een gang of een plein), als je die wilt.
+
+Wat de editor en de kroniekverteller leerden: de stap Kalender en `docs/NEW-WORLD.md` over de startminuut, en een regel onder Check over de eerste scène.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 4, alinea "Stand na M10.33: de eerste scène".
+
 ## M10.33 deel: het gesprek doet wat het zegt (F), 30 september 2026
 
 - **Twee rijen (F).** Onder het gesprek staan nu vragen ("Ask:") en zetten met een worp ("Try:") apart, elk met een uitleg als je de muis erop houdt. "Trade" staat er alleen bij iemand die hier iets verkoopt of koopt, "Come with me?" alleen bij iemand die mee kan reizen. Oorzaak: de rij was vast, voor iedereen gelijk.
@@ -16,6 +33,7 @@ Kosten: geen nieuwe aanroep. Een antwoord van een quest-persoon mag langer zijn:
 Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
 
 Ontwerp: geen wijziging; geen nieuw mechanisme (geen nieuwe staat, scherm, ronde of aanroep), alleen bestaande lagen en knoppen op de juiste plek.
+
 
 ## M10.33 deel: zoeken zonder dobbelsteen, en een weg bij zijn naam (Z), 30 september 2026
 

@@ -3,17 +3,61 @@ import { callName, isNameTitle, type Content } from './content'
 import { regionMap } from './map/region'
 import { questWarnings } from './quests/check'
 import { landIdOf } from './reach'
+import { routineNow } from './npc/brain'
+import { createInitialState } from './state'
+import { World } from './world'
 
 // The checks the editor shows beside the errors (FO, chapter 15, "Schema's en
 // validatie"), and the region as the generator draws it. Edits themselves are
 // in edit.ts; the editor's view in editor.ts.
 
 /** Things that load but deserve a look (FO, chapter 15, "Schema's en validatie"). */
+const SETTLED_KINDS = new Set(['village', 'town', 'city', 'hamlet', 'inn'])
+
+/**
+ * The first scene (M10.33 M, the Commons that emptied as the stranger came
+ * in): who is at the start place and at the meeting places of the first
+ * settlement (the start's own, or the first one its exits lead to) at the
+ * start minute, by their day, and how long until the last of them leaves.
+ */
+export function startScene(content: Content): { place: string; people: string[]; leaves: number }[] {
+  const world = new World(content, createInitialState(content, 1))
+  const start = content.world.start.location
+  // The first settlement: by the exits from the start, the nearest place in a village, town, hamlet or inn.
+  const seen = new Set([start])
+  const queue = [start]
+  let area: string | undefined
+  while (queue.length && !area) {
+    const id = queue.shift()!
+    const here = content.locations.get(id)
+    if (here && SETTLED_KINDS.has(content.areas.get(here.area)?.kind ?? '')) area = here.area
+    for (const exit of Object.values(here?.exits ?? {})) if (exit && !seen.has(exit.to)) (seen.add(exit.to), queue.push(exit.to))
+  }
+  const places = [start, ...[...content.locations.values()].filter((l) => l.id !== start && l.area === area && l.tags.includes('social')).map((l) => l.id)]
+  const routines = [...content.npcs.keys()].filter((id) => !content.npcs.get(id)!.absent).map((id) => ({ id, r: routineNow(world, id) }))
+  return places.map((place) => {
+    const there = routines.filter((x) => x.r?.place === place)
+    return { place, people: there.map((x) => x.id), leaves: there.length ? Math.max(...there.map((x) => x.r!.until)) - world.now : 0 }
+  })
+}
+
 export function warnings(content: Content): string[] {
   // A quest with a stage that has no way on, or no way to end (M10.30 (6)).
   const out: string[] = [...questWarnings(content), ...unsolvable(content)]
   // A world with people and no storyline (M10.30: The Quiet Reach had none, so every voice made the plot up as it talked).
   if (!content.quests.size && content.npcs.size) out.push('This world has no stories: people make the plot up as they talk, and nothing can be solved. The step Stories of the world build writes them.')
+  // The first scene (M10.33 M): someone at the start place and at its meeting place, for at least half an hour.
+  if (content.npcs.size) {
+    const at = `${String(content.world.start.hour).padStart(2, '0')}:${String(content.world.start.minute).padStart(2, '0')}`
+    // The start itself may be lonely by design (a wreck, a quay at dusk): the scene needs people at one of its places.
+    // A settlement without a meeting place (a place tagged social) gives nothing to judge but the start.
+    const scenes = startScene(content)
+    const names = scenes.map((s) => content.locations.get(s.place)?.name ?? s.place).join(' or ')
+    if (scenes.length < 2) {
+      // Nothing to judge: the first settlement has no meeting place.
+    } else if (!scenes.some((s) => s.people.length)) out.push(`At the start (${at}) nobody is at ${names}: the first scene is empty. Move the start minute, or a day's schedule, so the people of the first scene are there.`)
+    else if (!scenes.some((s) => s.people.length && s.leaves >= 30)) out.push(`At the start (${at}) everyone at ${names} leaves within half an hour: the start minute falls at the end of their block.`)
+  }
   // Reachability over exits from the start, and from every edge on the region map (reached across country);
   // a line of transport (M10.23: the white boat to another land) takes the stranger from one of its stops to the others.
   const roots = [content.world.start.location, ...[...content.locations.values()].filter((l) => l.tags.includes('edge') && (l.pos ?? content.areas.get(l.area)?.pos)).map((l) => l.id)]

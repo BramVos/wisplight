@@ -49,6 +49,7 @@ Off Skerrow: A ship for the light. Two nights after the Lamp of Skerrow was lit 
 Skerrow Hythe, the Harbour
 A curved wall of piled stone keeps the sea out of a harbour no bigger than a barn floor. Brannoc's boat, the Kittiwake, lies on the slip with her mast bare, and nets hang drying from every post. It smells of fish, wet rope and woodsmoke. Steps go up north to the green; west, the rocks lead back to the [Tidepools], and a low door by the slip opens into a cottage.
 Exits: north, west, in
+Here: Brannoc the boatman (at work), a fisherwoman (at work).
 +10 experience: you found Skerrow Hythe, the Harbour.
 +30 experience: you came to Skerrow Hythe.
 
@@ -57,10 +58,7 @@ Exits: north, west, in
 
 > @skip 4   [build command: a shortcut]
 [build] 4 days pass.
-Brannoc arrives from inside.
-A fisherwoman arrives from the north.
 A fisherwoman hoists the coracle onto her back and walks it down to the water.
-Brannoc nods to a fisherwoman.
 Pip comes from inside, on his way to Skerrow Hythe, the Green.
 Pip stops and gives you a nod, curious about the stranger.
 Brannoc and Pip greet each other warmly.
