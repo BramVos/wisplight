@@ -86,6 +86,11 @@ locations:
         look: A low bank of sand and heather where the heath ends, with the fields and the fen spread out below it.
       - words: [tower, waag]
         look: Far off to the south-west, small and grey, the tower of the Waag at Waagdam.
+      # Something to do in a place of the stories (M10.33 N).
+      - words: [heather, wind]
+        look: Heather to the knee, brown and purple, bending all one way in the wind.
+        verbs:
+          listen: The wind hisses in the heather. Something slides away through it at your feet, and is gone before you can look.
 
   - id: loc_reuzenrust_road
     name: The Road to Hunnenloo

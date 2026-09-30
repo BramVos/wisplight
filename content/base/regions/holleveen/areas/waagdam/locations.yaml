@@ -49,6 +49,11 @@ locations:
         look: "You cannot see it from here, only hear it: a hammer ringing on an anvil somewhere to the north."
       - words: [houses, gables]
         look: Narrow gabled houses lean together over the street, so close at the top that the sky is only a strip.
+      # Something to do in a place of the stories (M10.33 N).
+      - words: [ringing, anvil]
+        look: You cannot see the anvil, only hear it, somewhere to the north.
+        verbs:
+          listen: Three blows and a pause, three blows and a pause. Somebody at the smithy is drawing out iron, and in no hurry about it.
 
   - id: loc_waagdam_harbour
     name: The Harbour
@@ -343,6 +348,16 @@ locations:
       north: { to: loc_waagdam_guild_house }
       south: { to: loc_waagdam_graanhandel }
       east: { to: loc_waagdam_horse_mill }
+    details:
+      # Something to do in a place of the stories (M10.33 N).
+      - words: [canal, water]
+        look: A narrow canal, green and still, with a barge moored against the warehouse wall.
+      - words: [warehouses]
+        look: Tall brick warehouses with hoists at their gables and doors big enough for a cart.
+      - words: [horse, plod]
+        look: You cannot see it from here, only hear it at the east end of the street.
+        verbs:
+          listen: The plod of a horse going round and round, and the grumble of a millstone under it. The horse mill, at the east end of the street.
 
   - id: loc_waagdam_guild_house
     name: The Guild House

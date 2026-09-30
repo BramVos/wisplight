@@ -72,6 +72,14 @@ locations:
         mud sucks at your boots. The shore is east.
     exits:
       east: { to: loc_blackmere_shore, minutes: 5 }
+    details:
+      # Something to do in a place of the stories (M10.33 N).
+      - words: [willows, drowned willows, trees, branches]
+        look: Long-dead willows, grey and split, standing to their knees in the mere with their bare branches hanging down to the water.
+        take: They are rooted in the mud of the mere, dead as they are.
+        verbs:
+          listen: The creaking comes and goes with no wind to make it. Now and then it sounds like two voices, one low and one high, and then it is only wood again.
+          touch: The bark is cold and slick, and it gives under your thumb like wet bread.
 
   - id: loc_blackmere_hookstone
     name: The Haaksteen
@@ -146,6 +154,11 @@ locations:
       - words: [mussels, dead mussels, shells]
         look: Mussels that lived in the mere and died when it drew back. They lie open in the mud and crack under your boots.
         take: They are dead and they stink. You leave them.
+      # Something to do in a place of the stories (M10.33 N).
+      - words: [water, trickle]
+        look: The water of the mere, running off north along the channel in a thin, brown trickle.
+        verbs:
+          listen: Water trickles north along the channel with a small, steady sound, and under it, now and then, the mere gives a slow gulp, as if it were swallowing.
 
   - id: loc_blackmere_open_water
     name: The Open Water

@@ -68,6 +68,12 @@ locations:
       east: { to: loc_schout_house }
       west: { to: loc_aaltje_cottage }
       northwest: { to: loc_priory_path, minutes: 45 }
+    details:
+      # Something to do in a place of the stories (M10.33 N).
+      - words: [houses, doors, green doors, thatch]
+        look: Low houses in two rows, their doors painted green against the damp and their thatch dark with rain.
+        verbs:
+          smell: Wet thatch and peat smoke, and from the west the dry, green smell of the herbs hung up to dry.
 
   - id: loc_veenhoek_chapel
     name: Chapel of the Lantern

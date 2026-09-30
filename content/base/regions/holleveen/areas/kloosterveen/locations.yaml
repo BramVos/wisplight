@@ -150,6 +150,18 @@ locations:
     exits:
       west: { to: loc_kloosterveen_church }
       north: { to: loc_kloosterveen_lodging }
+    details:
+      # Something to do in a place of the stories (M10.33 N).
+      - words: [kettles, copper kettles, hearths]
+        look: Copper kettles on their hearths, dented and bright where the brothers rub them, the fires under them banked low.
+        take: They are as big as a cart and full of hot wort.
+      - words: [barrels, casks]
+        look: Barrels stacked to the rafters along the back wall, each with a mark in chalk for the day it was filled.
+        take: The brothers would miss a barrel, and you would not get far with it.
+        verbs:
+          listen: Something in the barrels works and sighs as it ferments, a slow bubbling like somebody breathing in their sleep.
+      - words: [hop poles, poles, hops]
+        look: Through the open door, hop poles in rows along the priory wall, the bines climbing them green and bitter.
 
   - id: loc_kloosterveen_garden
     name: The Herb Garden
@@ -202,3 +214,12 @@ locations:
     exits:
       east: { to: loc_kloosterveen_garden, minutes: 5 }
       southeast: { to: loc_kloosterveen_gate, minutes: 5 }
+    details:
+      # Something to do in a place of the stories (M10.33 N).
+      - words: [oaks, beeches, trees, moss]
+        look: Old oaks and beeches, grey with moss, standing so close that their crowns shut out the sky.
+        verbs:
+          listen: A woodpecker somewhere, then nothing. The wood drips, and a leaf comes down through the branches with a sound like a page turned.
+      - words: [leaves, ground, mushrooms]
+        look: The leaves of many years, soft underfoot, with pale mushrooms pushing up through them in a ring.
+        take: The brothers pick these; you do not know which of them are good to eat.

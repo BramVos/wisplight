@@ -221,3 +221,10 @@ locations:
         is west.
     exits:
       west: { to: loc_kattenbroek_oak, minutes: 5 }
+    details:
+      # Something to do in a place of the stories (M10.33 N).
+      - words: [pool, round pool, water, sky]
+        look: A round pool, so still that it holds the whole sky without a ripple. No reed grows in it, and nothing moves.
+        verbs:
+          touch: You hold your hand above the water and do not touch it. It is colder than the air, and your fingers ache as if you had.
+          listen: Nothing at all. Not a frog, not a reed. Only your own breath, too loud.

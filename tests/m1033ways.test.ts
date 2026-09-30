@@ -210,3 +210,23 @@ describe('M10.33 R: the rough edges', () => {
     expect(said(await engine.handle('where can I find the hangar'))).not.toMatch(/can I find can I find/)
   })
 })
+
+describe('M10.33 N: things a description names are there, and a place of the stories has something to do', () => {
+  // Cause, in the world maker: the step Places and the contract did not ask for it, and no Check counted it, so places
+  // of the stories could be walked through and only looked at. Fixed at the source: the contract and the step ask for
+  // it, and Check names a place of the stories with nothing to do. The Nethermarch got a verb in ten such places.
+  it('names a place of the stories with nothing to do, and the three worlds have none', async () => {
+    const { idlePlaces, sceneryWarnings } = await import('../src/engine/builder')
+    const { content } = await import('./helpers')
+    const isle = await loadContentFromDir(join(import.meta.dirname, '../content'), 'isle')
+    for (const world of [quiet, isle, content]) {
+      expect(idlePlaces(world)).toEqual([])
+      expect(sceneryWarnings(world)).toEqual([])
+    }
+    const bare = { ...quiet, locations: new Map(quiet.locations) }
+    const room = bare.locations.get('loc_medical_bay')!
+    bare.locations.set(room.id, { ...room, details: room.details.map((d) => ({ ...d, verbs: undefined })), objects: [], items: {}, hidden: [], services: [] } as never)
+    const npcs = new Map([...quiet.npcs].map(([id, n]) => [id, n.work === room.id || n.home === room.id ? { ...n, work: 'loc_commons', home: 'loc_guest_quarters' } : n]))
+    expect(idlePlaces({ ...bare, npcs } as never)).toContain('loc_medical_bay: nothing to do in a place of the stories: give a detail a verb, something to read, something lying or hidden, or someone who is there')
+  })
+})

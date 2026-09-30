@@ -99,11 +99,55 @@ export function directionProblems(content: Content): string[] {
   return [...new Set(out)]
 }
 
+/**
+ * Places of the stories with nothing to do (M10.33 N; review S7: places the
+ * stranger passes through and can only look at): a place in an area where a
+ * story is played (a deed is done there, or its giver lives or works there)
+ * wants at least one verb, something to read, something lying or hidden,
+ * something to buy, or someone there.
+ */
+export function idlePlaces(content: Content): string[] {
+  const storyAreas = new Set<string>()
+  for (const q of content.quests.values()) {
+    for (const a of q.actions ?? []) for (const at of a.at) storyAreas.add(content.locations.get(at)?.area ?? at)
+    for (const g of q.givers) {
+      const n = content.npcs.get(g)
+      for (const id of [n?.home, n?.work]) if (id) storyAreas.add(content.locations.get(id)?.area ?? '')
+    }
+  }
+  // A place the stories, encounters, plans or patterns name has something happen there.
+  const named = JSON.stringify([...content.quests.values(), ...content.encounters.values(), ...content.plans.values(), ...content.patterns.values(), ...content.watchers.values()])
+  const peopled = new Set([...content.npcs.values()].flatMap((n) => [n.home, n.work ?? '']))
+  const stops = new Set([...content.passages.values()].flatMap((p) => p.stops))
+  const out: string[] = []
+  for (const l of content.locations.values()) {
+    // A road or the edge of a place is for going through.
+    if (!storyAreas.has(l.area) || l.tags.some((t) => t === 'route' || t === 'edge')) continue
+    const something =
+      l.details.some((d) => d.verbs && Object.keys(d.verbs).length > 0) ||
+      l.objects.some((o) => {
+        const type = content.objectTypes.get(o.type)
+        return Boolean(type?.inscription || type?.affordances.some((a) => a.actors.includes('player')))
+      }) ||
+      Object.keys(l.items).length > 0 ||
+      l.hidden.length > 0 ||
+      l.services.length > 0 ||
+      l.forage.length > 0 ||
+      named.includes(`"${l.id}"`) ||
+      peopled.has(l.id) ||
+      stops.has(l.id)
+    if (!something) out.push(`${l.id}: nothing to do in a place of the stories: give a detail a verb, something to read, something lying or hidden, or someone who is there`)
+  }
+  return out
+}
+
 export function warnings(content: Content): string[] {
   // A quest with a stage that has no way on, or no way to end (M10.30 (6)).
   const out: string[] = [...questWarnings(content), ...unsolvable(content)]
   // A world with people and no storyline (M10.30: The Quiet Reach had none, so every voice made the plot up as it talked).
   if (!content.quests.size && content.npcs.size) out.push('This world has no stories: people make the plot up as they talk, and nothing can be solved. The step Stories of the world build writes them.')
+  // Places of the stories with nothing to do (M10.33 N).
+  out.push(...idlePlaces(content))
   // Ways that do not fit one plan, and one settlement in two areas (M10.33 L).
   out.push(...directionProblems(content))
   // The first scene (M10.33 M): someone at the start place and at its meeting place, for at least half an hour.

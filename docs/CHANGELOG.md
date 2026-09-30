@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.33 deel: dingen uit een beschrijving zijn er, en overal iets te doen (N), 30 september 2026
+
+- **Oorzaak:** de stap Plekken en het contract vroegen niet om een detail voor elk ding waar een speler aan kan zitten. Geen controle telde of een plek waar een verhaal speelt iets te doen heeft.
+- **In de bron:** het contract, de stap Plekken en `docs/NEW-WORLD.md` vragen het nu. Check noemt een plek in een gebied met een verhaal waar niets te doen is: geen werkwoord, niets om te lezen, niets dat ligt, verborgen is of te koop is, en niemand die er is. Wegen en randen tellen niet mee.
+- **De werelden:** The Quiet Reach en Skerrow kwamen leeg uit Check. De Nethermarch had tien zulke plekken, en die kregen elk iets: luisteren naar de verdronken wilgen en naar de gistende vaten, de rand van de maanpoel aanraken, de verse teer op de steiger ruiken.
+
+Testen: typ `listen` of `listen to the willows` bij de verdronken wilgen van het Zwartmeer, en `smell tar` op de steiger in het rietdoolhof. Test in `tests/m1033ways.test.ts`.
+
+Kosten: geen aanroep.
+
+Wat de editor en de kroniekverteller leerden: de regel in het contract en de stap Plekken, en een regel onder Check.
+
+Ontwerp: geen wijziging.
+
 ## M10.33 deel: een aanbod is van het spel (AG, AC), 30 september 2026
 
 - **Geen afspraak uit proza (AG).** Oorzaak: een keuze van de stem in `action` gold als gevraagd, ook als de speler niets vroeg ("Mara agrees to tell Ilyan about Tessa"), en een tijd in de woorden van de spreker werd een afspraak (M10.29). Nu geldt `action` alleen als de woorden van de speler om dat soort ding vragen; anders wordt het een voorstel met [Yes] en [No]. Een tijd in de woorden van de spreker is geen afspraak meer. Vraag je om later terwijl iemand werkt ("Can we talk later?"), dan biedt het spel een ontmoeting aan als het werk erop zit, en die kan de stem voorstellen. Opgelost in de motor, voor elke wereld.
@@ -12,6 +26,7 @@ Kosten: geen nieuwe aanroep. Een antwoord dat een ontmoeting in eigen woorden be
 Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
 
 Ontwerp: functioneel ontwerp, hoofdstuk 15, alinea "Stand na M10.33: een aanbod is van het spel, nooit uit proza" (achter die van M10.29 over een tijd in de woorden van de spreker, die hiermee vervalt).
+
 
 ## M10.33 deel: niets kwijt bij herladen (K), 30 september 2026
 

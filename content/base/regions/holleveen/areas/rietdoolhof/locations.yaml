@@ -80,6 +80,11 @@ locations:
         take: They are too big to carry, and somebody would miss them.
       - words: [path, boards]
         look: A path of boards laid over the mud, running south-east towards the smoke of a camp.
+      # Something to do in a place of the stories (M10.33 N).
+      - words: [tar, fresh tar]
+        look: Fresh tar in the seams of the planks, still soft enough to take a thumbprint.
+        verbs:
+          smell: Fresh tar, sharp and sweet. These planks went down this summer, not before.
 
   - id: loc_rietdoolhof_camp
     name: The Goat-Riders' Camp
