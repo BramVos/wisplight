@@ -1,5 +1,32 @@
 # Changelog
 
+## M10.30 af: een wereld krijgt zijn verhalen, 30 september 2026
+
+Alle elf punten van M10.30 zijn af. De delen staan hieronder in acht stukken "M10.30 deel"; dit is het overzicht.
+
+- **Verhalen voor een wereld.** De wereldbouw heeft een stap Verhalen: een hoofdlijn, kleinere lijnen en persoonlijke lijnen, met per stadium wat iedereen weet en wat het verhaal verborgen houdt. The Quiet Reach heeft ze nu: The Orison Recordings, Short on the Count en A Second Opinion. Een wereld die al loopt, krijgt ze met terugwerkende kracht, vanaf waar je spel al is.
+- **Mensen vertellen hetzelfde verhaal.** Elke stem krijgt wat die persoon in dit stadium weet, en een antwoord dat een verborgen waarheid te vroeg noemt, wordt opnieuw gevraagd. Gemeten met Niko en Tessa: hetzelfde verhaal over het signaal, de waarheid binnengehouden.
+- **Wat je nu moet doen.** Een questpagina eindigt met "Now: ...", en `quests` toont wat openstaat.
+- **Elke quest kan op meer manieren aflopen.** Minstens drie aflopen, met twee echte oplossingen, en een controle of een quest op te lossen is.
+- **Quests uit gesprekken.** Vraagt iemand je iets, dan maakt de kroniekverteller er na de nacht een quest van, met drie aflopen. Per streek lopen hooguit twee quests tegelijk naast de hoofdlijn.
+- **Dingen doen met de wereld.** Codes en wachtwoorden, je eigen woord voor een slot (hack), een daad op een ding (touw aan de paal), een weg die wacht, en wat je alleen vindt als je ervan hoorde.
+
+Testen, in een nieuw spel in The Quiet Reach:
+- Typ `quests` en open The Orison Recordings in het dagboek; volg wat er bij "Now" staat.
+- Vraag Niko en Tessa naar het signaal en de opnamen, en kijk of hun verhalen kloppen met elkaar.
+- Kom de hangar in: met de code van Tessa (`type 7411`), met `hack in`, of met `force in`.
+- Vraag Niko naar de steenhoop, en typ op de rug `lift the stone`.
+- Kies een van de aflopen van The Orison Recordings; er zijn er vier.
+- Je lopende spel krijgt de verhalen erbij wanneer je het laadt.
+
+Kosten: in M10.30 liep op je sleutel $0,60, elk met je akkoord: de verhalen van The Quiet Reach ($0,327), de metingen van de quest uit een verzoek ($0,104 en een deel van $0,172) en Niko en Tessa ($0,047). In het spel komt er één soort aanroep bij, `night_quest`: ongeveer 4 cent, hooguit één per speelnacht en alleen als iemand je iets vroeg.
+
+Bekende gaten: de stemmen verzinnen nog kleine bijzonderheden, zoals getallen en wie waar toegang toe heeft; de bewaker houdt alleen verborgen waarheden tegen. De controle of een quest op te lossen is, kijkt nog niet naar sloten en uitgangen.
+
+Wat de editor en de kroniekverteller leerden: de stap Verhalen, `goal`, `knows`, `truths` en aflopen in een quest, `story.quests_active`, `said`, `lock.word`, `verb_words`, daden op details, uitgangen en verborgen dingen met `when` (zie de delen).
+
+Ontwerp: functioneel ontwerp, de alinea's "Stand na M10.30" bij de quests en bij de wereld.
+
 ## M10.30 deel: verhalen met terugwerkende kracht, 30 september 2026
 
 - **Je spel loopt door met de nieuwe verhalen.** Laad je een save van The Quiet Reach van voor de verhalen, dan begint de hoofdlijn bij het laden. Heb je Niko al naar het signaal, het station of de opnamen gevraagd, dan staat hij meteen op stadium 2: de opnamen kopiëren in de Listening Room. Met jouw laatste save (Restday 22 Rainfall, in de Listening Room) heb ik dat nagespeeld: hij begint op stadium 2. Dat gebeurde lokaal op een kopie, zonder aanroep.
