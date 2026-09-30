@@ -270,7 +270,7 @@ items:
     plural: pocket terminals
     description: A palm-sized terminal in a rubberised case, its screen dimmed to save power. It holds your contract, a basic local map and your notes, and it works offline. It knows nothing of hidden places or sealed files.
     aliases: [terminal, pad]
-    tags: [personal, equipment, imported]
+    tags: [personal, equipment, imported, picks]
     value: 6000
     verbs:
       use: The screen wakes. Your contract, a basic map of Port Vesper and your own notes, nothing more; the map is the one on your screen, and the notes are your JOURNAL.
@@ -291,7 +291,8 @@ items:
     plural: multitools
     description: A folding multitool with pliers, drivers and a short blade, its grip worn smooth. It is good for small repairs, but it is no substitute for proper tools.
     aliases: [tool, pliers]
-    tags: [personal, tool]
+    # Good for getting past a keypad as well (M10.30: HACK).
+    tags: [personal, tool, picks]
     value: 1500
 
   - id: weatherproof_coat

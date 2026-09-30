@@ -194,17 +194,20 @@ export function pick(world: World, words: string, direction?: string): Output[] 
   if (lockOpen(world, id)) return [{ kind: 'error', text: 'It is not locked.' }]
   const what = door ? `the door of ${world.location(door[1].to).name}` : theName(object!.name ?? world.content.objectTypes.get(object!.type)?.name ?? object!.id)
   if (world.state.locks?.[id] === 'jammed') return [{ kind: 'error', text: `The lock of ${what} is jammed. Only its key, FORCE, or a smith who knows locks will open it now.` }]
-  const tool = PICKS.find((i) => (world.state.player.inventory[i] ?? 0) > 0)
+  // The fixed picks first, then anything this world tags as one (M10.30: a pocket terminal against a keypad).
+  const tool = PICKS.find((i) => (world.state.player.inventory[i] ?? 0) > 0) ?? Object.keys(world.state.player.inventory).find((i) => (world.state.player.inventory[i] ?? 0) > 0 && world.content.items.get(i)?.tags.includes('picks'))
   if (!tool) return [{ kind: 'error', text: 'You have nothing thin and stiff enough to pick a lock with: a nail, a hook, the point of a knife.' }]
   const outdoors = !place.tags.some((t) => ['indoors', 'private', 'shop', 'social', 'workshop'].includes(t))
   const dc = lockDc(world, lock, 'pick', outdoors)
   const check = playerCheck(world, 'thievery', dc)
   const out: Output[] = [{ kind: 'check', text: `(Thievery ${check.total} vs DC ${dc}: ${check.degree})` }]
   const tool1 = itemName(world.content, tool, 1)
+  // A device of the world's own (M10.30) opens a panel; a nail or a pick feels for the wards.
+  const device = !PICKS.includes(tool)
   const owner = door ? ownerOf(world, door[1].to) : ownerOf(world, here, { object: object!.id })
   if (check.degree === 'success' || check.degree === 'critical success') {
     ;(world.state.locks ??= {})[id] = 'open'
-    out.push({ kind: 'narration', text: `You work the ${tool1} into the lock of ${what}, feel for the wards, and turn. It gives with a small click.` })
+    out.push({ kind: 'narration', text: device ? `You open the panel of ${what} with the ${tool1} and work at the lock until it gives with a small click.` : `You work the ${tool1} into the lock of ${what}, feel for the wards, and turn. It gives with a small click.` })
     const picked = (world.state.player.found ??= [])
     if (!picked.includes(`picked:${id}`)) {
       picked.push(`picked:${id}`)
@@ -212,12 +215,13 @@ export function pick(world: World, words: string, direction?: string): Output[] 
     }
   } else if (check.degree === 'critical failure') {
     ;(world.state.locks ??= {})[id] = 'jammed'
-    const lost = tool !== 'knife'
+    // What snaps off is a nail, a hook or a pick; a knife or a device of the world's own stays whole.
+    const lost = ['lockpicks', 'iron_nails', 'iron_hook'].includes(tool)
     if (lost) world.state.player.inventory[tool] = (world.state.player.inventory[tool] ?? 1) - 1
     // What is now (M10.14): a jammed lock, and the ways that are left.
-    out.push({ kind: 'narration', text: `Something inside the lock of ${what} shifts the wrong way and sticks.${lost ? ` The ${tool1} snaps off in it.` : ''} It is jammed now: no pick will turn it. Its key would, or FORCE, loud as that is, or a smith who knows locks.` })
+    out.push({ kind: 'narration', text: `Something inside the lock of ${what} shifts the wrong way and sticks.${lost ? ` The ${tool1} snaps off in it.` : ''} It is jammed now: no pick will turn it. ${lock.word ? 'Its code would, or its key' : 'Its key would'}, or FORCE, loud as that is, or a smith who knows locks.` })
   } else {
-    out.push({ kind: 'narration', text: `You work at the lock of ${what} with the ${tool1}, but the wards won't give. The lock is as it was: you can try again, find its key, or leave it.` })
+    out.push({ kind: 'narration', text: `You work at the lock of ${what} with the ${tool1}, but ${device ? 'it' : 'the wards'} won't give. The lock is as it was: you can try again, find its ${lock.word ? 'code' : 'key'}, or leave it.` })
   }
   // Quiet, but not invisible: whoever sees the stranger at someone's lock knows what they saw.
   if (owner.id) {

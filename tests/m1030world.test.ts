@@ -65,7 +65,12 @@ describe('M10.30: a word as a key', () => {
     expect(engine.state.player.location).toBe('loc_peregrine_hangar')
     // HACK is PICK in this world: the rules of picking, never "you can't hack here".
     const other = await at(quietReach, 'loc_workshop')
-    expect(said(await other.handle('hack in'))).not.toMatch(/You can't "hack/)
+    other.state.player.inventory['pocket_terminal'] = 1
+    const hacked = said(await other.handle('hack in'))
+    expect(hacked).not.toMatch(/You can't "hack|nothing thin and stiff/)
+    expect(hacked).toMatch(/^\(Thievery \d+ vs DC 13: /)
+    // A device of the world's own never snaps off in the lock.
+    expect(other.state.player.inventory['pocket_terminal']).toBe(1)
     // The Nethermarch keeps its own word.
     expect(verbWord((await at(content, 'loc_veenhoek_green')).world, 'pick')).toBe('pick')
     expect(verbWord((await at(deepwell, [...deepwell.locations.keys()][0]!)).world, 'pick')).toBe('pick')

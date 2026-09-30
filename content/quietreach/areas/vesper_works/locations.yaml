@@ -22,7 +22,7 @@ locations:
       in:
         to: loc_peregrine_hangar
         minutes: 3
-        lock: { word: "7411", word_text: "The keypad blinks green, and the heavy door slides back on its rail with a hiss of air.", quality: good }
+        lock: { word: "7411", word_text: "The keypad blinks green, and the heavy door slides back on its rail with a hiss of air.", dc: 13 }
       southwest: { to: loc_arrival_lock, minutes: 4 }
       west: { to: loc_commons, minutes: 5 }
     details:
