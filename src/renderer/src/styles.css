@@ -80,7 +80,6 @@ body {
   position: absolute;
   right: calc(280px + 14px);
   top: 8px;
-  z-index: 1;
 }
 
 .log {
