@@ -59,7 +59,7 @@ Every kind puts what stays the same first and what changes after it (M10.26). A 
 | `far_place` | claude-opus-5-5 | 894 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `district` | claude-opus-5-5 | 1,551 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `night_quest` | claude-opus-5-5 | 1,674 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
-| `region_story` | claude-opus-5-5 | 16,217 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
+| `region_story` | claude-opus-5-5 | 16,231 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `weave` | claude-opus-5-5 | 1,010 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `expansion` | claude-opus-5-5 | 3,344 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `land` | claude-opus-5-5 | 2,794 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |

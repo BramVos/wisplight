@@ -95,6 +95,7 @@ Bekende gaten:
 - De nachtronde (`night_quest`) kent de vorm al, maar haar prompt vraagt nog niet om aflopen. Dat doet de andere sessie; daarom staat "Minstens drie aflopen" nog open.
 - Voor geschreven quests blijft de ontwerpregel van drie oplossingen een waarschuwing onder Check. Een gemaakte bijlijn met twee oplossingen krijgt die dus ook, als advies.
 - In het spel stuurt de streekronde niets terug: een antwoord met minder aflopen blijft zoals het kwam.
+- Later op de dag schreef Opus 5.5 op low bij `night_quest` één stadium en geen enkele afloop, zolang de aflopen optioneel waren (andere sessie). De regel zegt daarom nu ook in de streekronde en de stap Verhalen dat alleen het laatste stadium zijn eigen daad mag missen. In het schema staan de aflopen daar nog als optioneel: verplicht maken kan pas als de drie opgenomen antwoorden van de streekronde opnieuw zijn opgenomen. Dat kost drie betaalde aanroepen op je sleutel, geraamd op ongeveer $0,14 per stuk.
 - De controle kijkt niet naar uitgangen en sloten, en weet niet of iemand blijft leven.
 
 Wat de editor en de kroniekverteller leerden: de stap Stories van de wereldgids noemt de aflopen en de oplosbaarheid bij wat je controleert, en `docs/NEW-WORLD.md` ook. De prompt van de stap en die van de streekronde vragen om de aflopen. Onder Check staan de quests zonder weg verder of zonder einde. De wereld zelf kan niets nieuws bevatten, want aflopen zijn acties en uitkomsten zoals de Nethermarch die al had.

@@ -5,8 +5,9 @@ import { warnings } from '../src/engine/builder'
 import { questlog } from '../src/engine/quests/engine'
 import { endingProblems, questFromSketch, type QuestSketch } from '../src/engine/quests/sketch'
 import { solvableProblems } from '../src/engine/quests/solvable'
-import { readStories, storiesFixRequest, storiesRequest, storyChecks, storyScopes } from '../src/engine/storystep'
+import { readStories, storiesFixRequest, storiesRequest, storyChecks, storyScopes, STORY_STEP_RULES } from '../src/engine/storystep'
 import { QuestSchema } from '../src/engine/content'
+import { storySchema } from '../src/engine/growth/regionstory'
 import { loadContentFromDir, readContentFiles } from '../src/node/content'
 
 // M10.30 (6), solvable and checked (Bram, 29 September 2026: is there a check
@@ -87,6 +88,10 @@ describe('M10.30 (6): solvable, and three endings for what a model writes', () =
     const reply = JSON.parse((await new MockLlm().complete({ role: 'chronicler', system: '', prompt: '', schemaName: 'region_story', schema: {}, maxTokens: 3000, meta: { story: 'x', name: 'Tollby', people: [{ key: 'p1', name: 'Ansel Reed' }, { key: 'p2', name: 'Wenna Moss' }], places: ['l1', 'l2'], aftermath: [], skills: [] } })).text)
     expect(reply.quest.endings.map((e: { way: string; solution: boolean }) => [e.way, e.solution])).toEqual([['talk', true], ['deed', true], ['fail', false]])
     expect(endingProblems(reply.quest)).toEqual([])
+    // Optional in the kind's schema, so the replies recorded before endings still read; the rule says every stage before the last has its deed.
+    const schema = storySchema() as { properties: { quest: { anyOf: { required: string[] }[] } } }
+    expect(schema.properties.quest.anyOf[0]!.required).not.toContain('endings')
+    expect(STORY_STEP_RULES).toMatch(/only the last stage may leave its own say, at and done empty; every stage before it has its deed/)
   })
 
   it('names what a line lacks in endings, and sends such a scope back to the model once with the check\'s lines', async () => {
