@@ -58,24 +58,66 @@ quests:
           - { set: story_short_on_the_count_2 }
         text: Sorell looks at the entry for a long moment. Then he admits he moved the spares for a Peregrine test and meant to put them back before anyone needed them. He agrees they should go back to the emergency stores.
         once: false
-      - id: a3
+      - id: e1
         say: [tell (?:(?:the|a|an) )?mara (?:(?:the|a|an) )?about (?:(?:the|a|an) )?spares]
-        intent: tell Mara about the spares
+        intent: tell mara about the spares
         at: [loc_arrival_lock]
         with: npc_mara_venn
         when:
           - { flag: story_short_on_the_count_2 }
-          - { not_flag: story_short_on_the_count_3 }
+          - { not_flag: story_short_on_the_count_end_1 }
+          - { not_flag: story_short_on_the_count_end_2 }
+          - { not_flag: story_short_on_the_count_end_3 }
         effects:
-          - { set: story_short_on_the_count_3 }
+          - { set: story_short_on_the_count_end_1 }
         text: Mara listens without interrupting, then writes the crates back into her count. She says nothing kind about Sorell, but she thanks you plainly and asks you to tell her if you ever see it happen again.
         once: false
+      - id: e2
+        say: [carry (?:(?:the|a|an) )?crates (?:(?:the|a|an) )?back]
+        intent: carry the crates back
+        at: [loc_peregrine_hangar]
+        when:
+          - { flag: story_short_on_the_count_2 }
+          - { not_flag: story_short_on_the_count_end_1 }
+          - { not_flag: story_short_on_the_count_end_2 }
+          - { not_flag: story_short_on_the_count_end_3 }
+        effects:
+          - { set: story_short_on_the_count_end_2 }
+        text: The three crates stand behind the test rig in the hangar, their seals cut but most of the parts still in them. You wheel them back through the Works to the Arrival Lock and leave a note with the manifest number on top.
+        once: false
+      - id: e3
+        say: [keep (?:(?:the|a|an) )?quiet (?:(?:the|a|an) )?about (?:(?:the|a|an) )?spares]
+        intent: keep quiet about the spares
+        at: [loc_guest_quarters]
+        with: npc_ilyan_sorell
+        when:
+          - { flag: story_short_on_the_count_2 }
+          - { not_flag: story_short_on_the_count_end_1 }
+          - { not_flag: story_short_on_the_count_end_2 }
+          - { not_flag: story_short_on_the_count_end_3 }
+        effects:
+          - { set: story_short_on_the_count_end_3 }
+        text: You tell Sorell it is his to put right, and you say nothing to Mara. He thanks you and changes the subject. The crates do not come back.
+        once: false
     outcomes:
-      - id: done
+      - id: end1
         name: Back on the count
         text: The heating and water spares go back to the emergency stores, and Mara's count matches her shelves again. From now on she reads every research requisition twice, and she remembers who told her the truth.
+        solution: true
         when:
-          - { flag: story_short_on_the_count_3 }
+          - { flag: story_short_on_the_count_end_1 }
+      - id: end2
+        name: Back on the shelf
+        text: The spares are back where Mara's count says they should be, though nobody told her how. She guesses, and she reads every research requisition twice from now on.
+        solution: true
+        when:
+          - { flag: story_short_on_the_count_end_2 }
+      - id: end3
+        name: Left short
+        text: When the heating fails in the Guest Quarters a fortnight later, there are no spares to mend it. Mara's count stays short, and she stops asking anyone for help with it.
+        solution: false
+        when:
+          - { flag: story_short_on_the_count_end_3 }
 
   - id: story_a_second_opinion
     name: A Second Opinion
@@ -114,23 +156,66 @@ quests:
           - { set: story_a_second_opinion_1 }
         text: Over a cold cup, Tessa tells you about drift in the drive readings during test runs, which the research lead calls instrument noise. She doesn't claim to know what it means. She only knows she can't explain it, and she hates signing off on what she can't explain.
         once: false
-      - id: a2
+      - id: e1
         say: [read (?:(?:the|a|an) )?tessa's (?:(?:the|a|an) )?test (?:(?:the|a|an) )?notes]
-        intent: read Tessa's test notes
+        intent: read tessa's test notes
         at: [loc_guest_quarters]
         when:
           - { flag: story_a_second_opinion_1 }
-          - { not_flag: story_a_second_opinion_2 }
+          - { not_flag: story_a_second_opinion_end_1 }
+          - { not_flag: story_a_second_opinion_end_2 }
+          - { not_flag: story_a_second_opinion_end_3 }
         effects:
-          - { set: story_a_second_opinion_2 }
+          - { set: story_a_second_opinion_end_1 }
         text: Her notes are careful and dated, with every run logged. The drift is there, run after run, and it does not look like ordinary noise. You can't say what it is either, but she was not imagining it.
         once: false
+      - id: e2
+        say: [ask (?:(?:the|a|an) )?niko (?:(?:the|a|an) )?to (?:(?:the|a|an) )?check (?:(?:the|a|an) )?readings]
+        intent: ask niko to check the readings
+        at: [loc_orison_listening_room]
+        with: npc_niko_serrin
+        when:
+          - { flag: story_a_second_opinion_1 }
+          - { not_flag: story_a_second_opinion_end_1 }
+          - { not_flag: story_a_second_opinion_end_2 }
+          - { not_flag: story_a_second_opinion_end_3 }
+        effects:
+          - { set: story_a_second_opinion_end_2 }
+        text: Niko sets Tessa's figures beside the station's own instrument logs and goes quiet for a while. "Not noise," he says at last. "My instruments would show noise. Tell her I'll put my name under hers."
+        once: false
+      - id: e3
+        say: [tell (?:(?:the|a|an) )?tessa (?:(?:the|a|an) )?it (?:(?:the|a|an) )?is (?:(?:the|a|an) )?only (?:(?:the|a|an) )?noise]
+        intent: tell tessa it is only noise
+        at: [loc_guest_quarters]
+        with: npc_tessa_rook
+        when:
+          - { flag: story_a_second_opinion_1 }
+          - { not_flag: story_a_second_opinion_end_1 }
+          - { not_flag: story_a_second_opinion_end_2 }
+          - { not_flag: story_a_second_opinion_end_3 }
+        effects:
+          - { set: story_a_second_opinion_end_3 }
+        text: You tell her the board is green and the drift is noise. She thanks you, a little too politely, and puts her notes away.
+        once: false
     outcomes:
-      - id: done
+      - id: end1
         name: Not alone with it
         text: Tessa has someone who has read her numbers and did not wave them away. She decides to put her doubt on record at the next meeting instead of carrying it alone, whatever the research lead says.
+        solution: true
         when:
-          - { flag: story_a_second_opinion_2 }
+          - { flag: story_a_second_opinion_end_1 }
+      - id: end2
+        name: Two names on the record
+        text: With Niko's name under hers, Tessa puts her doubt on record at the next meeting. The research lead calls it noise again, but this time the meeting writes it down.
+        solution: true
+        when:
+          - { flag: story_a_second_opinion_end_2 }
+      - id: end3
+        name: Signed off
+        text: Tessa signs off on the next run and keeps her doubt to herself. She does not bring you her notes again.
+        solution: false
+        when:
+          - { flag: story_a_second_opinion_end_3 }
 
   - id: story_the_orison_recordings
     name: The Orison Recordings
@@ -246,26 +331,92 @@ quests:
           - { not_flag: story_the_orison_recordings_4 }
         effects:
           - { set: story_the_orison_recordings_4 }
-        text: Tessa tells you, reluctantly, that a secret drive test ran on Nacre shortly before the transmission was first caught. It was powered with emergency heating and water parts that were entered as research stock. She gives you the test telemetry. Set beside your raw copies, the removed segments carry the same pulse pattern as the test.
+        text: Tessa tells you, reluctantly, that a secret drive test ran on Nacre shortly before the transmission was first caught. It was powered with emergency heating and water parts that were entered as research stock. She gives you the test telemetry, and the hangar code, 7411, so you can take it to Sorell yourself. Set beside your raw copies, the removed segments carry the same pulse pattern as the test.
         once: false
-      - id: a5
+      - id: e1
         say: [confront (?:(?:the|a|an) )?sorell (?:(?:the|a|an) )?about (?:(?:the|a|an) )?recordings]
         intent: confront sorell about the recordings
         at: [loc_peregrine_common_deck]
         with: npc_ilyan_sorell
         when:
           - { flag: story_the_orison_recordings_4 }
-          - { not_flag: story_the_orison_recordings_5 }
+          - { not_flag: story_the_orison_recordings_end_1 }
+          - { not_flag: story_the_orison_recordings_end_2 }
+          - { not_flag: story_the_orison_recordings_end_3 }
+          - { not_flag: story_the_orison_recordings_end_4 }
         effects:
-          - { set: story_the_orison_recordings_5 }
+          - { set: story_the_orison_recordings_end_1 }
         text: Sorell admits it. He cut the segments that matched the drive test and rewrote their timestamps, so that nobody would learn of the secret test or the stock he diverted, and so that the port would not ground the Peregrine. What made the signal, and why it carries the test's pattern, he cannot say. Neither can you.
         once: false
+      - id: e2
+        say: [play (?:(?:the|a|an) )?recordings (?:(?:the|a|an) )?in (?:(?:the|a|an) )?commons]
+        intent: play the recordings in the commons
+        at: [loc_commons]
+        when:
+          - { flag: story_the_orison_recordings_4 }
+          - { not_flag: story_the_orison_recordings_end_1 }
+          - { not_flag: story_the_orison_recordings_end_2 }
+          - { not_flag: story_the_orison_recordings_end_3 }
+          - { not_flag: story_the_orison_recordings_end_4 }
+        effects:
+          - { set: story_the_orison_recordings_end_2 }
+        text: At the evening meal you put the raw copies and Tessa's telemetry up on the Commons screen and let the port see the gaps for itself. Sorell stands at the back and does not deny it.
+        once: false
+      - id: e3
+        say: [leave (?:(?:the|a|an) )?recordings (?:(?:the|a|an) )?with (?:(?:the|a|an) )?niko]
+        intent: leave the recordings with niko
+        at: [loc_orison_listening_room]
+        with: npc_niko_serrin
+        when:
+          - { flag: story_the_orison_recordings_4 }
+          - { not_flag: story_the_orison_recordings_end_1 }
+          - { not_flag: story_the_orison_recordings_end_2 }
+          - { not_flag: story_the_orison_recordings_end_3 }
+          - { not_flag: story_the_orison_recordings_end_4 }
+        effects:
+          - { set: story_the_orison_recordings_end_3 }
+        text: You give Niko the complete copies and a drawing of his own bypass. He takes the bypass out that night, and by morning the receiver has steadied.
+        once: false
+      - id: e4
+        say: [keep (?:(?:the|a|an) )?sorell's (?:(?:the|a|an) )?secret]
+        intent: keep sorell's secret
+        at: [loc_peregrine_common_deck]
+        with: npc_ilyan_sorell
+        when:
+          - { flag: story_the_orison_recordings_4 }
+          - { not_flag: story_the_orison_recordings_end_1 }
+          - { not_flag: story_the_orison_recordings_end_2 }
+          - { not_flag: story_the_orison_recordings_end_3 }
+          - { not_flag: story_the_orison_recordings_end_4 }
+        effects:
+          - { set: story_the_orison_recordings_end_4 }
+        text: You tell Sorell you will say nothing. He thanks you quietly and hands you his edited copies to deliver as the originals.
+        once: false
     outcomes:
-      - id: done
+      - id: end1
         name: The report is made
         text: "The stranger delivers an investigation report built on the evidence: the complete recordings, the bypass, the edits and the match with the drive test. What the signal is remains unknown. What Port Vesper does about Sorell and the Peregrine is now the port's own argument."
+        solution: true
         when:
-          - { flag: story_the_orison_recordings_5 }
+          - { flag: story_the_orison_recordings_end_1 }
+      - id: end2
+        name: Before the whole port
+        text: The port has seen the gaps with its own eyes. By morning it has voted to hold the Peregrine until the drive is understood, and Sorell answers to the Commons, not to you. What the signal is remains unknown.
+        solution: true
+        when:
+          - { flag: story_the_orison_recordings_end_2 }
+      - id: end3
+        name: Kept safe on the ridge
+        text: The complete recordings are safe on Orison Ridge with the man who found the signal, and the station listens again. Whatever Sorell says in his own report, the originals can prove it true or false.
+        solution: true
+        when:
+          - { flag: story_the_orison_recordings_end_3 }
+      - id: end4
+        name: The edited copies
+        text: The Peregrine flies on schedule, on a drive nobody understands, and the gaps in the recordings stay hidden. Only Sorell and you know what was cut.
+        solution: false
+        when:
+          - { flag: story_the_orison_recordings_end_4 }
     truths:
       - text: Segments of the repeating transmission were removed from the archive, and their timestamps were rewritten to hide the gaps.
         words:

@@ -29,9 +29,10 @@ describe('The Quiet Reach, as Bram built it in the app', () => {
     expect([...reach.npcs.keys()]).toEqual(['npc_mara_venn', 'npc_ilyan_sorell', 'npc_tessa_rook', 'npc_niko_serrin', 'npc_edda_vale', 'npc_sana_holt'])
     expect(reach.passages.size).toBe(3)
     expect(reach.world.law).toMatchObject({ npc: 'npc_mara_venn' })
-    // The imports wait for the supply ship, the far places have no origin yet, and its storylines (M10.30) have one ending
-    // each until item 6: nothing else.
-    expect(warnings(reach).filter((w) => !/made nowhere and brought by no route|no origin, so nobody knows where it belongs|1 solution, the design asks/.test(w))).toEqual([])
+    // The imports wait for the supply ship and the far places have no origin yet; its two small storylines (M10.30) have two
+    // solutions and a way it goes wrong, as the rule for a made line asks, which Check still names as advice: nothing else.
+    const advice = /^quest (story_short_on_the_count|story_a_second_opinion): 2 solutions, the design asks/
+    expect(warnings(reach).filter((w) => !/made nowhere and brought by no route|no origin, so nobody knows where it belongs/.test(w) && !advice.test(w))).toEqual([])
   })
 
   it('keeps its contract: every kind is filled or takes its neutral default', () => {

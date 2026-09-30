@@ -14,7 +14,7 @@ import { cachedPictureIn, worldAtlasFor, worldBookFor, writeWorldBook } from '..
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
 import type { ChosenRole, Cipher } from '../node/ai/settings'
-import { readStories, storiesRequest, storyScopes, type StoryScope } from '../engine/storystep'
+import { readStories, storiesFixRequest, storiesRequest, storyChecks, storyScopes, type StoryScope } from '../engine/storystep'
 import { DEFAULT_WORLD, listWorlds, loadContentFromDir, readContentFiles } from '../node/content'
 import { format, GameLog, PART_BYTES, type LogScope, type Session } from '../node/gamelog'
 import { SaveStore } from '../node/savegame'
@@ -887,6 +887,12 @@ handle('editor:story-step', async (_event, world: unknown, said: unknown, fullne
     // A scope whose call fails is named in the proposal; the others still come.
     const text = await llm.complete(storiesRequest(files, scope, how, words)).then((r) => r.text, () => '')
     parts.push({ scope, text })
+  }
+  // What the check sends back goes to the model once more, with its lines (M10.30 (6)): too few endings, no way on.
+  for (const { scope, problems } of storyChecks(files, parts)) {
+    const part = parts.find((p) => p.scope.id === scope.id)!
+    const again = await llm.complete(storiesFixRequest(files, scope, how, words, part.text, problems)).then((r) => r.text, () => '')
+    if (again) part.text = again
   }
   return shownDraft(readStories(files, words, parts))
 })

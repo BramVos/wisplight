@@ -182,6 +182,12 @@ export class MockLlm implements LlmClient {
               { text: 'Half the tally is found; someone kept the other half.', say: `ask ${(b ?? a).name.split(' ')[0]!.toLowerCase()} about the tally`, at: there, with: (b ?? a).key, skill: '', done: 'With a sigh the other half comes out of an apron pocket. "I only meant to keep it safe."' },
             ],
             outcome: { name: 'The tally made whole', text: 'The two halves fit, and the carters pay what they owe.' },
+            // Three ways to end (M10.30): two solutions by different ways, and one where it goes wrong.
+            endings: [
+              { name: 'The tally made whole', text: 'The two halves fit, and the carters pay what they owe.', solution: true, way: 'talk', say: `ask ${(b ?? a).name.split(' ')[0]!.toLowerCase()} for the other half`, at: there, with: (b ?? a).key, skill: '' },
+              { name: 'A new tally', text: 'You cut a new tally from what the carters own to, and they pay by it, grumbling.', solution: true, way: 'deed', say: 'cut a new tally', at: here, with: '', skill: '' },
+              { name: 'Every carter swears', text: 'Without a tally nobody owes anything, and the debts are lost.', solution: false, way: 'fail', say: 'give up on the tally', at: here, with: '', skill: '' },
+            ],
           }
         : null,
       watchers: [
@@ -208,6 +214,13 @@ export class MockLlm implements LlmClient {
       done,
       knows: knows.map((k) => ({ who: k.key, line: `${first(k)} knows only what ${first(k)} saw, and says no more.` })),
     })
+    // Three ways to end (M10.30): talking it through, doing something with the world, and letting it go wrong; the main line a third solution.
+    const endings = (giver: { key: string; name: string }, main: boolean) => [
+      { name: 'Talked through', text: `${first(giver)} hears you out, and it is settled with words.`, solution: true, way: 'talk', say: `talk ${first(giver).toLowerCase()} round`, at: at(0), with: giver.key, skill: '' },
+      { name: 'Put right', text: 'You put it right with your own hands.', solution: true, way: 'deed', say: 'put the matter right', at: at(1), with: '', skill: '' },
+      ...(main ? [{ name: 'Paid off', text: 'A payment closes the matter, if not the questions.', solution: true, way: 'give', say: 'pay the debt', at: at(0), with: giver.key, skill: '' }] : []),
+      { name: 'Let slide', text: 'Nobody sees to it, and it goes wrong.', solution: false, way: 'fail', say: 'let the matter slide', at: at(0), with: '', skill: '' },
+    ]
     const line = (kind: string, giver: { key: string; name: string }, title: string, stages: ReturnType<typeof stage>[], extra: Record<string, unknown> = {}) => ({
       name: title,
       kind,
@@ -216,6 +229,7 @@ export class MockLlm implements LlmClient {
       ask: 'Would you see to it? I cannot do it myself.',
       stages,
       outcome: { name: `${title} settled`, text: 'It comes right in the end, and people say so.' },
+      endings: endings(giver, kind === 'main'),
       ...extra,
     })
     const quests = !a

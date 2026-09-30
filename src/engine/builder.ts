@@ -1,3 +1,4 @@
+import { unsolvable } from './quests/solvable'
 import { callName, isNameTitle, type Content } from './content'
 import { regionMap } from './map/region'
 import { questWarnings } from './quests/check'
@@ -9,7 +10,8 @@ import { landIdOf } from './reach'
 
 /** Things that load but deserve a look (FO, chapter 15, "Schema's en validatie"). */
 export function warnings(content: Content): string[] {
-  const out: string[] = [...questWarnings(content)]
+  // A quest with a stage that has no way on, or no way to end (M10.30 (6)).
+  const out: string[] = [...questWarnings(content), ...unsolvable(content)]
   // A world with people and no storyline (M10.30: The Quiet Reach had none, so every voice made the plot up as it talked).
   if (!content.quests.size && content.npcs.size) out.push('This world has no stories: people make the plot up as they talk, and nothing can be solved. The step Stories of the world build writes them.')
   // Reachability over exits from the start, and from every edge on the region map (reached across country);

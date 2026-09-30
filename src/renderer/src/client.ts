@@ -542,9 +542,13 @@ export async function createEditor(): Promise<EditorBridge> {
     },
     storyStep: async (world, said, fullness) => {
       const files = filesOfWorld(all, world)
-      const { readStories, storiesRequest, storyScopes } = await import('../../engine/storystep')
+      const { readStories, storiesFixRequest, storiesRequest, storyChecks, storyScopes } = await import('../../engine/storystep')
       const parts = []
       for (const scope of storyScopes(loadContent(files), fullness)) parts.push({ scope, text: (await new MockLlm().complete(storiesRequest(files, scope, fullness, said))).text })
+      for (const { scope, problems } of storyChecks(files, parts)) {
+        const part = parts.find((p) => p.scope.id === scope.id)!
+        part.text = (await new MockLlm().complete(storiesFixRequest(files, scope, fullness, said, part.text, problems))).text
+      }
       return shownDraft(readStories(files, said, parts))
     },
     mapFix: async (world, said, table, wrong) => {

@@ -70,26 +70,30 @@ describe('M10.25: the story round at arrival', () => {
     expect(replayed.state.growth!.stories).toEqual(engine.state.growth!.stories)
   })
 
-  it('makes a quest that can be played through: the giver asks, two deeds, and it ends', async () => {
+  it('makes a quest that can be played through: the giver asks, a deed, and it ends one of three ways', async () => {
     const engine = new Engine(content, { seed: 6, builder: true, llm: new MockLlm('good') })
     await withStory(engine)
     const story = engine.state.growth!.stories!['graafhaven']!
     const id = String(story.quest!['id'])
     const giver = (story.quest!['givers'] as string[])[0]!
-    const actions = story.quest!['actions'] as { say: string[]; at: string[]; with?: string }[]
+    const actions = story.quest!['actions'] as { id: string; say: string[]; at: string[]; with?: string; effects: { set?: string }[] }[]
     await engine.handle(`@goto ${engine.content.npcs.get(giver)!.work ?? engine.content.npcs.get(giver)!.home}`)
     Object.assign(engine.state.npcs[giver]!, { location: engine.state.player.location, busyUntil: engine.world.now + 600, plan: [] })
     await engine.handle(`talk ${engine.content.npcs.get(giver)!.name.split(' ')[0]}`)
     expect(questlog(engine.world)[id]).toBeDefined()
     await engine.handle('bye')
+    // The deeds in order until it ends: since M10.30 the last stage ends by one of its endings, the first a solution by talking.
     for (const a of actions) {
+      if (questlog(engine.world)[id]!.outcome) break
       await engine.handle(`@goto ${a.at[0]}`)
       if (a.with) Object.assign(engine.state.npcs[a.with]!, { location: engine.state.player.location, busyUntil: engine.world.now + 600, plan: [] })
       // The command as the player types it; a deed that asks for a skill may take a few tries.
       const command = a.say[0]!.replace(/\(\?:\(\?:the\|a\|an\) \)\?/g, '')
-      for (let i = 0; i < 12 && engine.state.flags?.[`${id}_${actions.indexOf(a) + 1}`] === undefined; i++) await engine.handle(command)
+      const flag = a.effects.find((e) => e.set)!.set!
+      for (let i = 0; i < 12 && engine.state.flags?.[flag] === undefined; i++) await engine.handle(command)
     }
-    expect(questlog(engine.world)[id]!.outcome).toBe('done')
+    expect(questlog(engine.world)[id]!.outcome).toBe('end1')
+    expect((story.quest!['outcomes'] as { id: string; solution: boolean }[]).map((o) => [o.id, o.solution])).toEqual([['end1', true], ['end2', true], ['end3', false]])
   })
 
   it('without a model gives the region one watcher of the standard set and no quest', async () => {

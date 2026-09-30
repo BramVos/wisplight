@@ -36,6 +36,26 @@ export interface SketchStage {
   knows?: { who: string; line: string }[]
 }
 
+/**
+ * A way a line may end (M10.30: at least three, as the design asks of every
+ * quest): the deed that ends it this way, what came of it, whether it is a
+ * solution, and the way it goes (talking, giving or paying, doing something
+ * with the world, or a way it goes wrong).
+ */
+export interface SketchEnding {
+  name: string
+  text: string
+  solution: boolean
+  way: string
+  say: string
+  at: string
+  with: string
+  skill: string
+}
+
+/** The ways an ending goes. */
+export const ENDING_WAYS = ['talk', 'give', 'deed', 'fail'] as const
+
 export interface QuestSketch {
   name: string
   kind: string
@@ -45,7 +65,10 @@ export interface QuestSketch {
   /** What they say when asking, in their voice. */
   ask: string
   stages: SketchStage[]
+  /** The one way it ended before M10.30; with `endings`, those take its place. */
   outcome: { name: string; text: string }
+  /** The ways it may end (M10.30): the last stage is done by one of their deeds, each to its own outcome. */
+  endings?: SketchEnding[]
   /** How it begins: when the giver is spoken to (talk, the default), when the stranger comes to the first deed's place (place), or from the start of the game (start: the main line). */
   begins?: string
   /** What the world does when the stranger does nothing (M10.30): after so many days, far from its people, it lapses with this line. */
@@ -80,11 +103,12 @@ export function sketchSchema(): Record<string, unknown> {
         items: object({ text, say: text, at: text, with: text, skill: text, done: text, goal: text, knows: { type: 'array', items: object({ who: text, line: text }) } }, ['goal', 'knows']),
       },
       outcome: object({ name: text, text }),
+      endings: { type: 'array', items: object({ name: text, text, solution: { type: 'boolean' }, way: { type: 'string', enum: [...ENDING_WAYS] }, say: text, at: text, with: text, skill: text }) },
       begins: { type: 'string', enum: ['talk', 'place', 'start'] },
       lapses: object({ days: { type: 'integer' }, text }),
       truths: { type: 'array', items: object({ text, words: { type: 'array', items: text }, from: { type: 'integer' } }) },
     },
-    ['begins', 'lapses', 'truths'],
+    ['endings', 'begins', 'lapses', 'truths'],
   )
 }
 
@@ -132,49 +156,66 @@ export interface SketchScope {
  * A quest from a sketch, as content (QuestSchema), or none when too little of
  * it is fit to keep: the stages that have a journal line, a deed and a place,
  * at least `minStages` of them; each deed sets a flag, the next stage waits
- * for it, the last one ends it.
+ * for it, the last one ends it. With endings (M10.30), the last stage is done
+ * by one of theirs instead, each to an outcome of its own.
  */
 export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSketch, id: string, scope: SketchScope): Raw | undefined {
   const content = world.content
   const giver = scope.person(sketch.giver)
   if (!giver) return undefined
-  const good = sketch.stages.slice(0, scope.mostStages).filter((s) => fit(s.text, 240) && fit(s.done, 400) && sayPattern(s.say) && scope.place(s.at))
+  const doable = (d: { say: string; at: string; done?: string; text?: string }) => Boolean(fit(d.done ?? d.text, 400) && sayPattern(d.say) && scope.place(d.at))
+  const endings = (sketch.endings ?? []).filter((e) => fit(e.name, 80) && doable(e)).slice(0, 5)
+  const cut = sketch.stages.slice(0, scope.mostStages)
+  // The last stage needs no deed of its own when the endings are its deeds.
+  const good = cut.filter((s, i) => fit(s.text, 240) && ((endings.length && i === cut.length - 1) || doable(s)))
   if (good.length < scope.minStages) return undefined
   const stages: Raw[] = []
   const actions: Raw[] = []
+  /** The action of one deed; someone who must be there is met where they live or work. */
+  const deed = (key: string, d: { say: string; at: string; with: string; skill: string }, text: string, when: Raw[], effects: Raw[]): Raw => {
+    const withWho = scope.person(d.with)
+    const skill = d.skill && scope.skills.has(d.skill.trim()) ? d.skill.trim() : undefined
+    // M10.25: the harness found a deed at the market with an innkeeper who never leaves the inn: it moves to them.
+    const who = withWho ? content.npcs.get(withWho) : undefined
+    const at = scope.place(d.at)!
+    const where = who && ![who.home, who.work].includes(at) ? (who.work && scope.places.some((l) => l.id === who.work) ? who.work : who.home) : at
+    return {
+      id: key,
+      say: [sayPattern(d.say)!],
+      intent: fit(d.say, 80)!,
+      at: [where],
+      ...(withWho ? { with: withWho } : {}),
+      when,
+      ...(skill ? { check: { skill, dc: scope.dc }, fail_text: 'It does not come right this time. You may try again.' } : {}),
+      effects,
+      text,
+      once: false,
+    }
+  }
   good.forEach((s, i) => {
     const flag = `${id}_${i + 1}`
-    const next = i + 1 < good.length ? [{ when: [{ flag }], to: `s${i + 2}` }] : []
+    const last = i === good.length - 1
+    const next = !last ? [{ when: [{ flag }], to: `s${i + 2}` }] : []
     // What each person knows at this stage and may say (M10.30), by id.
     const knows = Object.fromEntries((s.knows ?? []).flatMap((k) => (scope.person(k.who) && fit(k.line, 300) ? [[scope.person(k.who)!, fit(k.line, 300)!]] : [])))
     const goal = fit(s.goal, 160)
     stages.push({ id: `s${i + 1}`, text: fit(s.text, 240)!, ...(goal ? { goal } : {}), ...(Object.keys(knows).length ? { knows } : {}), next })
-    const withWho = scope.person(s.with)
-    const skill = s.skill && scope.skills.has(s.skill.trim()) ? s.skill.trim() : undefined
-    // Someone who must be there is met where they live or work (M10.25: the harness found a deed at the market
-    // with an innkeeper who never leaves the inn): the deed moves to them, or it could never be done.
-    const who = withWho ? content.npcs.get(withWho) : undefined
-    const at = scope.place(s.at)!
-    const where = who && ![who.home, who.work].includes(at) ? (who.work && scope.places.some((l) => l.id === who.work) ? who.work : who.home) : at
-    actions.push({
-      id: `a${i + 1}`,
-      say: [sayPattern(s.say)!],
-      intent: fit(s.say, 80)!,
-      at: [where],
-      ...(withWho ? { with: withWho } : {}),
-      when: [...(i > 0 ? [{ flag: `${id}_${i}` }] : []), { not_flag: flag }],
-      ...(skill ? { check: { skill, dc: scope.dc }, fail_text: 'It does not come right this time. You may try again.' } : {}),
-      effects: [{ set: flag }],
-      text: fit(s.done, 400)!,
-      once: false,
-    })
+    if (last && endings.length) return
+    actions.push(deed(`a${i + 1}`, s, fit(s.done, 400)!, [...(i > 0 ? [{ flag: `${id}_${i}` }] : []), { not_flag: flag }], [{ set: flag }]))
   })
+  // The ways it ends: a deed each, after the stages before the last, to an outcome of its own; one ending only.
+  const before = good.length > 1 ? [{ flag: `${id}_${good.length - 1}` }] : []
+  const ended = endings.map((_, k) => ({ not_flag: `${id}_end_${k + 1}` }))
+  endings.forEach((e, k) => actions.push(deed(`e${k + 1}`, e, fit(e.text, 400)!, [...before, ...ended], [{ set: `${id}_end_${k + 1}` }])))
   const name = fit(sketch.name, 80)
   const summary = fit(sketch.summary, 240)
   const ask = fit(sketch.ask, 400)
   const end = fit(sketch.outcome?.name, 80)
   const endText = fit(sketch.outcome?.text, 400)
-  if (!name || !summary || !ask || !end || !endText) return undefined
+  if (!name || !summary || !ask || (!endings.length && (!end || !endText))) return undefined
+  const outcomes = endings.length
+    ? endings.map((e, k) => ({ id: `end${k + 1}`, name: fit(e.name, 80)!, text: fit(e.text, 400)!, solution: e.solution !== false, when: [{ flag: `${id}_end_${k + 1}` }] }))
+    : [{ id: 'done', name: end, text: endText, when: [{ flag: `${id}_${good.length}` }] }]
   // What the story keeps hidden (M10.30): the words that give it away, as patterns, from a stage there is.
   const escape = (w: string) => w.trim().toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+')
   const truths = (sketch.truths ?? []).flatMap((t) => {
@@ -197,9 +238,30 @@ export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSket
     ask,
     stages,
     actions,
-    outcomes: [{ id: 'done', name: end, text: endText, when: [{ flag: `${id}_${good.length}` }] }],
+    outcomes,
     ...(truths.length ? { truths } : {}),
     // What the world does when nobody takes it up: it lapses, far from its people, after so many days.
     ...(lapses ? { lapses } : {}),
   }
+}
+
+/**
+ * What a made line lacks in ways to end (M10.30, the design's chapter 14: at
+ * least three real endings per quest): at least three, the lapse counted; at
+ * least two solutions by different ways (three for the main line); and at
+ * least one where it goes wrong or runs out. None: it is enough.
+ */
+export function endingProblems(sketch: QuestSketch): string[] {
+  const endings = (sketch.endings ?? []).filter((e) => fit(e.name, 80) && fit(e.text, 400) && sayPattern(e.say))
+  const solutions = endings.filter((e) => e.solution)
+  const ways = new Set(solutions.map((e) => e.way))
+  const fails = endings.filter((e) => !e.solution).length + (sketch.lapses ? 1 : 0)
+  const main = sketch.kind === 'main'
+  const most = main ? 3 : 2
+  const problems: string[] = []
+  if (endings.length + (sketch.lapses ? 1 : 0) < 3) problems.push(`${sketch.name}: ${endings.length + (sketch.lapses ? 1 : 0)} ways to end, at least three are needed (the lapse counts)`)
+  if (solutions.length < most) problems.push(`${sketch.name}: ${solutions.length} solutions, at least ${most} are needed${main ? ' for the main line' : ''}`)
+  else if (ways.size < 2) problems.push(`${sketch.name}: every solution goes the same way (${[...ways].join('')}); two ways at least: talking, giving or paying, doing something with the world`)
+  if (!fails) problems.push(`${sketch.name}: no ending where it goes wrong or runs out (an ending that is no solution, or a lapse)`)
+  return problems
 }

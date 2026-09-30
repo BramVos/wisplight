@@ -1,5 +1,30 @@
 # Changelog
 
+## M10.30 deel: drie aflopen, en een controle of een quest op te lossen is, 30 september 2026
+
+- **Drie aflopen.** Een quest die de kroniekverteller schrijft, eindigt nu op minstens drie manieren: twee oplossingen langs verschillende wegen (praten, geven of betalen, iets doen met de wereld), bij de hoofdlijn drie, en één waarin het misloopt. De aflopen zijn de daden van het laatste stadium. Na één afloop gaan de andere dicht. De stap Verhalen en de streekronde in het spel vragen erom.
+- **Terug naar het model.** Heeft een voorstel van de stap Verhalen een lijn met minder aflopen, of een quest waar geen weg doorheen gaat, dan gaat dat deel één keer terug naar de kroniekverteller, met de regels van de controle erbij.
+- **Oplosbaar.** Check kijkt nu bij elke quest, geschreven of gemaakt, of elk stadium een weg verder heeft: een vlag waarop gewacht wordt, wordt ergens gezet; een ding dat gevraagd wordt, is ergens te krijgen; de plekken en mensen bestaan. Hij kijkt ook of er een weg naar een einde is. De Nethermarch, Skerrow en The Quiet Reach komen er zonder fouten door.
+- **The Quiet Reach.** De drie lijnen hebben hun aflopen gekregen, met de hand en zonder nieuwe run. Bij de hoofdlijn confronteer je Sorell aan boord. Je kunt ook de opnamen in de Commons aan de hele haven laten zien, of ze bij Niko op de heuvel in veiligheid brengen. Of je zwijgt, en dan vliegt de Peregrine. Tessa geeft je nu ook de hangarcode als ze over de proef vertelt.
+
+Testen:
+- Speel "Short on the Count" en "A Second Opinion" op verschillende manieren tot het eind. Typ bijvoorbeeld `carry the crates back` in de hangar of `keep quiet about the spares` bij Sorell, en `ask niko to check the readings` of `tell tessa it is only noise`.
+- Bij de hoofdlijn probeer je na het gesprek met Tessa: `play the recordings in the commons`, `leave the recordings with niko` of `keep sorell's secret`.
+- In de editor, bij Check: de twee kleine lijnen hebben twee oplossingen, dus daar staat een advies (zie hieronder).
+- Tests in `tests/m1030solvable.test.ts`.
+
+Kosten: geen aanroep gedaan. Een streekronde in het spel schrijft nu ongeveer 250 tokens meer, dus `maxTokens` ging van 2500 naar 3000; de meting van 29 september gaf 2017 zonder aflopen. Een deel dat de stap Verhalen terugstuurt, kost een tweede aanroep. Die leest het gedeelde deel uit de cache; geschat ongeveer $0,15 op basis van de run van vanochtend, niet gemeten.
+
+Bekende gaten:
+- De nachtronde (`night_quest`) kent de vorm al, maar haar prompt vraagt nog niet om aflopen. Dat doet de andere sessie; daarom staat "Minstens drie aflopen" nog open.
+- Voor geschreven quests blijft de ontwerpregel van drie oplossingen een waarschuwing onder Check. Een gemaakte bijlijn met twee oplossingen krijgt die dus ook, als advies.
+- In het spel stuurt de streekronde niets terug: een antwoord met minder aflopen blijft zoals het kwam.
+- De controle kijkt niet naar uitgangen en sloten, en weet niet of iemand blijft leven.
+
+Wat de editor en de kroniekverteller leerden: de stap Stories van de wereldgids noemt de aflopen en de oplosbaarheid bij wat je controleert, en `docs/NEW-WORLD.md` ook. De prompt van de stap en die van de streekronde vragen om de aflopen. Onder Check staan de quests zonder weg verder of zonder einde. De wereld zelf kan niets nieuws bevatten, want aflopen zijn acties en uitkomsten zoals de Nethermarch die al had.
+
+Ontwerp: functioneel ontwerp, bij het dagboek (na de stap Verhalen), alinea "Stand na M10.30: minstens drie aflopen, en oplosbaar gecontroleerd".
+
 ## M10.30 deel: een woord als sleutel, en dingen doen met de wereld, 30 september 2026
 
 - **Codes en wachtwoorden.** Een slot opent met een sleutel, met een woord of met allebei. Bij de hangardeur in The Quiet Reach typ je `type 7411` of `enter the code 7411`; Tessa geeft je de code als ze je genoeg vertrouwt. Het spel onthoudt wat je laatst zei, in een gesprek, met `say` of met `type`. Een quest kan daarop wachten met de voorwaarde `said`: op Skerrow opent Brannoc zich ook als je de naam van Ysolde tegen hem zegt.

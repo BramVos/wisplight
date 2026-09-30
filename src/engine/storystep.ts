@@ -1,12 +1,13 @@
 import { stringify } from 'yaml'
-import { callName, loadContent, lockedIds, type Content, type ContentFile, type Location, type Npc } from './content'
+import { callName, loadContent, lockedIds, QuestSchema, type Content, type ContentFile, type Location, type Npc } from './content'
 import { cachedSystem, type LlmRequest } from './dialogue/llm'
 import { worldFrame } from './dialogue/prompt'
 import { voiceSummary } from './dialogue/voice'
 import { recheckDraft, type Draft, type DraftChange } from './editor'
 import { worldPrefix } from './edit'
 import { storyReply, storySchema } from './growth/regionstory'
-import { questFromSketch, readSketch, SKETCH_KINDS, type QuestSketch } from './quests/sketch'
+import { endingProblems, questFromSketch, readSketch, SKETCH_KINDS, type QuestSketch } from './quests/sketch'
+import { solvableProblems } from './quests/solvable'
 import { worldText } from './safety'
 import { worldFixedPart } from './worldfixed'
 
@@ -72,6 +73,7 @@ function keysOf(cast: { people: Npc[]; places: Location[] }): { person: Map<stri
 export const STORY_STEP_RULES = [
   'THE STEP STORIES OF THE WORLD BUILD. You write the storylines of this world, as quests that lie ready until the stranger meets them: by talking to someone, by coming somewhere, or from the start. Take them from the world itself: the frame, the stranger\'s task, what the people want, hide and are bound by, the places and their things. The designer has given only the hidden truth, what they do not want, and perhaps a line of their own: keep to it, and never let a line say the hidden truth before its stage.',
   `A LINE (put every line in QUESTS, leave QUEST null): a name, a kind (${SKETCH_KINDS.join(', ')}), a summary (one sentence), the giver (by key: the one who asks, or whose matter it is), what they say when asking (one or two sentences in their voice), the stages, and an outcome (a name, and one or two sentences of what came of it). Each stage has its journal line (text), what the stranger can do now (goal, one line: "Ask Tessa about the coupling"), the one deed that completes it (say: the command the player types, three to six plain words, a verb first; at: the key of a place; with: the key of a person who must be there, or empty; skill: one of SKILLS where the deed asks for it, or empty; done: one or two sentences of what the deed brings), and knows: for each person of the line, one sentence with their name of what they know at this stage and may say ("Tessa knows the coupling was never synced; she does not know who took the pages"). What a person does not know, they do not say.`,
+  'ENDINGS (every line): at least three ways it may end, each a deed (say, at, with, skill as a stage has) with a name and what came of it (text): at least two solutions by different ways (way: talk, give for giving or paying, deed for doing something with the world), three for the main line; and at least one where it goes wrong (solution false, way fail) or the lapse. The endings are the deeds of the last stage: its own say, at and done may stay empty.',
   'SIZES: small (one person and one place, one or two stages), middle (two or three people, two places or a thing, two stages), large (the main line: three to five stages, across the settlements, with more people). Choose the size by what the matter is.',
   'THE MAIN LINE (kind main, begins start): from the stranger\'s task, three to five stages across the world; its truths: what the story keeps hidden, each with the words a reply would give it away by (plain phrases, three letters or more: "cut the recordings") and the stage from which it may be said (a number; leave the last stage for the whole truth); and lapses: what the world does if the stranger does nothing (after how many game days, and the line that says what came of it: the recordings are wiped, the supply ship leaves without them).',
   'HOW A LINE BEGINS: talk (when its giver is spoken to, the default), place (when the stranger comes to the place of its first deed: a discovery), or start (the main line).',
@@ -138,6 +140,48 @@ export function storiesRequest(files: ContentFile[], scope: StoryScope, fullness
     effort: 'medium',
     // The world's prefix: the gateway counts the call as the editor's (M10.26), not the game's.
     meta: { stories: scope.kind, fullness, prefix: worldPrefix(files) || 'world', name: scope.name, people: cast.people.map((n) => ({ key: key.person.get(n.id), name: n.name, secret: n.secrets.length > 0 })), places: cast.places.map((l) => key.place.get(l.id)), skills, aftermath: [] },
+  }
+}
+
+/**
+ * What the check says of each scope's lines (M10.30 (6)): too few ways to end
+ * (the design asks three, two of them solutions by different ways, one where
+ * it goes wrong), or no way on or to the end as the world stands. A scope
+ * with problems goes back to the model once, with these lines.
+ */
+export function storyChecks(files: ContentFile[], parts: { scope: StoryScope; text: string }[]): { scope: StoryScope; problems: string[] }[] {
+  const content = loadContent(files)
+  const skills = new Set((content.rules?.skills ?? []).map((s) => s.id))
+  return parts.flatMap(({ scope, text }) => {
+    const reply = storyReply(text)
+    if (!reply) return [{ scope, problems: ['The answer could not be read as the agreed JSON.'] }]
+    const cast = scopeCast(content, scope)
+    const key = keysOf(cast)
+    const own = (k: string | undefined) => (k ? key.id.get(k.trim()) : undefined)
+    const problems = [reply.quest, ...(reply.quests ?? [])].map(readSketch).filter((s): s is QuestSketch => Boolean(s)).flatMap((sketch) => {
+      const quest = questFromSketch({ content }, sketch, 'story_check', {
+        person: (k) => (own(k) && content.npcs.has(own(k)!) ? own(k) : undefined),
+        place: (k) => (own(k) && content.locations.has(own(k)!) ? own(k) : undefined),
+        places: cast.places,
+        skills,
+        dc: 12,
+        minStages: sketch.kind === 'main' ? 2 : 1,
+        mostStages: sketch.kind === 'main' ? 5 : 3,
+      })
+      if (!quest) return [`${sketch.name}: too little of it fits (a stage without a journal line, a deed, or a place of the keys given)`]
+      const parsed = QuestSchema.safeParse(quest)
+      return [...endingProblems(sketch), ...(parsed.success ? solvableProblems({ ...content, quests: new Map(content.quests).set('story_check', parsed.data) }, parsed.data).map((p) => p.replace('quest story_check', sketch.name)) : [])]
+    })
+    return problems.length ? [{ scope, problems }] : []
+  })
+}
+
+/** The same call again for a scope the check sent back: the answer before, and what the check says of it. */
+export function storiesFixRequest(files: ContentFile[], scope: StoryScope, fullness: StoryFullness, said: string, before: string, problems: string[]): LlmRequest {
+  const request = storiesRequest(files, scope, fullness, said)
+  return {
+    ...request,
+    prompt: [request.prompt, '', 'YOUR ANSWER BEFORE:', before.trim(), '', 'WHAT THE CHECK SAYS OF IT:', ...problems.map((p) => `- ${p}`), '', 'Write all the lines of this scope again, whole, so that every check holds. JSON only.'].join('\n'),
   }
 }
 
