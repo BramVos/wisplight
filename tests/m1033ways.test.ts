@@ -154,3 +154,20 @@ describe('M10.33 M: someone is there when the stranger comes in', () => {
     expect(warnings(night).find((w) => /At the start/.test(w))).toMatch(/^At the start \(23:30\) nobody is at Arrival Lock or Commons: the first scene is empty\./)
   })
 })
+
+describe('M10.33 L: directions and areas fit', () => {
+  // Cause, in the world maker: nothing checked that the ways fit one plan, or that an area is what you walk through
+  // indoors, so the world build cut one station in two areas and gave the lock a way northeast to the Workshop while
+  // the Commons, east of the lock, went east to it. Fixed at the source: a Check, and the Places step and the contract
+  // say how areas and directions go.
+  it('names the ways that do not fit one plan, and one settlement in two areas', async () => {
+    const { directionProblems } = await import('../src/engine/builder')
+    const found = directionProblems(quiet)
+    expect(found).toContain('Commons east to Workshop, which lies north of it by the other ways: the ways do not fit one plan')
+    expect(found).toContain('Port Vesper and Vesper Works: one settlement in two areas (Arrival Lock and Workshop, 4 minutes indoors); an area is what you walk through indoors')
+    const { content } = await import('./helpers')
+    const isle = await loadContentFromDir(join(import.meta.dirname, '../content'), 'isle')
+    expect(directionProblems(content)).toEqual([])
+    expect(directionProblems(isle)).toEqual([])
+  })
+})

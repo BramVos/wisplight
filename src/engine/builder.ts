@@ -41,11 +41,71 @@ export function startScene(content: Content): { place: string; people: string[];
   })
 }
 
+const COMPASS: Record<string, [number, number]> = { north: [0, -1], northeast: [1, -1], east: [1, 0], southeast: [1, 1], south: [0, 1], southwest: [-1, 1], west: [-1, 0], northwest: [-1, -1] }
+const OUTSIDE_TAGS = ['outdoor', 'route', 'edge', 'wilderness']
+
+/**
+ * Ways that do not fit one plan (M10.33 L; the cause: the Quiet Reach's Arrival
+ * Lock went northeast to the Workshop while the Commons, east of the lock,
+ * went east to it, and no check caught that). The places joined by compass
+ * ways are laid out by the first way found to each, as the plan does, across
+ * areas; any other way whose direction is more than one wind off the layout
+ * is named, with where the place lies by the others.
+ */
+export function directionProblems(content: Content): string[] {
+  const at = new Map<string, [number, number]>()
+  const out: string[] = []
+  // Settlements only: a way across the land is as long as the land, and lies on the map, not on a plan.
+  const settled = (id: string) => SETTLED_KINDS.has(content.areas.get(content.locations.get(id)?.area ?? '')?.kind ?? '')
+  const wind = (dx: number, dy: number) => Object.entries(COMPASS).find(([, [x, y]]) => x === Math.sign(dx) && y === Math.sign(dy))?.[0]
+  for (const first of [...content.locations.keys()].sort()) {
+    if (at.has(first) || !settled(first)) continue
+    at.set(first, [0, 0])
+    const queue = [first]
+    while (queue.length) {
+      const id = queue.shift()!
+      const [x, y] = at.get(id)!
+      for (const [dir, exit] of Object.entries(content.locations.get(id)?.exits ?? {})) {
+        const step = COMPASS[dir]
+        if (!exit || !step || at.has(exit.to) || !content.locations.has(exit.to) || !settled(exit.to)) continue
+        at.set(exit.to, [x + step[0], y + step[1]])
+        queue.push(exit.to)
+      }
+    }
+  }
+  for (const l of [...content.locations.values()].sort((a, b) => a.id.localeCompare(b.id))) {
+    for (const [dir, exit] of Object.entries(l.exits)) {
+      const step = COMPASS[dir]
+      const from = at.get(l.id)
+      const to = exit && at.get(exit.to)
+      if (!step || !from || !to) continue
+      const [dx, dy] = [to[0] - from[0], to[1] - from[1]]
+      if (!dx && !dy) continue
+      // More than one wind off: the angle between the way and where the place lies is over 45 degrees.
+      const cos = (dx * step[0] + dy * step[1]) / (Math.hypot(dx, dy) * Math.hypot(step[0], step[1]))
+      if (cos < Math.cos(Math.PI / 4) - 1e-9) out.push(`${l.name} ${dir} to ${content.locations.get(exit!.to)!.name}, which lies ${wind(dx, dy) ?? 'elsewhere'} of it by the other ways: the ways do not fit one plan`)
+    }
+  }
+  // One settlement cut in two: two settled areas joined indoors by a short way.
+  for (const l of content.locations.values()) {
+    for (const exit of Object.values(l.exits)) {
+      const other = exit && content.locations.get(exit.to)
+      if (!exit || !other || other.area === l.area || l.id > other.id) continue
+      const settled = [l.area, other.area].every((a) => SETTLED_KINDS.has(content.areas.get(a)?.kind ?? ''))
+      const indoors = ![l, other].some((p) => p.tags.some((t) => OUTSIDE_TAGS.includes(t)))
+      if (settled && indoors && exit.minutes < 10) out.push(`${content.areas.get(l.area)!.name} and ${content.areas.get(other.area)!.name}: one settlement in two areas (${l.name} and ${other.name}, ${exit.minutes} minutes indoors); an area is what you walk through indoors`)
+    }
+  }
+  return [...new Set(out)]
+}
+
 export function warnings(content: Content): string[] {
   // A quest with a stage that has no way on, or no way to end (M10.30 (6)).
   const out: string[] = [...questWarnings(content), ...unsolvable(content)]
   // A world with people and no storyline (M10.30: The Quiet Reach had none, so every voice made the plot up as it talked).
   if (!content.quests.size && content.npcs.size) out.push('This world has no stories: people make the plot up as they talk, and nothing can be solved. The step Stories of the world build writes them.')
+  // Ways that do not fit one plan, and one settlement in two areas (M10.33 L).
+  out.push(...directionProblems(content))
   // The first scene (M10.33 M): someone at the start place and at its meeting place, for at least half an hour.
   if (content.npcs.size) {
     const at = `${String(content.world.start.hour).padStart(2, '0')}:${String(content.world.start.minute).padStart(2, '0')}`

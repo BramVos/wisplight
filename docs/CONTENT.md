@@ -116,6 +116,8 @@ A list; each has:
 
 Doing things with the world (M10.30): a verb of a detail may be a deed instead of a line: `when` (conditions, such as `{ has: saw }`), `not_yet`, `check`, `effects` (as in a quest: `set` a flag, `take` or `give` a thing, a fact), `text`, `once` and `done`. An exit may have `when` and `not_yet`: the way opens when they hold (the roof once `tree_down` is set), and people keep to the other ways. Something `hidden` may have `when` (`{ knows: <topic> }`), `words` and `verbs`: then only someone who knows of it finds it, with SEARCH <words> or one of its verbs, never by a roll. A `lock` opens with `key`, `word` (a code the stranger types or says; `word_text` for what happens) or both.
 
+An area is what the stranger walks through indoors: one station, one village. Directions fit one plan (east of east is east, never northeast), with `in` and `out` for doors; Check names a way that does not fit, and two areas joined by a short way indoors.
+
 SEARCH has no die (M10.33): it finds what the stranger's eye reaches (Perception plus ten against `dc`), at once. Give each hidden thing `words` (the spot, which SEARCH <words> finds at once) and `helps` (where to look, said when a search misses it); an exit may have `words` too (hatch, ladder), so OPEN THE HATCH and CLIMB DOWN THE LADDER take it.
 
 A secret way (M10.31): an exit with `hidden: true` is not in the exits, on the plan or taken until it is found, by something `hidden` of the place with `exit: <direction>` (SEARCH, or SEARCH <words>) or once its `when` holds (a deed that sets a flag); give it one of the two, and never name it in the description. People keep to the other ways.

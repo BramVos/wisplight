@@ -220,6 +220,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     optional: false,
     skipped: 'A world needs at least one area and one place, the start; the builder\'s first place stays.',
     checks: [
+      'An area is what you walk through indoors (a station, a village): two areas joined by a short way indoors are one settlement cut in two (M10.33). Directions fit one plan: if the Commons is east of the lock and the Workshop east of the Commons, the lock goes east to the Workshop, not northeast; in and out are for doors. Check names a way that does not fit.',
       'Every description keeps the place rules below: three to five sentences and at most 70 words, second person, present tense, a sense that is not sight, a hint at one way out and not a list, topics in [brackets], one image of this world only, not opening with its own name, and no two places opening alike.',
       'Every thing a description brings in with "a" or "an" has a detail.',
       'The start location exists, and every place can be reached from it by exits.',
