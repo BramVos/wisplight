@@ -1,6 +1,6 @@
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { Engine, LlmError, type LlmClient, type Output } from '../src/engine'
+import { Engine, LlmError, MockLlm, type LlmClient, type Output } from '../src/engine'
 import { classify, tierFor } from '../src/engine/dialogue/acts'
 import { fitLength } from '../src/engine/dialogue/guard'
 import { loadContentFromDir } from '../src/node/content'
@@ -59,5 +59,28 @@ describe('M10.33 G: a short line that fits, never a cut one', () => {
     expect(text(await engine.handle('"Thank you.'))).not.toMatch(/The AI gave no answer/)
     fail = true
     expect(text(await engine.handle('"Who keeps the station running?'))).toMatch(/The AI gave no answer/)
+  })
+})
+
+// M10.33 T, the voice knows who stands there and never speaks of itself as a
+// third (Mara spoke of Tessa as away while she sat beside her; Niko said
+// "Niko didn't mention it"), and P, plain words for a reader whose first
+// language is not English (Bram read "the equipment's going" as a cut line).
+describe('M10.33 T and P: who is here, I, and plain words', () => {
+  it('names who stands here and whom the speaker knows by name, and keeps the speaker out of their own knowledge', async () => {
+    const good = new MockLlm('good')
+    const engine = new Engine(quiet, { seed: 3, builder: true, llm: good })
+    engine.start()
+    for (const c of ['@goto loc_commons', '@bring mara', '@bring tessa', 'talk mara']) await engine.handle(c)
+    await engine.handle('"Mara, what do you make of the signal?')
+    const call = good.calls.filter((c) => c.schemaName === 'npc_reply').at(-1)!
+    expect(call.prompt).toMatch(/Also here: [^\n]*Tessa, the chief engineer/)
+    expect(call.prompt).toMatch(/PEOPLE YOU KNOW: [^\n]*Tessa, the chief engineer \(/)
+    // Mara is no topic of her own knowledge.
+    expect(call.prompt).not.toMatch(/KNOWLEDGE[^]*\bMara Venn\b[^\n]*:/)
+    const rules = `${call.system}`
+    expect(rules).toMatch(/of yourself as I/)
+    expect(rules).toMatch(/Also here hears you: speak of them as present/)
+    expect(rules).toMatch(/plain British English a non-native reader gets: no native-only idiom/)
   })
 })

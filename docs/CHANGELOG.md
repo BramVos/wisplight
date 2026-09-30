@@ -1,5 +1,18 @@
 # Changelog
 
+## M10.33 deel: wie erbij staat, en gewone woorden (T, P), 30 september 2026
+
+- **Wie erbij staat, hoort het (T).** De stem krijgt nu te zien wie er staat, met naam als ze die persoon kent ("Also here: Tessa, the chief engineer"), en een vaste regel dat wie erbij staat meehoort. Zo praat Mara niet meer over Tessa alsof die weg is terwijl ze naast haar zit. Ook de lijst van mensen die de spreker kent, heeft nu namen; in The Quiet Reach stonden daar alleen beroepen, zodat de stem zijn buren niet bij naam kon noemen.
+- **Ik is ik (T).** Wie spreekt, is geen onderwerp meer in zijn eigen kennis, en de vaste regel zegt dat hij van zichzelf "I" zegt. De bewaker van M10.29 vraagt opnieuw als Niko toch "Niko didn't mention it" zegt.
+- **Gewone woorden (P).** Een vaste regel vraagt Engels dat iemand volgt voor wie Engels niet de moedertaal is, zonder uitdrukkingen die alleen een moedertaalspreker kent. "The equipment's going" (Brits voor kapotgaan) hoort daar niet meer bij.
+
+Testen: praat in de Commons met Mara terwijl Tessa erbij staat, en vraag naar Tessa. Test in `tests/m1033talk.test.ts`.
+
+Kosten: geen nieuwe aanroep. De vaste regels van een gesprek bleven onder de grens van M10.27 (5.015 van 5.016 tekens met het schema); de cache van het vaste deel wordt één keer opnieuw geschreven, en daarna per regel een paar tokens meer voor de namen.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: geen wijziging; de regels voor de stem staan in het functioneel ontwerp en worden hier waargemaakt.
 ## M10.33 deel: aangekomen, paden bij hun naam, een jas en iemand volgen (X, Y, AD), 30 september 2026
 
 - **Aangekomen is aangekomen (X).** Oorzaak: de laatste etappe van een wandeling zette "on the way to" de plek zelf, en pas de volgende stap van het plan wiste dat. Opgelost in de motor: wie aankomt, doet meteen wat daarna komt ("at work").
@@ -15,6 +28,7 @@ Kosten: geen aanroep.
 Wat de editor en de kroniekverteller leerden: de tags `clothing` en `rainproof` (sjabloon van een ding, contract, stap Economie van de wereldgids, `docs/NEW-WORLD.md`, een regel onder Check); de knop `people.follow_minutes`.
 
 Ontwerp: functioneel ontwerp, hoofdstuk 4, alinea "Stand na M10.33: kleren, regen en iemand volgen".
+
 
 ## M10.33 deel: namen, het doel in beeld en een zin die past (S, C, G), 30 september 2026
 

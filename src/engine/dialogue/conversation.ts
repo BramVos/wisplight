@@ -638,7 +638,8 @@ export class Dialogue {
     }
     const act = options.act ?? classify(text, topics.length)
     if (act === 'AskRumors' && topics.length === 0) topics = this.rumours(npcId)
-    const packet = this.knowledge.packet(npcId, topics, act === 'AskStory' || act === 'AskAbout')
+    // The speaker is never a topic of their own knowledge (M10.33 T: Niko said "Niko didn't mention it"): what is about them is theirs to say as I.
+    const packet = this.knowledge.packet(npcId, topics.filter((t) => t !== npcId), act === 'AskStory' || act === 'AskAbout')
     let tier: Tier = tierFor(act)
     if ((act === 'AskStory' || /\b(story|legend|tale|verhaal)\b/i.test(text)) && packet.known.some((k) => k.story)) tier = 'story'
     if (tier !== 'story') for (const k of packet.known) delete k.story
