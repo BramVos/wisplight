@@ -262,6 +262,8 @@
     "keyboard": "Everything can be done with the keyboard: type commands, Tab through the buttons, Escape closes a window. The story is read out by a screen reader as it comes. Nothing in the game needs quick reflexes: the clock stops while you type, in a fight, and in any window like this one.",
     "rules": "Show what does not come from the AI",
     "rulesNote": "Lines the game wrote itself (greetings, set lines, a line standing in for a slow or refused answer) get a warmer tint in the log and the talk window. Only while an AI model is chosen.",
+    "rolls": "Show the dice",
+    "rollsNote": "The roll of a check in brackets, as (Persuasion 14 vs DC 12: success). Off, you see only what came of it.",
     "cards": "Show moments as cards",
     "cardsNote": "A place worth it the first time you reach it or see it rise from afar, and a tiding that changes things, come as a card over the log; the clock waits. Off, they are lines like any other.",
     "sound": "Sound",

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import type { JournalPage, Reply } from './client'
 import { complete } from './complete'
-import { useShowRules } from './display'
+import { useShowRolls, useShowRules } from './display'
 import { t, tn } from './i18n'
 import figure from './assets/portraits/figure.svg'
 import man from './assets/portraits/man.svg'
@@ -71,6 +71,7 @@ export function ConversationView({
   const [said, setSaid] = useState<string[]>([])
   const [back, setBack] = useState(-1)
   const showRules = useShowRules()
+  const showRolls = useShowRolls()
   const [query, setQuery] = useState('')
   const [everything, setEverything] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -202,6 +203,8 @@ export function ConversationView({
               )}
               {lines
                 .filter((line) => !OPTIONS.test(line.text))
+                // The dice of a check only when the setting asks for them (M10.33 R).
+                .filter((line) => showRolls || line.kind !== 'check')
                 // What you typed, when the game says it back ("You: ..."), shows once; TALK itself is the window.
                 .filter((line, i, all) => !(line.kind === 'input' && (/^talk\b/i.test(line.text) || (all[i + 1]?.kind === 'text' && /^You: /.test(all[i + 1]!.text)))))
                 .map((line) => (

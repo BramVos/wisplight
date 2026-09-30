@@ -2315,3 +2315,11 @@ pre.sheet {
   flex-wrap: wrap;
   gap: 0.2rem 1rem;
 }
+
+/* Who of the AI is working now, beside the lights (M10.33 R). */
+.ai-busy {
+  color: var(--muted);
+  font-size: calc(11px * var(--text-scale));
+  margin-left: 6px;
+}
+

@@ -197,3 +197,16 @@ describe('M10.33 H: HELP of this world', () => {
     expect(said(await nether.handle('help you'))).toMatch(/level up.*\nFaith: pray, devote to <patron>, rite\./)
   })
 })
+
+describe('M10.33 R: the rough edges', () => {
+  it('says an east wind, and asks where the hangar is once', async () => {
+    const { weatherLine } = await import('../src/engine/weather')
+    const engine = game()
+    expect(weatherLine(engine.world, 'overcast', true, { from: 'east', force: 2 })).toMatch(/An east wind pushes at you\./)
+    expect(weatherLine(engine.world, 'overcast', true, { from: 'north', force: 3 })).toMatch(/A north gale leans on you\./)
+    await engine.handle('east')
+    const out = said(await engine.handle('talk sana'))
+    expect(out).toMatch(/You are talking with/)
+    expect(said(await engine.handle('where can I find the hangar'))).not.toMatch(/can I find can I find/)
+  })
+})

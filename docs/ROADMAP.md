@@ -889,7 +889,7 @@ Scope: de samenvoeging van de ontwerpersreview van 30 september 2026 (`docs/revi
 
 **Kleine dingen (motor)**
 
-- [ ] R. De rest van de ruwe randen (voorstel 18, R5, U5): "Where can I find can I find", de proefwerelden in de wereldkiezer, een plattegrond van één plek, "A east wind", "You have ."; geen worp bij SEARCH als er niets verborgen meer is, en de worpregel alleen als een instelling het aanzet; "time paused" zegt waarom; de vijf bolletjes in de statusbalk krijgen een naam
+- [x] R. De rest van de ruwe randen (gebouwd, 30 september 2026: "Where can I find can I find" weg (de woorden van de vraag zijn niet de plek); de proefwerelden niet in de wereldkiezer van het spel; geen plattegrond van één plek; "An east wind"; "You have ." was er al niet meer; SEARCH werpt niet meer (Z); de worpregel alleen met de instelling Show the dice, in het log en het gesprekvenster; "time paused" zegt waarom (a window is open, you type, a fight, you were away), met `pausedWhy` in de status; de bolletjes noemen wie er werkt; nagekeken in de browser; test `m1033ways`) (voorstel 18, R5, U5): "Where can I find can I find", de proefwerelden in de wereldkiezer, een plattegrond van één plek, "A east wind", "You have ."; geen worp bij SEARCH als er niets verborgen meer is, en de worpregel alleen als een instelling het aanzet; "time paused" zegt waarom; de vijf bolletjes in de statusbalk krijgen een naam
 
 **Uit Brams logs van 29 en 30 september: de gesprekken** (analyse in `docs/review-spel-2026-09-30.md`, hoofdstuk 7)
 

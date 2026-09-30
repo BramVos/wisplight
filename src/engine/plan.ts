@@ -125,7 +125,8 @@ export function planOf(world: World, areaId: string): PlanData | undefined {
   const kindOf = (id: string): PlanBox['kind'] | undefined => (id === here ? 'here' : seen.has(id) ? 'seen' : journal[id] !== undefined ? 'heard' : undefined)
   const cells = layout(world, area.id)
   const shown = ofArea.filter((l) => kindOf(l.id))
-  if (!shown.length) return undefined
+  // A plan of one place says nothing (M10.33 R): it comes once a second place is known.
+  if (shown.length < 2) return undefined
   const people = world.state.player.people ?? {}
   const boxes: PlanBox[] = shown.map((l) => {
     const [col, row] = cells.get(l.id)!

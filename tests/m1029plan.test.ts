@@ -27,10 +27,12 @@ const said = async (engine: Engine, line: string) => (await engine.handle(line))
 describe('M10.29 I: a plan of here', () => {
   it('draws Port Vesper after one place, after five steps, and with a place only heard of', async () => {
     const engine = stranger()
-    expect(planText(planHere(engine.world)!).slice(0, 2)).toEqual(['Port Vesper, as you know it (1 place; * where you are, ( ) only heard of):', '[Arrival Lock*]'])
+    // A plan of one place says nothing (M10.33 R): it comes with the second place known.
+    expect(planHere(engine.world)).toBeUndefined()
     // Heard of before it is seen: grey, with a question mark, and no way to it.
     ;(engine.state.player.journal ??= {})['loc_guest_quarters'] = engine.world.now
     const heard = planHere(engine.world)!
+    expect(planText(heard)[0]).toBe('Port Vesper, as you know it (2 places; * where you are, ( ) only heard of):')
     expect(heard.boxes.find((b) => b.id === 'loc_guest_quarters')).toMatchObject({ kind: 'heard' })
     expect(heard.links).toEqual([])
     for (const step of ['e', 'n', 's', 's', 'n']) await engine.handle(step)
@@ -54,6 +56,9 @@ describe('M10.29 I: a plan of here', () => {
     expect(planHere(engine.world)).toBeUndefined()
     expect(await said(engine, 'plan')).toMatch(/^There is no plan of here/)
     engine.state.player.location = 'loc_workshop'
+    // One place known is no plan yet (M10.33 R); with the hangar heard of, there is one.
+    expect(planHere(engine.world)).toBeUndefined()
+    ;(engine.state.player.journal ??= {})['loc_peregrine_hangar'] = engine.world.now
     expect(planHere(engine.world)!.area).toBe('Vesper Works')
   })
 

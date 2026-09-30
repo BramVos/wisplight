@@ -138,6 +138,13 @@
   "status": {
     "loading": "Loading the world",
     "paused": "time paused",
+    "pausedWhy": {
+      "fight": "time paused: a fight",
+      "window": "time paused while a window is open",
+      "typing": "time paused while you type",
+      "talk": "time paused: a talk",
+      "idle": "time paused: you were away"
+    },
     "wanted": "Wanted: {crimes}",
     "journal": "Journal",
     "journalTitle": "Journal (J)"

@@ -212,6 +212,8 @@ export interface Status {
   time: string
   money: string
   paused: boolean
+  /** Why the clock stands still (M10.33 R: "time paused" said nothing of why): a fight, a window or typing, a talk, or no input for a while. */
+  pausedWhy?: 'fight' | 'window' | 'talk' | 'idle'
   /** A development build: the @ commands work and the editor can be opened. */
   builder?: boolean
   talk?: { npc: string; name: string; call: string; colour?: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string; trades: boolean; joins: boolean; matter: boolean; pronoun: 'she' | 'he' | 'they'; lines: TalkLine[]; earlier?: EarlierTalk }

@@ -17,6 +17,8 @@ export interface Display {
   rules: boolean
   /** Moments as cards over the log (M10.11); off, they are lines like any other. */
   cards: boolean
+  /** The dice of a check in brackets, "(Perception 12 vs DC 14: success)" (M10.33 R): off by default. */
+  rolls: boolean
   /** Sound (M10.15): an ambient sound per place and a bell; on and soft by default. */
   sound: boolean
   volume: number
@@ -32,7 +34,7 @@ export const TEXT_SIZES = [
 ] as const
 
 const KEY = 'wisplight.display'
-const DEFAULT: Display = { scale: 1, contrast: 'normal', map: 'dark', rules: true, cards: true, sound: true, volume: 0.25 }
+const DEFAULT: Display = { scale: 1, contrast: 'normal', map: 'dark', rules: true, cards: true, rolls: false, sound: true, volume: 0.25 }
 const LOOKS: MapLook[] = ['dark', 'paper', 'bw']
 
 export function loadDisplay(): Display {
@@ -40,7 +42,7 @@ export function loadDisplay(): Display {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Partial<Display> | null
     const scale = TEXT_SIZES.some((s) => s.scale === saved?.scale) ? saved!.scale! : DEFAULT.scale
     const volume = typeof saved?.volume === 'number' ? Math.min(1, Math.max(0, saved.volume)) : DEFAULT.volume
-    return { scale, contrast: saved?.contrast === 'high' ? 'high' : 'normal', map: LOOKS.includes(saved?.map as MapLook) ? (saved!.map as MapLook) : 'dark', rules: saved?.rules !== false, cards: saved?.cards !== false, sound: saved?.sound !== false, volume }
+    return { scale, contrast: saved?.contrast === 'high' ? 'high' : 'normal', map: LOOKS.includes(saved?.map as MapLook) ? (saved!.map as MapLook) : 'dark', rules: saved?.rules !== false, cards: saved?.cards !== false, rolls: saved?.rolls === true, sound: saved?.sound !== false, volume }
   } catch {
     return DEFAULT
   }
@@ -104,6 +106,17 @@ export function useShowRules(): boolean {
   const [on, setOn] = useState<boolean>(() => loadDisplay().rules)
   useEffect(() => {
     const changed = () => setOn(loadDisplay().rules)
+    window.addEventListener('wisplight:display', changed)
+    return () => window.removeEventListener('wisplight:display', changed)
+  }, [])
+  return on
+}
+
+/** Whether the dice of a check show (M10.33 R), as the setting says. */
+export function useShowRolls(): boolean {
+  const [on, setOn] = useState<boolean>(() => loadDisplay().rolls)
+  useEffect(() => {
+    const changed = () => setOn(loadDisplay().rolls)
     window.addEventListener('wisplight:display', changed)
     return () => window.removeEventListener('wisplight:display', changed)
   }, [])

@@ -144,9 +144,14 @@ function setup(): Promise<void> {
 
 // The clock stands still in conversations and menus, and after a minute without input.
 function paused(): boolean {
+  return pausedWhy() !== undefined
+}
+
+/** Why the clock stands still, if it does (M10.33 R): the status bar says it. */
+function pausedWhy(): 'fight' | 'window' | 'talk' | 'idle' | undefined {
   // An arrival the chronicler is laying out (M10.25) is no idleness: the clock and the models go on until it comes.
   const idle = Date.now() - lastInput > appKnobs().get('idle_pause_seconds') * 1000 && !engine?.state.growth?.underway?.held
-  return Boolean(engine?.state.combat) || held || Boolean(engine?.state.talk) || idle
+  return engine?.state.combat ? 'fight' : held ? 'window' : engine?.state.talk ? 'talk' : idle ? 'idle' : undefined
 }
 
 function aiStatus() {
@@ -192,7 +197,8 @@ function scribe(): Transcript {
 let typed: string | undefined
 
 function reply(outputs: Output[], earlier?: EarlierLines) {
-  const status = { ...engine!.status(), paused: paused(), ai: aiStatus() }
+  const why = pausedWhy()
+  const status = { ...engine!.status(), paused: why !== undefined, ...(why ? { pausedWhy: why } : {}), ai: aiStatus() }
   // Everything shown goes into the transcript, if it is on; to disk in the background at the end of the turn.
   const shown = transcriptNotice ? [...outputs, system(transcriptNotice)] : outputs
   transcriptNotice = undefined

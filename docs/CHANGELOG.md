@@ -1,5 +1,23 @@
 # Changelog
 
+## M10.33 deel: de ruwe randen (R), 30 september 2026
+
+- "Where can I find can I find" is weg: de woorden van de vraag horen niet bij de plek.
+- De proefwerelden staan niet meer in de wereldkiezer van het spel.
+- Een plattegrond van één plek komt pas als je een tweede plek kent.
+- "An east wind" in plaats van "A east wind".
+- De worp tussen haakjes ("(Persuasion 14 vs DC 12: success)") staat alleen in beeld als je Instellingen > Weergave > Show the dice aanzet.
+- "time paused" zegt waarom: een venster staat open, je typt, een gevecht, of je was weg.
+- Naast de AI-bolletjes staat wie er aan het werk is.
+
+Testen: een nieuw spel in The Quiet Reach, `search`, het dagboek open, en de statusbalk. Tests in `tests/m1033ways.test.ts`.
+
+Kosten: geen aanroep.
+
+Wat de editor en de kroniekverteller leerden: niets.
+
+Ontwerp: geen wijziging.
+
 ## M10.33 deel: HELP van deze wereld (H), 30 september 2026
 
 - **Oorzaak:** HELP was één vaste tekst voor elke wereld, met PRAY waar geen geloof is, USE OVEN BAKE waar niets gebakken wordt, en "Dutch works too" in een Engelse wereld.

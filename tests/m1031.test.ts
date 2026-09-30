@@ -83,7 +83,8 @@ describe('M10.31 B: a secret way', () => {
     expect(said(await engine.handle('go in'))).toMatch(/^You can't go in from here\./)
     expect(said(await engine.handle('walk to the cable gallery'))).toMatch(/^You know no such place\./)
     expect(completionsHere(world, [])).not.toContain('in')
-    expect(planHere(world)!.boxes.find((b) => b.id === room)!.words).not.toContain('in')
+    // No plan of one place (M10.33 R), and nothing of the hatch on it either way.
+    expect(planHere(world)?.boxes.find((b) => b.id === room)?.words ?? []).not.toContain('in')
     // People keep to the ordinary ways: no route into the gallery, found or not.
     expect(world.route(room, 'loc_orison_cable_gallery')).toBeUndefined()
     // The consoles hint at it; naming the spot finds it without a roll.
@@ -91,13 +92,13 @@ describe('M10.31 B: a secret way', () => {
     expect(said(await engine.handle('search behind the consoles'))).toMatch(/a square hatch lies flush with the plating/)
     expect(exitsLine(await engine.handle('look'))).toBe('Exits: down, in')
     expect(completionsHere(world, [])).toContain('in')
-    expect(planHere(world)!.boxes.find((b) => b.id === room)!.words).toContain('in')
     const arrived = said(await engine.handle('in'))
     expect(arrived).toMatch(/^Cable Gallery\n/)
     expect(arrived).toMatch(/newer cable|feed line/)
     expect(said(await engine.handle('look at splice'))).toMatch(/spliced into it, wrapped in bright tape/)
     await engine.handle('out')
     expect(planHere(world)?.links).toContainEqual({ from: room, to: 'loc_orison_cable_gallery' })
+    expect(planHere(world)!.boxes.find((b) => b.id === room)!.words).toContain('in')
     // A replay finds it the same way.
     const replayed = await Engine.replay({ ...quietReach, areas }, 7, engine.save().log)
     expect(replayed.state.player.found).toContain(`exit:${room}/in`)

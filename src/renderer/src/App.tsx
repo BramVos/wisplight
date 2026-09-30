@@ -9,11 +9,11 @@ import { SavesView } from './SavesView'
 import { FightPanel } from './FightPanel'
 import { EndView } from './EndView'
 import { LogExport } from './LogExport'
-import { ConversationView, type TalkLine } from './ConversationView'
+import { ConversationView } from './ConversationView'
 import { JournalView } from './JournalView'
 import { runs } from './mapRuns'
 import { HexMap } from './HexMap'
-import { useMapLook, useShowCards, useShowRules, useSoundSetting } from './display'
+import { useMapLook, useShowCards, useShowRules, useSoundSetting, useShowRolls } from './display'
 import { sound } from './sound'
 import { MomentCard } from './MomentCard'
 import { ClockPanel } from './Clock'
@@ -123,9 +123,6 @@ export function App() {
   useEffect(() => {
     if (!hasPlan) setPlanOpen(false)
   }, [hasPlan])
-  // The talk that just ended (M10.4): its window stays until closed, with the last answer in view; its lines are the
-  // engine's (M10.8), so every line shows, also when the window had no focus when the answer came.
-  const [ended, setEnded] = useState<{ talk: NonNullable<Status['talk']>; lines: TalkLine[] }>()
   const lastTalk = useRef<NonNullable<Status['talk']> | undefined>(undefined)
   // The lights per role (M10.4), as calls start and end.
   const [lights, setLights] = useState<RoleLight[]>()
@@ -231,12 +228,10 @@ export function App() {
     if (showCards && fresh.length) setMoments((previous) => [...previous, ...fresh.map((l) => (l as Output).card!)])
   }, [lines, showCards])
 
-  // Menus stop the clock (FO, chapter 3); the dev menu too, so looking changes nothing; and a moment's card; and
-  // the window of a talk that ended, while it stays open (M10.29: the clock ran on for two hours behind it).
-  const endedOpen = Boolean(ended) && !status?.talk
+  // Menus stop the clock (FO, chapter 3); the dev menu too, so looking changes nothing; and a moment's card.
   useEffect(() => {
-    client?.hold(Boolean(settings) || ending || exporting || typing || Boolean(creation) || Boolean(journal) || Boolean(worlds) || Boolean(loading) || dev || moments.length > 0 || endedOpen || planOpen)
-  }, [client, settings, ending, exporting, typing, creation, journal, worlds, loading, dev, moments.length, endedOpen, planOpen])
+    client?.hold(Boolean(settings) || ending || exporting || typing || Boolean(creation) || Boolean(journal) || Boolean(worlds) || Boolean(loading) || dev || moments.length > 0 || planOpen)
+  }, [client, settings, ending, exporting, typing, creation, journal, worlds, loading, dev, moments.length, planOpen])
 
   // Sound (M10.15): what the engine says is to be heard here; silent in menus and while the game waits, and a bell
   // only when it rings after the game has loaded. The browser lets it start at the first key or click.
@@ -370,12 +365,14 @@ export function App() {
   const talk = status?.talk
   // The input has the focus whenever nothing lies over the game (M10.29 O): at the start, and after every screen,
   // settings, the frames, the journal, a card, a closed talk, the end, the picker. An open talk keeps its own.
-  const covered = Boolean(settings || frames || journal || ended || menu || about || ending || exporting || creation || worlds || loading || moments[0] || talk)
+  const covered = Boolean(settings || frames || journal || menu || about || ending || exporting || creation || worlds || loading || moments[0] || talk)
   const playing = Boolean(status)
   useEffect(() => {
     if (!covered && playing) inputRef.current?.focus()
   }, [covered, playing])
   const showRules = useShowRules()
+  // The dice of a check only when the setting asks for them (M10.33 R).
+  const showRolls = useShowRolls()
   // The talk as it stands, every answer: its lines go to the window that stays when it is over.
   useEffect(() => {
     if (talk) lastTalk.current = talk
@@ -389,7 +386,6 @@ export function App() {
       return
     }
     lastTalk.current = talk
-    setEnded(undefined)
     setPortrait(undefined)
     if (client?.picture) void client.picture(talk.npc).then(setPortrait)
     // Only when a conversation starts or ends.
@@ -450,7 +446,6 @@ export function App() {
     void send(command, Boolean(talk))
   }
   const closeEnded = () => {
-    setEnded(undefined)
     setAbout(undefined)
     talkOpen.current = false
     inputRef.current?.focus()
@@ -458,6 +453,7 @@ export function App() {
 
   const ai = status?.ai ? aiLabel(status.ai) : undefined
   const roles = lights ?? status?.ai?.roles
+  const busyRoles = roles?.filter((r) => r.busy).map((r) => t(`app.ai.role.${r.role}`)).join(', ')
   const journalCount = status ? JOURNAL_KEYS.reduce((sum, key) => sum + status.journal[key].length, 0) : 0
   const openQuests = status?.journal.quests.filter((q) => q.group === 'Open') ?? []
 
@@ -472,7 +468,7 @@ export function App() {
       <main className="log" ref={logRef} aria-live="polite">
         <StaleBanner />
         {error && <p className="line error">{error}</p>}
-        {lines.map((line) => (
+        {lines.filter((line) => showRolls || line.kind !== 'check').map((line) => (
           <p key={line.id} className={`line ${line.kind}${showRules && line.kind === 'speech' && line.source === 'rules' ? ' rules' : ''}${line.earlier ? ` earlier earlier-${line.earlier}` : ''}`}>
             {line.kind === 'input' ? `> ${line.text.replace(/^"/, '')}` : renderText(line.text, onTopic, onMenu)}
           </p>
@@ -741,7 +737,7 @@ export function App() {
         )}
         <div className="statusline">
           <span className="status">
-            {status ? `${status.location}  |  ${status.time}  |  ${status.money}${status.paused && !status.talk ? `  |  ${t('app.status.paused')}` : ''}` : t('app.status.loading')}
+            {status ? `${status.location}  |  ${status.time}  |  ${status.money}${status.paused && !status.talk ? `  |  ${status.pausedWhy ? t(`app.status.pausedWhy.${status.pausedWhy === 'window' && typing ? 'typing' : status.pausedWhy}`) : t('app.status.paused')}` : ''}` : t('app.status.loading')}
           </span>
           {status?.wanted && <span className="wanted">{t('app.status.wanted', { crimes: status.wanted.join('; ') })}</span>}
           {status?.building && <span className="building">{status.building}</span>}
@@ -753,6 +749,8 @@ export function App() {
               {roles.map((r) => (
                 <span key={r.role} className={`ai-light${r.busy ? ' on' : ''}${r.last && !r.last.ok ? ' failed' : ''}`} title={lightTitle(r)} aria-label={lightTitle(r)} />
               ))}
+              {/* The lights by name (M10.33 R): who is working now, beside them; each light names itself on hover. */}
+              {busyRoles && <span className="ai-busy">{busyRoles}</span>}
             </span>
           )}
           {ai && (
@@ -809,7 +807,8 @@ export function App() {
 
       {worlds && client && !loading && (
         <WorldPicker
-          worlds={worlds}
+          // A world's proofs (the regions grown in trial runs) are the editor's, not a world to play (M10.33 R).
+          worlds={worlds.filter((w) => !/_proofs$/.test(w.folder))}
           saves={saves}
           onPick={(folder) => void begin(client, folder).catch((reason: unknown) => setError(String(reason)))}
           {...(client.saves

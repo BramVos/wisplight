@@ -157,6 +157,11 @@ function DisplayTab() {
       </label>
       <p className="muted small">{t('settings.display.rulesNote')}</p>
       <label className="display-check">
+        <input type="checkbox" checked={display.rolls} onChange={(event) => change({ ...display, rolls: event.target.checked })} />
+        {t('settings.display.rolls')}
+      </label>
+      <p className="muted small">{t('settings.display.rollsNote')}</p>
+      <label className="display-check">
         <input type="checkbox" checked={display.cards} onChange={(event) => change({ ...display, cards: event.target.checked })} />
         {t('settings.display.cards')}
       </label>

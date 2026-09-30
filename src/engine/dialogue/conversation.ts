@@ -274,7 +274,8 @@ export class Dialogue {
   }
 
   async where(npcId: string, place: string): Promise<Output[]> {
-    const about = bare(place)
+    // WHERE CAN I FIND THE HANGAR (M10.33 R: "Where can I find can I find"): the words of the question are not the place.
+    const about = bare(place).replace(/^(?:can|could|do|would|might)\s+(?:i|we|one)\s+(?:find|get to|reach)\s+/i, '').replace(/^(?:is|are)\s+/i, '')
     const topic = this.topics.find(about) ?? kinOf(this.world, npcId, about.replace(/^(his|her|their)\b/i, 'your'))[0]
     return this.turn(npcId, `Where can I find ${about}?`, { act: 'AskDirections', topics: topic ? [topic] : [], echo: true, ...this.confide(npcId, topic) })
   }

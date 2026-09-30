@@ -172,7 +172,9 @@ export function weatherLine(world: World, kind: WeatherKind, night: boolean, gus
   const sky = (night ? words.night : undefined) ?? words.day
   // The wind (M10.8), when there is enough of it to feel, and the storm has not already said so.
   if (!gust || gust.force < 2 || kind === 'storm') return sky
-  return `${sky} ${gust.force >= 3 ? `A ${gust.from} gale leans on you.` : `A ${gust.from} wind pushes at you.`}`
+  // An east wind, a north wind (M10.33 R: "A east wind").
+  const a = /^[aeiou]/i.test(gust.from) ? 'An' : 'A'
+  return `${sky} ${gust.force >= 3 ? `${a} ${gust.from} gale leans on you.` : `${a} ${gust.from} wind pushes at you.`}`
 }
 
 /** Whether someone reads the sky (M10.8): a trade that works outdoors, by the world's own list. */
