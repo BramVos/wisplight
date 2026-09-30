@@ -5,6 +5,7 @@ import { HexMap, LandMap } from './HexMap'
 import { useMapLook } from './display'
 import { runs } from './mapRuns'
 import { t, tn } from './i18n'
+import { useWindow } from './windows'
 
 // The journal as its own window (FO, chapter 2): everything the player has
 // learnt, in parts and under headings, searchable, with the page of what you
@@ -88,12 +89,11 @@ export function JournalView({
     if (window.innerWidth <= 760) requestAnimationFrame(() => pageRef.current?.scrollIntoView({ block: 'start' }))
   }
 
+  // A window of the stack (M10.33 A): Escape closes it when it is on top.
+  useWindow(onClose)
   useEffect(() => {
     if (start) void open(start)
     else searchRef.current?.focus()
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
     // Only when it opens.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

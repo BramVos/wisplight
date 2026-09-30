@@ -46,12 +46,10 @@ describe('engine', () => {
     // The intro as a moment card (M10.29 C).
     expect(outputs[0]).toMatchObject({ kind: 'card', card: { kind: 'intro' } })
     expect(outputs[0]?.text).toContain('The barge from Graafhaven')
-    // Then why you are here (M10.9), whom you were told to ask for and whom you know (M10.29 C), before the place itself.
-    expect(outputs[1]?.text).toMatch(/^You ran goods past the Count's tolls/)
-    expect(outputs[2]?.text).toMatch(/You were told to ask for Trijntje/)
-    // Trijntje, known from before, is the contact already named.
-    expect(outputs[3]?.text).toBe('Why you are here is in your journal.')
-    expect(outputs[4]?.text).toContain('Canal Quay')
+    // Why you are here (M10.9) is in the card since M10.33 B, the beginning told once; then one line of whom to ask for.
+    expect(outputs[0]?.text).toMatch(/You ran goods past the Count's tolls/)
+    expect(outputs[1]?.text).toBe('You were told to ask for Trijntje the innkeeper at the Drowned Goose. Why you are here, and the name, are in your journal (J).')
+    expect(outputs[2]?.text).toContain('Canal Quay')
     expect(outputs.at(-1)?.text).toContain('TEMPO CALM')
   })
 

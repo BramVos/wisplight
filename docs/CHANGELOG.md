@@ -1,5 +1,18 @@
 # Changelog
 
+## M10.33 deel: één stapel vensters en het begin in één keer (A, B), 30 september 2026
+
+- **Eén stapel vensters (A).** Oorzaak: elk venster had zijn eigen Esc, dus één toets sloot ze allemaal, en de commandobalk werkte gewoon door onder een venster. Nu sluit Esc alleen het bovenste venster. Zolang er iets open is, staat de commandobalk uit: "close the window first (Esc)". Een gesprek dat voorbij is, sluit zichzelf; wat er gezegd is, staat in het log. Een kaartje wacht tot een gesprek dicht is.
+- **Het begin in één keer (B).** Het intro staat één keer op het kaartje, met de reden waarom je komt erbij. Daarna volgen één regel met wie je moet vragen en één regel over TEMPO. Het personagescherm heeft één hoofdknop, "Play the ready-made traveller", die Enter neemt; zelf maken staat onder "Or make your own". Het raamwerk komt niet meer als vol scherm, maar als één regel boven de commandobalk met [Adjust].
+
+Testen: begin een nieuw spel in de Nethermarch, druk op Enter, en kijk naar de regel boven de commandobalk. Open in een gesprek het dagboek en druk twee keer op Esc. Test in `tests/m1033windows.test.ts`.
+
+Kosten: geen aanroep.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 2, alinea "Stand na M10.33: één stapel vensters en het begin in één keer".
+
 ## M10.33 deel: bij aankomst is er iemand (M), 30 september 2026
 
 - **Iedereen waar zijn dag hem zet.** Oorzaak in de motor: een nieuw spel zette iedereen thuis, wat de dienstregeling ook zei, en The Quiet Reach begon om 08:00, precies toen iedereen van de Guest Quarters door de Commons naar zijn werk liep. Nu staat bij een nieuw spel iedereen waar zijn dag hem op dat moment zet. Een oude save verandert niet.

@@ -4,6 +4,7 @@ import type { HexMapData, LandMapData } from '../../engine'
 import { neighbour, neighbours } from '../../engine/map/hexgrid'
 import { mapStyle, markColours, signsOf, tintsOf, type MapStyle, type MapStyleName, type Sign } from '../../engine/map/palette'
 import { hasWords, t } from './i18n'
+import { useWindow } from './windows'
 
 // The map in colour (M10; FO, chapter 4, "Weergave"; the proposal page
 // approved on 28 September 2026), as two maps after the M10 playtest:
@@ -701,17 +702,8 @@ function MapCanvas({
     return () => clearTimeout(timer)
   }, [flash])
 
-  useEffect(() => {
-    if (!full) return
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.stopPropagation()
-        onFull()
-      }
-    }
-    window.addEventListener('keydown', onKey, true)
-    return () => window.removeEventListener('keydown', onKey, true)
-  }, [full, onFull])
+  // A window of the stack while full screen (M10.33 A): Escape leaves full screen when it is on top.
+  useWindow(onFull, full)
 
   /** Zooms by a factor, keeping the point under (px, py) where it is; the minimap zooms round the stranger. */
   const zoom = useCallback(

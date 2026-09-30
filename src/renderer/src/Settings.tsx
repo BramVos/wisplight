@@ -7,6 +7,7 @@ import { t, tn } from './i18n'
 import { BUDGET_CEILING_USD, BUDGET_CONFIRM_USD, BUDGET_FLOOR_USD, REPLY_WITHIN_SECONDS_RANGE } from '../../engine/aisettings'
 import { PLAY_MODES } from '../../engine/modes'
 import { regionPrice } from './FramesView'
+import { useWindow } from './windows'
 
 // Settings > AI, Usage and the AI log (FO, chapter 16). Keys are typed here,
 // sent to the main process once, and only ever shown masked afterwards.
@@ -73,11 +74,8 @@ export function Settings({
     void refresh()
   }, [refresh])
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  // A window of the stack (M10.33 A): Escape closes it when it is on top.
+  useWindow(onClose)
 
   return (
     <div className="overlay" role="dialog" aria-modal="true" aria-label={t('settings.title')}>

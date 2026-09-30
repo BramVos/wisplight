@@ -9,16 +9,16 @@ Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin and far
 This is Skerrow, though you do not know it yet. No ship has called here since the light went out.
 
 Type LOOK to look around. Type HELP if you are lost. You are, rather.
+
 You were born to wreckers on another island and ran from them on the Grey Gull, and now a wreck has put you ashore after all. Maren at the Salt Kettle takes in what the sea brings.
-You were told to ask for Maren of the Salt Kettle in Skerrow Hythe. The name is in your journal.
-Why you are here is in your journal.
+You were told to ask for Maren of the Salt Kettle in Skerrow Hythe. Why you are here, and the name, are in your journal (J).
 The Wreck Strand
 You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
 On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
 Exits: north, east
 The Wreck Strand
 You come to on black shingle with the sea still pulling at your boots. Around you lies what is left of the Grey Gull, a mast, rope, a cask turning in the shallows, and nobody else.
-The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+The pace of events is normal: TEMPO CALM or TEMPO DRAMATIC changes it.
 New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
 
 ==== RECOGNISE (Windsday 3 Leaffall 412 SF, 07:10 (morning))
@@ -341,16 +341,16 @@ Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin and far
 This is Skerrow, though you do not know it yet. No ship has called here since the light went out.
 
 Type LOOK to look around. Type HELP if you are lost. You are, rather.
+
 You were born to wreckers on another island and ran from them on the Grey Gull, and now a wreck has put you ashore after all. Maren at the Salt Kettle takes in what the sea brings.
-You were told to ask for Maren of the Salt Kettle in Skerrow Hythe. The name is in your journal.
-Why you are here is in your journal.
+You were told to ask for Maren of the Salt Kettle in Skerrow Hythe. Why you are here, and the name, are in your journal (J).
 The Wreck Strand
 You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
 On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
 Exits: north, east
 The Wreck Strand
 You come to on black shingle with the sea still pulling at your boots. Around you lies what is left of the Grey Gull, a mast, rope, a cask turning in the shallows, and nobody else.
-The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+The pace of events is normal: TEMPO CALM or TEMPO DRAMATIC changes it.
 New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
 
 ==== RECOGNISE (Windsday 3 Leaffall 412 SF, 07:10 (morning))

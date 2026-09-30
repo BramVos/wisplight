@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BUDGET_CONFIRM_USD, PLAY_MODES, type FramesView as Frames, type PlayMode } from '../../engine'
 import type { AiBridge } from './client'
 import { t, tn } from './i18n'
+import { useWindow } from './windows'
 
 // The frames once (M10.24; Bram, 28 September 2026): at the start of a game
 // what it is played under stands on one screen, and after that it is out of
@@ -42,11 +43,8 @@ export function FramesView({ frames, ai, onDial, onClose }: { frames: Frames; ai
       live = false
     }
   }, [ai])
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  // A window of the stack (M10.33 A): Escape closes it when it is on top.
+  useWindow(onClose)
 
   const dial = async (id: string, choice: string) => {
     const next = await onDial(id, choice)

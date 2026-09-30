@@ -18,6 +18,7 @@ import {
   type CreationData,
 } from '../../engine'
 import { t } from './i18n'
+import { useWindow } from './windows'
 
 // Making a character (FO, chapter 11, "Personage maken"): class, ancestry and
 // background, boosts, extra skills and a first talent. Everything starts from
@@ -36,11 +37,8 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
   const rules = data.rules
   const [choice, setChoice] = useState<CreationChoice>(() => suggestChoice(content, rules.classes[0]!.id, ''))
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onSkip(tempo)
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onSkip, tempo])
+  // A window of the stack (M10.33 A): Escape plays the ready-made traveller, when it is on top.
+  useWindow(() => onSkip(tempo))
 
   // A new class starts again from its suggestion; a new ancestry or background from the class's, keeping the other.
   const pick = (patch: Partial<Pick<CreationChoice, 'class' | 'ancestry' | 'background'>>) => {
@@ -82,16 +80,21 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
       <div className="panel settings creation">
         <header className="panel-head">
           <h2>{t('creation.head.title')}</h2>
-          <span className="muted small">{t('creation.head.hint')}</span>
-          <button type="button" className="link" onClick={() => onSkip(tempo)}>
-            [{t('creation.head.readyMade')}]
-          </button>
         </header>
         <div className="settings-body">
+          {/* One main button that Enter takes (M10.33 A and B): the ready-made traveller; the rest when you want it. */}
+          <p>
+            <button type="button" className="primary" autoFocus onClick={() => onSkip(tempo)}>
+              {t('creation.head.readyMade')}
+            </button>
+          </p>
+          <details className="creation-own">
+            <summary>{t('creation.head.own')}</summary>
+          <p className="muted small">{t('creation.head.hint')}</p>
           <div className="row">
             <label className="field">
               <span>{t('creation.name.label')}</span>
-              <input value={choice.name} maxLength={30} placeholder={t('creation.name.placeholder')} onChange={(e) => setChoice({ ...choice, name: e.target.value })} autoFocus />
+              <input value={choice.name} maxLength={30} placeholder={t('creation.name.placeholder')} onChange={(e) => setChoice({ ...choice, name: e.target.value })} />
             </label>
             <label className="field">
               <span>{t('creation.pronoun.label')}</span>
@@ -225,6 +228,7 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
               [{t('creation.begin', { name: choice.name.trim() || '...' })}]
             </button>
           </div>
+          </details>
         </div>
       </div>
     </div>

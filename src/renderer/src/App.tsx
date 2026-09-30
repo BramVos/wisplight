@@ -106,6 +106,8 @@ export function App() {
   const [settings, setSettings] = useState<SettingsTab>()
   // The frames of the game (M10.24), open at the start of a game and from Settings.
   const [frames, setFrames] = useState<FramesPage>()
+  // The frames of a new game in one line (M10.33 B): the full screen only when asked for.
+  const [framesLine, setFramesLine] = useState<FramesPage>()
   // How full a new region is built in this game (M10.25), for the row under Settings > AI.
   const [regionNow, setRegionNow] = useState<string>()
   useEffect(() => {
@@ -191,8 +193,14 @@ export function App() {
     setStatus(reply.status)
     const c = reply.status.character
     if (c && !c.made && c.xp === 0) setCreation(await target.creation())
-    // The frames once (M10.24): after the character, or at once in a world without one.
-    else await showFrames(target)
+    // The frames in one line (M10.33 B; the full screen came after the character screen as a second wall of choices).
+    else await showFramesLine(target)
+  }
+
+  /** The frames of a new game as one line with [Adjust], above the command bar (M10.33 B). */
+  async function showFramesLine(target: EngineClient) {
+    const page = await target.page('frames')
+    if (page?.frames) setFramesLine(page.frames)
   }
 
   /** The frames screen of the game in play (M10.24): at the start of a game, and from Settings after. */
@@ -374,10 +382,9 @@ export function App() {
   }, [talk])
   useEffect(() => {
     if (!talk) {
-      // Over: the window stays with the last answer, until it is closed (M10.4); the engine kept its last lines (M10.8).
-      const was = lastTalk.current
-      if (was) setEnded({ talk: was, lines: status?.lastTalk?.npc === was.npc ? status.lastTalk.lines : was.lines })
-      talkOpen.current = Boolean(was)
+      // Over: the window closes itself (M10.33 A; it stayed with the last answer since M10.4, and Bram's log showed a
+      // talk after BYE left standing); every line of it is in the log below.
+      if (lastTalk.current) closeEnded()
       lastTalk.current = undefined
       return
     }
@@ -768,6 +775,21 @@ export function App() {
             {completing.join(', ')}
           </div>
         )}
+        {framesLine && !covered && (
+          <div className="frames-line" role="status">
+            {t('app.framesLine.text', {
+              events: framesLine.dials.find((d) => d.id === 'events')?.choices.find((c) => c.id === framesLine.dials.find((d) => d.id === 'events')?.chosen)?.name ?? 'normal',
+              mode: t(`frames.modes.${framesLine.mode}`),
+              speed: tn('frames.clockValue', framesLine.dials.find((d) => d.slider)?.slider?.value ?? 4),
+            })}{' '}
+            <button type="button" className="link" onClick={() => (setFrames(framesLine), setFramesLine(undefined))}>
+              [{t('app.framesLine.adjust')}]
+            </button>{' '}
+            <button type="button" className="link" aria-label={t('app.framesLine.close')} onClick={() => setFramesLine(undefined)}>
+              [×]
+            </button>
+          </div>
+        )}
         <label className="prompt">
           <span aria-hidden="true">{'>'}</span>
           <input
@@ -776,7 +798,9 @@ export function App() {
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={onKeyDown}
             aria-label={t('app.prompt.label')}
-            placeholder={talk ? t('app.prompt.talking', { name: talk.call }) : t('app.prompt.idle')}
+            // Nothing goes on behind a window (M10.33 A): the command bar waits until the stack is empty.
+            disabled={covered}
+            placeholder={covered && !talk ? t('app.prompt.covered') : talk ? t('app.prompt.talking', { name: talk.call }) : t('app.prompt.idle')}
             autoFocus
             spellCheck={false}
           />
@@ -824,13 +848,13 @@ export function App() {
           data={creation}
           onSkip={(tempo) => {
             setCreation(undefined)
-            void (tempo !== 'normal' ? send(`tempo ${tempo}`) : Promise.resolve()).then(() => client && showFrames(client))
+            void (tempo !== 'normal' ? send(`tempo ${tempo}`) : Promise.resolve()).then(() => client && showFramesLine(client))
           }}
           onCreate={(command, tempo) => {
             setCreation(undefined)
             void send(command)
               .then(() => (tempo !== 'normal' ? send(`tempo ${tempo}`) : undefined))
-              .then(() => client && showFrames(client))
+              .then(() => client && showFramesLine(client))
           }}
         />
       )}
@@ -845,24 +869,7 @@ export function App() {
           render={(text) => renderText(text, talkTopic, onMenu)}
           onSend={(text) => void send(text, true)}
           onJournal={() => setJournal({ nearby: true })}
-          covered={Boolean(journal)}
           completions={status.completions}
-        />
-      )}
-      {!talk && ended && status && (
-        <ConversationView
-          talk={ended.talk}
-          lines={ended.lines}
-          journal={status.journal}
-          busy={false}
-          portrait={portrait}
-          about={about}
-          render={(text) => renderText(text, talkTopic, onMenu)}
-          onSend={(text) => void send(text, true)}
-          onJournal={() => setJournal({ nearby: true })}
-          ended
-          onClose={closeEnded}
-          covered={Boolean(journal)}
         />
       )}
       {planOpen && status?.plan && (
@@ -899,7 +906,8 @@ export function App() {
           </div>
         </div>
       )}
-      {moments[0] && client && !journal && !creation && !worlds && !settings && (
+      {/* A card waits until a talk is closed (M10.33 A). */}
+      {moments[0] && client && !journal && !creation && !worlds && !settings && !talk && (
         <MomentCard
           card={moments[0]}
           client={client}

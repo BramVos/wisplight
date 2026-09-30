@@ -6,6 +6,7 @@ import { t, tn } from './i18n'
 import figure from './assets/portraits/figure.svg'
 import man from './assets/portraits/man.svg'
 import woman from './assets/portraits/woman.svg'
+import { useWindow } from './windows'
 
 // A conversation in its own window (after the M7 playtest): it starts in the
 // ordinary interface with TALK, then goes on here. You type what you say in
@@ -45,7 +46,6 @@ export function ConversationView({
   onJournal,
   ended = false,
   onClose,
-  covered = false,
   completions = [],
 }: {
   talk: Talk
@@ -61,8 +61,6 @@ export function ConversationView({
   /** The talk is over (M10.4): the last answer stays in view until the window is closed. */
   ended?: boolean
   onClose?: () => void
-  /** A window lies over this one (the journal): Escape is for that one (M10.8). */
-  covered?: boolean
   /** The names Tab completes from (M10.29 K), as in the main input. */
   completions?: string[]
 }) {
@@ -89,15 +87,8 @@ export function ConversationView({
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight })
   }, [lines, busy])
 
-  useEffect(() => {
-    const onKey = (event: globalThis.KeyboardEvent) => {
-      if (event.key !== 'Escape' || covered) return
-      if (ended) onClose?.()
-      else onSend('bye')
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onSend, onClose, ended, covered])
+  // A window of the stack (M10.33 A): Escape says goodbye when it is on top (a journal over it closes first).
+  useWindow(() => (ended ? onClose?.() : onSend('bye')))
 
   // A new talk has its own history.
   useEffect(() => {

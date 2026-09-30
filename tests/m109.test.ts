@@ -20,9 +20,9 @@ describe('M10.9: a reason to be here', () => {
   it('the opening tells why you came, after the world, and puts your contact in the journal', () => {
     const engine = new Engine(content, { seed: 1 })
     const out = engine.start()
-    const at = out.findIndex((o) => /^You ran goods past the Count's tolls/.test(o.text))
-    expect(at).toBe(1)
-    expect(out[2]?.text).toMatch(/You were told to ask for Trijntje the innkeeper at the Drowned Goose\./)
+    // The reason is in the intro's card since M10.33 B (the beginning told once), after the world's own opening.
+    expect(out[0]?.text).toMatch(/\n\nYou ran goods past the Count's tolls/)
+    expect(out[1]?.text).toMatch(/You were told to ask for Trijntje the innkeeper at the Drowned Goose\./)
     expect(engine.state.player.contact).toBe('npc_trijntje')
     expect(engine.state.player.journal?.['npc_trijntje']).toBeDefined()
     // What you heard that brought you is in the journal from the start.

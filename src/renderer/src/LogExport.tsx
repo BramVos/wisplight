@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { EngineClient, LogScope } from './client'
 import { t, tn } from './i18n'
+import { useWindow } from './windows'
 
 // Saving a copy of the game log (FO, chapter 3, "Het spellogboek"). The log
 // itself stays where it is; this writes a copy wherever the player wants it.
@@ -26,11 +27,8 @@ export function LogExport({ client, onClose }: { client: EngineClient; onClose: 
   const [busy, setBusy] = useState(false)
   const scope = CHOICES.find((c) => c.id === choice)!.scope
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  // A window of the stack (M10.33 A): Escape closes it when it is on top.
+  useWindow(onClose)
 
   useEffect(() => {
     let live = true

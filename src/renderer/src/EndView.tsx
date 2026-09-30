@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { EngineClient } from './client'
 import { t } from './i18n'
+import { useWindow } from './windows'
 
 // The end of a game (design: lore and world change, "Wat de speler ziet"): the
 // player's own log and the true chronicle, each to read and to download. The
@@ -10,11 +11,8 @@ export function EndView({ client, onClose }: { client: EngineClient; onClose: ()
   const [texts, setTexts] = useState<{ log?: string; chronicle: string }>()
   const [tab, setTab] = useState<'log' | 'chronicle'>('chronicle')
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  // A window of the stack (M10.33 A): Escape closes it when it is on top.
+  useWindow(onClose)
 
   const download = (text: string, name: string) => {
     const link = document.createElement('a')

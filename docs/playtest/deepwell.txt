@@ -12,7 +12,7 @@ Type LOOK to look around. Type HELP if you are lost.
 The Shuttle Airlock
 You stand in a ribbed steel airlock big enough for a cargo sled, its walls furred with frost where the outer door meets the frame. The air smells of metal and of other people's breath, used many times. A faded poster of the Long Patience is taped beside the inner door. The inner door opens east onto the Commons.
 Exits: east
-The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+The pace of events is normal: TEMPO CALM or TEMPO DRAMATIC changes it.
 
 ==== RECOGNISE (Quintday 12 Thaw 140 AL, 09:00 (morning))
 
@@ -164,7 +164,7 @@ Type LOOK to look around. Type HELP if you are lost.
 The Shuttle Airlock
 You stand in a ribbed steel airlock big enough for a cargo sled, its walls furred with frost where the outer door meets the frame. The air smells of metal and of other people's breath, used many times. A faded poster of the Long Patience is taped beside the inner door. The inner door opens east onto the Commons.
 Exits: east
-The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+The pace of events is normal: TEMPO CALM or TEMPO DRAMATIC changes it.
 
 ==== RECOGNISE (Quintday 12 Thaw 140 AL, 09:00 (morning))
 

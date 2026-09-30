@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Output } from '../../engine'
 import type { EngineClient } from './client'
 import { t } from './i18n'
+import { useWindow } from './windows'
 
 // A moment (M10.11): a card over the log for what deserves more than a line.
 // A place worth it the first time you reach it or see it rise from afar, a
@@ -43,16 +44,8 @@ export function MomentCard({ card, client, onClose, onPage }: { card: Card; clie
       live = false
     }
   }, [card, client])
-  useEffect(() => {
-    const key = (event: KeyboardEvent) => {
-      if (event.key === 'Enter' || event.key === 'Escape') {
-        event.preventDefault()
-        onClose()
-      }
-    }
-    window.addEventListener('keydown', key)
-    return () => window.removeEventListener('keydown', key)
-  }, [onClose])
+  // A window of the stack (M10.33 A): Escape closes it when it is on top; Enter on its button closes it too.
+  useWindow(onClose)
   return (
     <div className="overlay moment-overlay" onClick={onClose} role="presentation">
       <section className={`moment ${card.kind}`} role="dialog" aria-modal="true" aria-label={card.title} onClick={onClose}>

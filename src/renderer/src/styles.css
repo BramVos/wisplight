@@ -245,6 +245,38 @@ body {
   cursor: default;
 }
 
+/* The one main button of a window that must be finished (M10.33 A): Enter takes it. */
+button.primary {
+  all: unset;
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid var(--topic);
+  border-radius: 3px;
+  color: var(--bg);
+  background: var(--topic);
+  font-family: var(--font);
+  cursor: pointer;
+}
+
+button.primary:hover,
+button.primary:focus-visible {
+  outline: 2px solid var(--room);
+  outline-offset: 2px;
+}
+
+.creation-own > summary {
+  color: var(--topic);
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+/* The frames of a new game in one line (M10.33 B), above the command bar. */
+.frames-line {
+  color: var(--system);
+  font-size: calc(13px * var(--text-scale));
+  padding: 4px 0;
+}
+
 .journal-group h3 {
   color: var(--muted);
   font-size: calc(12px * var(--text-scale));

@@ -1244,15 +1244,22 @@ export class Engine {
     // The world's intro as a moment (M10.29 C), with the picture of where it begins and a way to "Why you are here".
     // The card without the hint to type LOOK, which the log keeps below it.
     const told = intro?.replace(/\n*\s*Type LOOK\b[^\n]*$/i, '').trim()
-    const card = intro ? { kind: 'intro' as const, title: this.content.world.name, text: told || intro, picture: this.state.player.location, link: 'why' } : undefined
+    // The beginning told once (M10.33 B; it stood in four places: the card, the reason below it, and two lines saying
+    // it was in the journal): the reason for coming goes into the intro's card, and what is in the journal is one line.
+    const reason = why.find((o) => o.kind === 'text')?.text
+    const told2 = [told || intro, reason].filter(Boolean).join('\n\n')
+    const card = intro ? { kind: 'intro' as const, title: this.content.world.name, text: told2 ?? '', picture: this.state.player.location, link: 'why' } : undefined
+    const rest = card ? why.filter((o) => o.text !== reason && o.text !== 'Why you are here is in your journal.') : why
+    const asked = rest.find((o) => /^You were told to ask for /.test(o.text))
+    const journalLine = card && (reason || asked) ? [{ kind: 'system' as const, text: asked ? asked.text.replace('The name is in your journal.', 'Why you are here, and the name, are in your journal (J).') : 'Why you are here is in your journal (J).' }] : []
     const outputs: Output[] = [
-      ...(card ? [{ kind: 'card' as const, text: `${card.title}\n${intro}`, card }] : []),
+      ...(card ? [{ kind: 'card' as const, text: `${card.title}\n${[intro, reason].filter(Boolean).join('\n\n')}`, card }] : []),
       // Why you are here (M10.9), after the world's own opening.
-      ...why,
+      ...(card ? [...journalLine, ...rest.filter((o) => o !== asked)] : rest),
       describeRoom(this.world),
       // Where the game begins may be worth a moment (M10.11): the wreck on Skerrow.
       ...momentsNow(this.world, true),
-      { kind: 'system', text: 'The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.' },
+      { kind: 'system', text: 'The pace of events is normal: TEMPO CALM or TEMPO DRAMATIC changes it.' },
       ...this.opening,
     ]
     // Words in brackets lead somewhere from the first line on (M10.8).

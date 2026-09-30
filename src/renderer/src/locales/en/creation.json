@@ -3,7 +3,8 @@
   "head": {
     "title": "Who are you?",
     "hint": "Everything starts from a suggestion; change what you like.",
-    "readyMade": "Play the ready-made traveller"
+    "readyMade": "Play the ready-made traveller",
+    "own": "Or make your own"
   },
   "name": {
     "label": "Name",

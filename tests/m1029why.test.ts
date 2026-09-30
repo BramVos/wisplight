@@ -20,7 +20,8 @@ describe('M10.29 C: why you are here', () => {
     expect(start[0]).toMatchObject({ kind: 'card', card: { kind: 'intro', title: 'The Quiet Reach', link: 'why' } })
     expect(said(start)).toMatch(/You keep old machines alive for a living/)
     expect(said(start)).toMatch(/You were told to ask for the research lead/)
-    expect(said(start)).toMatch(/Why you are here is in your journal\./)
+    // One line for what is in the journal (M10.33 B).
+    expect(said(start)).toMatch(/Why you are here, and the name, are in your journal \(J\)\./)
     const why = engine.page('why')!
     expect(why.name).toBe('Why you are here')
     expect(why.lines[0]).toMatch(/^The supply ship settles onto the pad/)

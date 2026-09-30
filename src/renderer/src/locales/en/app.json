@@ -145,7 +145,8 @@
   "prompt": {
     "label": "Command",
     "idle": "type a command, or HELP",
-    "talking": "say something to {name}, pick a number, or BYE"
+    "talking": "say something to {name}, pick a number, or BYE",
+    "covered": "close the window first (Esc)"
   },
   "topicMenu": {
     "label": "What to do with {topic}",
@@ -155,6 +156,11 @@
     "go": "Go to"
   },
   "earlier": "Earlier, {when}:",
+  "framesLine": {
+    "text": "The frames of this game: events {events}, {mode}, {speed}.",
+    "adjust": "Adjust",
+    "close": "Close this line"
+  },
   "plan": {
     "title": "Here",
     "label": "The plan of {name} as you know it",

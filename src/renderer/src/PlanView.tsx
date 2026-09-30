@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import type { PlanData } from '../../engine/plan'
 import { t, tn } from './i18n'
+import { useWindow } from './windows'
 
 // The plan of here (M10.29 I; the board "Wisplight plattegrond van hier"):
 // above the map in the side panel, 300 by 220, the places of this settlement
@@ -129,6 +130,8 @@ export function PlanView({ plan, onWalk, large = false, onOpen, onClose }: { pla
     drag.current = undefined
   }
 
+  // A window of the stack while large (M10.33 A): Escape closes it when it is on top.
+  useWindow(() => onClose?.(), large && Boolean(onClose))
   // In the window: Home puts where you are back in the middle, Esc closes it.
   useEffect(() => {
     if (!large) return
@@ -136,9 +139,6 @@ export function PlanView({ plan, onWalk, large = false, onOpen, onClose }: { pla
       if (event.key === 'Home') {
         event.preventDefault()
         setPan({ x: 0, y: 0 })
-      } else if (event.key === 'Escape' && onClose) {
-        event.stopPropagation()
-        onClose()
       }
     }
     window.addEventListener('keydown', onKey, true)
