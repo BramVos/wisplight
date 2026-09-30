@@ -15,9 +15,9 @@ import { approve, companionOf, offer, recruit } from '../social/companions'
 import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
-import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promised, promises, recites, saysNothing, speaksAsOther, swearRight, talksOfSelf, unknownNames, vocabularyOf } from './guard'
+import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, recites, saysNothing, speaksAsOther, swearRight, talksOfSelf, unknownNames, vocabularyOf } from './guard'
 import { byRule } from './byrule'
-import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, spokenMeet, type Offer } from './offers'
+import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, type Offer } from './offers'
 import { accepted, declined, inviteOffer } from '../social/invite'
 import { claimValid, claimWords, parseClaim, playerSays } from '../claims'
 import { afterChoice, askedOfStranger, confided, doAfter, talkFact } from './aftertalk'
@@ -710,8 +710,12 @@ export class Dialogue {
       this.heard(talk, text, reply.reply)
       return echo
     }
-    // The offer the player asked for: the voice's choice, or by the rules without a model.
-    const asked = reply ? offers.find((o) => o.key === reply.action) : askedFor(offers, text)
+    // The offer the player asked for: the voice's choice, or by the rules without a model. The voice's choice holds only
+    // where the player's words ask for that kind of thing (M10.33 AG: "Mara agrees to tell Ilyan about Tessa", asked by
+    // nobody); otherwise it is at most a proposal, which waits for the player's yes.
+    const chosen = reply ? offers.find((o) => o.key === reply.action) : undefined
+    const bidden = askedFor(offers, text)
+    const asked = reply ? (chosen && bidden?.kind === chosen.kind ? chosen : undefined) : bidden
     // Asked what they want, without a model (M10.33 E: a stock line on "what should I do?"): what they ask, and what to do now.
     const matter = !reply && !rule && !asked && !options.check && (act === 'Request' || WANTS.test(text)) ? this.matter(npcId) : undefined
     const replyText = rule?.line
@@ -841,8 +845,9 @@ export class Dialogue {
       offerOut.push(...done.outputs)
       offerEnds = done.ends
     } else if (!asked && !reaction) {
-      // What they propose: an offer they chose, or a meeting they named in their own words (M10.29).
-      const proposed = reply ? (offers.find((o) => o.key === reply.propose && o.decision === 'yes') ?? (promises(replyText) ? spokenMeet(world, npcId, promised(replyText), this.topics.recognise(promised(replyText))) : undefined)) : proposal(offers, act)
+      // What they propose: an offer of the game they chose (M10.33 AG: never one read from their words), or the one they
+      // took for asked where the player asked for nothing of the kind.
+      const proposed = reply ? (offers.find((o) => o.key === reply.propose && o.decision === 'yes') ?? (chosen?.decision === 'yes' ? chosen : undefined)) : proposal(offers, act)
       if (proposed) {
         talk.proposal = proposed
         offerOut.push({ kind: 'system', text: proposalText(world, npcId, proposed) })
@@ -1179,9 +1184,8 @@ export class Dialogue {
       }
       // A promise the game did not offer never stands in the text (M10.3): the deed hangs on a chosen yes.
       const doing = offers.find((o) => o.key === reply.action && o.decision === 'yes') ?? offers.find((o) => o.key === reply.propose && o.decision === 'yes')
-      // A time the speaker keeps in their own words is a meeting they propose (M10.29), when they are willing.
-      const spoken = promises(fitted) && !doing ? spokenMeet(world, npcId, promised(fitted), this.topics.recognise(promised(fitted))) : undefined
-      if (promises(fitted) && !doing && !spoken && !ctx.decision && reply.quest_action === 'none') {
+      // A time they keep in their own words is no meeting (M10.33 AG): a meeting is an offer of the game they propose.
+      if (promises(fitted) && !doing && !ctx.decision && reply.quest_action === 'none') {
         this.refused('promise', llm)
         prompt += '\nNOTE: your last reply promised to do something the game did not offer. Answer again without promising it: choose an OFFER with decision yes, or say what you can and cannot do.'
         continue

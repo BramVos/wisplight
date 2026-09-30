@@ -1,5 +1,18 @@
 # Changelog
 
+## M10.33 deel: een aanbod is van het spel (AG, AC), 30 september 2026
+
+- **Geen afspraak uit proza (AG).** Oorzaak: een keuze van de stem in `action` gold als gevraagd, ook als de speler niets vroeg ("Mara agrees to tell Ilyan about Tessa"), en een tijd in de woorden van de spreker werd een afspraak (M10.29). Nu geldt `action` alleen als de woorden van de speler om dat soort ding vragen; anders wordt het een voorstel met [Yes] en [No]. Een tijd in de woorden van de spreker is geen afspraak meer. Vraag je om later terwijl iemand werkt ("Can we talk later?"), dan biedt het spel een ontmoeting aan als het werk erop zit, en die kan de stem voorstellen. Opgelost in de motor, voor elke wereld.
+- **Een aanbod kijkt naar de wereld (AC).** Oorzaak: de aanbiedingen keken naar waar de spreker dénkt dat iemand is, en niet of die er staat. Niemand biedt nu aan iemand te halen, naar iemand te brengen, op iemand te wachten of iemand iets te laten weten die er al staat. Niemand biedt iets aan dat je al draagt, tenzij je om nog een vraagt. Een ontmoeting na het werk telde het werk nog als bezwaar; ook dat is weg.
+
+Testen, in The Quiet Reach: praat met Tessa terwijl Mara erbij staat en vraag of ze met je op Mara wil wachten. In de Nethermarch: vraag Mirte in de bakkerij "Can we talk later?". Tests in `tests/m1033offers.test.ts`; de test van M10.29 over een ontmoeting volgt de nieuwe weg.
+
+Kosten: geen nieuwe aanroep. Een antwoord dat een ontmoeting in eigen woorden belooft zonder die voor te stellen, vraagt de bewaker nu opnieuw; dat kan af en toe een tweede poging kosten.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 15, alinea "Stand na M10.33: een aanbod is van het spel, nooit uit proza" (achter die van M10.29 over een tijd in de woorden van de spreker, die hiermee vervalt).
+
 ## M10.33 deel: niets kwijt bij herladen (K), 30 september 2026
 
 - **Oorzaak:** de ontwikkelversie herlaadt bij elke commit van een andere sessie, en een antwoord dat onderweg is, gaat verloren.

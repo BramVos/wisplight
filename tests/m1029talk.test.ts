@@ -117,9 +117,12 @@ describe('M10.29 B: words are never deeds', () => {
     expect(out).not.toMatch(/hands you a loaf/)
   })
 
-  it('a time and place she names herself is a meeting she proposes; the yes makes it an agreement that takes her there', async () => {
-    const { engine, out } = await talk(scripted('Mirte wipes her hands. "I\'ll be done at seventeen thirty. Meet me on the green then?"'), 'Can we talk later?')
-    expect(out).toMatch(/Mirte offers to meet you .*17:30\. YES to agree/)
+  // Since M10.33 AG a meeting is never read from her words: asked for later while she works, the game offers one at the
+  // end of her work, and she proposes it in the schema.
+  it('a meeting later is the game\'s offer she proposes; the yes makes it an agreement that takes her there', async () => {
+    const here = new Engine(content, { seed: 4 }).state.player.location
+    const { engine, out } = await talk(scripted({ reply: 'Mirte wipes her hands. "When I am done with the baking. Meet me here then?"', propose: `meet:${here}` }), 'Can we talk later?')
+    expect(out).toMatch(/Mirte offers to meet you at Canal Quay, 12:00\. YES to agree/)
     await engine.handle('yes')
     const meeting = (engine.state.agreements?.list ?? []).find((a) => a.kind === 'meet' && a.by === 'npc_mirte')
     expect(meeting).toBeDefined()

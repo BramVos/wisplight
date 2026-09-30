@@ -256,14 +256,21 @@ export function offersFor(world: World, npcId: string, topics: string[], text: s
   const offers: Offer[] = []
   const add = (o: Omit<Offer, 'decision' | 'reasons' | 'deed'>, to?: string) => {
     if (offers.some((x) => x.key === o.key)) return
-    const w = willing(world, npcId, o.kind, to)
+    // A meeting after their work is not in its way: its time counts.
+    const w = willing(world, npcId, o.kind, to, o.kind === 'meet' ? o.at : undefined)
     offers.push({ ...o, deed: deedOf(world, o), decision: w.yes ? 'yes' : 'no', reasons: w.reasons })
   }
-  const people = topics.filter((t) => world.content.npcs.has(t) && t !== npcId && world.alive(t))
+  // Someone who stands here needs no leading to, fetching, waiting for or word taken to (M10.33 AC: Tessa offered to
+  // wait with the stranger for Mara, who sat beside them).
+  const people = topics.filter((t) => world.content.npcs.has(t) && t !== npcId && world.alive(t) && world.npcState(t).location !== here)
   const places = topics.map((t) => placeOf(world, t)).filter((p): p is string => !!p && p !== here)
   // Things are topics as item_<id> in the journal.
   const items = topics.map((t) => (world.content.items.has(t) ? t : t.startsWith('item_') && world.content.items.has(t.slice(5)) ? t.slice(5) : undefined)).filter((t): t is string => !!t)
-  const when = parseWhen(text, world.now)
+  // A time the player names, or, asked for later while they work, the end of their work (M10.33 AG: a meeting is the
+  // game's offer the voice may propose, never one read from its words).
+  const day = routineNow(world, npcId)
+  const later = /\b(later|after (?:your |the )?(?:work|shift)|when (?:are you|you're|you are) (?:free|done|finished)|talk (?:again|more)|meet)\b/i.test(text) && day?.activity === 'work' && day.until > world.now ? day.until : undefined
+  const when = parseWhen(text, world.now) ?? later
   for (const person of people.slice(0, 2)) {
     const where = thinksIsAt(world, npcId, person)
     if (where === 'dead') continue
@@ -288,7 +295,9 @@ export function offersFor(world: World, npcId: string, topics: string[], text: s
     add({ key: `lead:${place}`, kind: 'lead', place, what: `walk ahead to ${nameOf(world, place)}`, intent: `be shown the way to ${nameOf(world, place)}` }, place)
     if (when !== undefined) add({ key: `meet:${place}`, kind: 'meet', place, at: when, what: `meet the stranger at ${nameOf(world, place)}, ${clockWords(world, when)}`, intent: `meet at ${nameOf(world, place)} then` }, place)
   }
-  for (const item of items.slice(0, 1)) offers.push(...thingOffers(world, npcId, item))
+  // Nothing the stranger already carries, unless they ask for another (M10.33 AC).
+  const another = /\b(another|more|second|one more|spare one|nog een)\b/i.test(text)
+  for (const item of items.filter((i) => another || (world.state.player.inventory[i] ?? 0) <= 0).slice(0, 1)) offers.push(...thingOffers(world, npcId, item))
   // "May I come in?" (M10.3): leave to be in their home, for the rest of the day.
   if (/\b(may i come in|can i come in|let me in|may i enter|could i come in|mag ik binnen)/i.test(text) && isSomeonesHome(world, npc.home)) {
     const hour = Math.floor(minuteOfDay(world.now) / 60)
@@ -308,25 +317,6 @@ export function offersFor(world: World, npcId: string, topics: string[], text: s
   return offers.slice(0, knob(world, 'talk.max_offers'))
 }
 
-
-/**
- * A meeting the speaker proposes in their own words (M10.29, Bram's playtest: "I'll be done at seventeen thirty, you
- * know where the common room is?" made no appointment): the time they name, at a place they name that they know, or
- * where they are. Only when they are willing; the player's yes makes it an agreement, which takes them there like any
- * meeting and counts as their word and the stranger's.
- */
-export function spokenMeet(world: World, npcId: string, said: string, topics: string[]): Offer | undefined {
-  // Their own day counts for "after my shift" (M10.29 T).
-  const at = parseWhen(said, world.now, { until: routineNow(world, npcId)?.until })
-  if (at === undefined) return undefined
-  const here = world.npcState(npcId).location
-  const known = world.knownLocations(npcId)
-  const place = topics.map((t) => placeOf(world, t)).find((p): p is string => Boolean(p && known.has(p))) ?? here
-  const w = willing(world, npcId, 'meet', place, at)
-  if (!w.yes) return undefined
-  const o = place === here ? { key: `meet:${here}`, kind: 'meet' as const, place: here, at, what: `meet the stranger here, ${clockWords(world, at)}`, intent: 'meet here then' } : { key: `meet:${place}`, kind: 'meet' as const, place, at, what: `meet the stranger at ${nameOf(world, place)}, ${clockWords(world, at)}`, intent: `meet at ${nameOf(world, place)} then` }
-  return { ...o, deed: deedOf(world, o), decision: 'yes', reasons: w.reasons }
-}
 
 /** Whether someone needs a thing themselves (what the brain knows): the only tool of their work, or what their trade uses. */
 function needs(world: World, npcId: string, item: string): boolean {

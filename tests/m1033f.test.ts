@@ -2,7 +2,6 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Engine, MockLlm, type Output } from '../src/engine'
 import { personView } from '../src/engine/acquaintance'
-import { promised } from '../src/engine/dialogue/guard'
 import { loadContentFromDir } from '../src/node/content'
 
 // M10.33 F, the talk does what it says (Bram's playtest and the review of 30
@@ -74,12 +73,5 @@ describe('M10.33 F: the talk does what it says', () => {
     for (const c of ['bye', '@goto loc_commons', '@bring sana', 'talk sana']) await engine.handle(c)
     await engine.handle('"Who keeps the station running?')
     expect(limit()).toBe(50)
-  })
-
-  it('reads a meeting only in the sentence that promises it, and the one after', () => {
-    // With room to tell the whole of it, Pip's wyrm that "sleeps soundest at noon" became a meeting at noon.
-    const pip = 'Pip looks up. "Come on, I\'ll take you there myself. They say a wyrm sleeps under the barrow. Nobody living has seen him. Tamsin says he sleeps soundest at noon."'
-    expect(promised(pip)).not.toMatch(/noon/)
-    expect(promised('Mirte nods. "I\'ll be done at six. Wait by the green." She goes back to her dough.')).toMatch(/done at six\. Wait by the green\./)
   })
 })
