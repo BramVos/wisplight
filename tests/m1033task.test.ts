@@ -73,6 +73,6 @@ describe('M10.33 V: what someone asks of the stranger comes from the game', () =
 
   it('shows what the journal says to do now beside the talk with the giver', async () => {
     const engine = await talkTo(scripted('Ilyan nods. "Morning."'), 'ilyan', 'loc_medical_bay')
-    expect(engine.status().talk?.now).toBe('Ask Niko Serrin about the listening station')
+    expect(engine.status().talk?.now).toBe('Ask Niko about the station')
   })
 })
