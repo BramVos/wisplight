@@ -8,7 +8,7 @@ import { knob } from './knobs'
 import { playModeOf } from './modes'
 import { factById, recordFact } from './news'
 import { activeIn, questlog, regionOfPlace } from './quests/engine'
-import { fit, questFromSketch, readSketch, sketchSchema } from './quests/sketch'
+import { endingProblems, fit, questFromSketch, readSketch, sketchSchema } from './quests/sketch'
 import { worldText } from './safety'
 import type { GameState, MadeQuest, NightQuestWant } from './state'
 import type { World } from './world'
@@ -196,6 +196,8 @@ export function makeNightQuest(world: World, want: NightQuestWant, reply: NightQ
   const asker = factById(world, want.asked)?.about[0]
   // Only the asker's matter, and not the world's main line.
   if (byKey('p')(sketch.giver) !== asker || sketch.kind === 'main' || sketch.kind === 'personal') return undefined
+  // At least three ways to end, two of them solutions by different ways, and one where it goes wrong (M10.30).
+  if (endingProblems(sketch).length) return undefined
   const id = freeId(world, fit(sketch.name, 80)?.split(/\s+/).slice(0, 4).join('_') ?? 'quest')
   const quest = questFromSketch(world, { ...sketch, begins: 'talk' }, id, { person: byKey('p'), place: byKey('l'), places, skills, dc: MADE_DC, minStages: 2, mostStages: 4 })
   if (!quest) return undefined

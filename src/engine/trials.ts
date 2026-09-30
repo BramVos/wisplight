@@ -35,6 +35,7 @@ import { buildInput } from './chronicler'
 import { assignKeys, buildRequest, DEFAULT_LIMITS } from '../chronicler'
 import { askedOfStranger } from './dialogue/aftertalk'
 import { makeNightQuest, nightQuestReply, type NightQuestReply } from './nightquest'
+import { endingProblems, readSketch } from './quests/sketch'
 
 // A fixed situation for every kind of model call (M10.20; Bram, 28 September
 // 2026: every kind of call really tried, and that written down). The same
@@ -322,6 +323,10 @@ const SITUATION_BUILDS: Record<string, Build> = {
     const built = (value: unknown): string[] => {
       const reply = value as NightQuestReply
       if (!reply.make) return []
+      // Too few endings is its own reason (M10.30); anything else, the quest could not be built.
+      const sketch = readSketch(reply.quest)
+      const endings = sketch ? endingProblems(sketch) : []
+      if (endings.length) return endings
       return played && makeNightQuest(played.world, want, reply) ? [] : ['no quest the game can carry could be built of it']
     }
     return { about: 'Harmen asked the stranger to look at his torn sails, and after the night round a quest is made of it', request, check: (text) => (nightQuestReply(text) ? checked(request, text, built) : ['the reply could not be read']) }
