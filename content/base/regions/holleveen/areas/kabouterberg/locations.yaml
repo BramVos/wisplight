@@ -39,6 +39,7 @@ locations:
         take: You leave the bowl where it is. It was put there for the kabouters, not for you.
         verbs:
           drink: You bend over the bowl, and the whole hill seems to hold its breath. You straighten up again. That milk is not yours to drink.
+          leave: The bowl is full already. Milk for the kabouters goes out once a night, after dark, by whoever brings it.
       - words: [sand, hill]
         look: Pale, fine sand, dry even after rain. It has been swept smooth round the bowl, and there are no footprints in it but yours.
         verbs:
@@ -93,6 +94,7 @@ locations:
         look: The roots grip the hilltop like fingers, grey and smooth, and under them the hollow opens into the dark. IN takes you there.
         verbs:
           climb: The lowest branches bend almost to the sand, easy to climb. You look at the bowl, and at the hollow, and decide against it.
+          set: The path under the oak would take a snare, if you had rope for one.
       - words: [leaves, branches, wind]
         look: The leaves hiss overhead in a wind you cannot feel down here, and the lowest branches bend almost to the sand.
         verbs:

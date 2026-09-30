@@ -19,13 +19,13 @@ const worlds = {
 }
 
 describe('M10.33 AE: every quest played as a new player', () => {
-  it('plays every quest of every world by its Now lines, and only the antenna fault is still stuck', async () => {
+  it('plays every quest of every world by its Now lines, none stuck', async () => {
     const stuck: string[] = []
     for (const content of Object.values(worlds)) {
       for (const { quest, runs } of await stuckQuests(content, new MockLlm('good'))) for (const r of runs) if (!r.moved) stuck.push(`${quest}@${r.stage}`)
     }
-    // Orison s3 waits for M10.33 AA (the trace moves to the splice in the Cable Gallery, with its own verb): then none.
-    expect(stuck).toEqual(['story_the_orison_recordings@s3'])
+    // Orison s3 moved with M10.33 AA: the trace is typed on the feed in the Cable Gallery, under the floor.
+    expect(stuck).toEqual([])
   }, 300_000)
 
   it('does The Short on the Count to its last stage by its Now lines, the manifests read at the lock', async () => {

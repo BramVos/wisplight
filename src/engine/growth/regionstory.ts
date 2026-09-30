@@ -12,7 +12,7 @@ import { worldText } from '../safety'
 import type { GameState } from '../state'
 import type { World } from '../world'
 import { worldFixedPart } from '../worldfixed'
-import { fit, questFromSketch, sketchSchema, type QuestSketch } from '../quests/sketch'
+import { DEED_RULE, fit, placeThings, questFromSketch, sketchSchema, type QuestSketch } from '../quests/sketch'
 import { districtOf, districtsOf } from './districts'
 import { farPlaceOf } from './far'
 import { outlineOf } from '../outlines'
@@ -169,6 +169,7 @@ const STORY_RULES = [
   'A DEED MAY BE A WORD (word): a code or a password said to the person (with) in a talk, or said or typed at the place (at), in place of a command; give the word first in a deed\'s done or in what someone knows.',
   // Secret and shut places (M10.32): marked in PLACES.
   SECRET_PLACES_RULE,
+  DEED_RULE,
   'ENDINGS: at least three ways the quest may end, each a deed (say, at, with, skill as a stage has) with a name and what came of it (text): at least two solutions by different ways (way: talk, give for giving or paying, deed for doing something with the world, word for a code or a password), and at least one where it goes wrong (solution false, way fail). The endings are the deeds of the last stage: only the last stage may leave its own say, at and done empty; every stage before it has its deed.',
   `WATCHERS: up to ${MOST_WATCHERS}, each setting off one signal of the STANDARD AFTERMATH (by its name) when the quest is taken up (on: taken) or done (on: done), about one or two of the PEOPLE (who, by key; the first is the one it happens to), with why in one sentence. Without a quest, none.`,
   'LORE: one, or null: a piece of lore about the place that its people tell: a name, a summary (one sentence), details (two or three sentences), a story (a short paragraph as someone tells it), and teller (the key of one of the PEOPLE who tells it, or empty).',
@@ -208,7 +209,7 @@ export function storyRequest(world: World, topic: string): LlmRequest {
       ...(t?.story ? [`What they tell of it: ${t.story}`] : []),
       ...(quarters.length ? [`QUARTERS: ${quarters.map((q) => `${q.name}: ${q.line}`).join('; ')}`] : []),
       'PLACES:',
-      ...places.map((l) => `  ${key.place.get(l.id)} ${l.name}: ${l.summary ?? l.description.day.split(/(?<=[.!?])\s/)[0]}${secretNote(content, l.id)}`),
+      ...places.map((l) => `  ${key.place.get(l.id)} ${l.name}: ${l.summary ?? l.description.day.split(/(?<=[.!?])\s/)[0]}${placeThings(content, l)}${secretNote(content, l.id)}`),
       'PEOPLE:',
       ...people.map((n) => `  ${key.person.get(n.id)} ${n.name}, ${content.professions.get(n.profession)?.name ?? n.profession}, at ${key.place.get(n.home) ?? n.home}. ${n.public_facts[0] ?? ''}${secretsNow(n)}`),
       `STANDARD AFTERMATH: ${aftermath.length ? aftermath.map((a) => `${a.signal} (${a.what})`).join('; ') : 'none'}`,

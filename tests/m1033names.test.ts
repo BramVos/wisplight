@@ -68,7 +68,8 @@ describe('M10.33 C: the goal in view', () => {
     expect(open).toMatchObject({ name: 'The Orison Recordings', now: 'Ask Niko about the station' })
     const page = questPage(engine.world, 'story_the_orison_recordings')!
     expect(page.lines).toContain('Given by [Dr Ilyan Sorell].')
-    expect(page.lines.join('\n')).toMatch(/Where: \[Orison Listening Room\]\./)
+    // Its first deed is with Niko, wherever he is (M10.33 AA).
+    expect(page.lines.join('\n')).toMatch(/With: \[Niko(?: Serrin)?\]\./)
   })
 
   it('knows the lore a new background names from the first minute', async () => {

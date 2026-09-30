@@ -50,6 +50,9 @@ locations:
       - words: [rack, drives, recording drives, recordings, original recordings]
         look: A tall rack of recording drives, each with a small status light. Several lights are amber and one is dark, and a handwritten tag on the rack reads ORIGINALS. DO NOT OVERWRITE.
         take: The drives are clamped into the rack, and pulling one while it is running might destroy exactly what you came to recover.
+        # COPY THE ORIGINAL RECORDINGS is typed on the rack (M10.33 AA).
+        verbs:
+          copy: The console will not release the originals without the access sequence, and you do not have it.
       - { words: [desk], look: "A metal desk with a cold mug, a pen on a string and the binder of logs." }
       - words: [binder, logs, maintenance logs, log]
         look: A thick binder of printed and handwritten maintenance logs, its pages curled with damp.
@@ -94,5 +97,7 @@ locations:
         take: Cutting into a live feed would be the quickest way to lose what you came for.
         verbs:
           touch: The newer cable is warm, much warmer than the old feed beside it.
+          trace: The feed runs along its tray towards the consoles above, and the newer cable spliced into it runs with it, out of sight.
+          follow: The feed runs along its tray towards the consoles above, and the newer cable spliced into it runs with it, out of sight.
       - words: [ladder, hatch]
         look: A steel ladder up to the square hatch behind the consoles, and the flicker of the fault codes above it.

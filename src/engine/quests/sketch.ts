@@ -1,4 +1,4 @@
-import type { Location } from '../content'
+import type { Content, Location } from '../content'
 import { idWordsIn } from '../idwords'
 import { crossesLimits, readsAsInstruction } from '../safety'
 import { wordsOf } from '../said'
@@ -14,6 +14,20 @@ import type { World } from '../world'
 // them read it here, so there is one form.
 
 type Raw = Record<string, unknown>
+
+/**
+ * How a deed is done (M10.33 AA: "trace the antenna fault" was a sentence the voice chose for the player), the same
+ * rule for every call that writes a quest.
+ */
+export const DEED_RULE =
+  'A DEED WITH NOBODY (with empty) is typed on a thing of its place: a verb of its Things in PLACES, or LOOK, SEARCH, READ, USE, OPEN, TAKE or GIVE ("read the manifests", "touch the splice"), never a sentence such as "trace the antenna fault", and its goal names that verb. A deed with someone (with) is what the stranger says to them ("ask niko about the station").'
+
+/** The things of a place a deed can be done to, with their verbs, for the PLACES of a prompt (M10.33 AA). */
+export function placeThings(content: Pick<Content, 'objectTypes'>, location: Location): string {
+  const details = [...location.details, ...location.objects.flatMap((o) => content.objectTypes.get(o.type)?.details ?? [])]
+  const things = details.filter((d) => Object.keys(d.verbs ?? {}).length).slice(0, 5).map((d) => `${d.words[0]} (${Object.keys(d.verbs!).join(', ')})`)
+  return things.length ? ` Things: ${things.join('; ')}.` : ''
+}
 
 /** The kinds of quest a sketch may be; `main` is the world's main line (M10.30). */
 export const SKETCH_KINDS = ['main', 'request', 'mystery', 'bargain', 'discovery', 'social', 'trial', 'conflict', 'personal'] as const

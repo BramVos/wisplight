@@ -225,9 +225,9 @@ export class MockLlm implements LlmClient {
     // Three ways to end (M10.30): talking it through, doing something with the world, and letting it go wrong; the main line a third solution.
     const endings = (giver: { key: string; name: string }, main: boolean) => [
       { name: 'Talked through', text: `${first(giver)} hears you out, and it is settled with words.`, solution: true, way: 'talk', say: `talk ${first(giver).toLowerCase()} round`, at: at(0), with: giver.key, skill: '' },
-      { name: 'Put right', text: 'You put it right with your own hands.', solution: true, way: 'deed', say: 'put the matter right', at: at(1), with: '', skill: '' },
+      { name: 'Put right', text: 'You put it right with your own hands.', solution: true, way: 'deed', say: 'search the place', at: at(1), with: '', skill: '' },
       ...(main ? [{ name: 'Paid off', text: 'A payment closes the matter, if not the questions.', solution: true, way: 'give', say: 'pay the debt', at: at(0), with: giver.key, skill: '' }] : []),
-      { name: 'Let slide', text: 'Nobody sees to it, and it goes wrong.', solution: false, way: 'fail', say: 'let the matter slide', at: at(0), with: '', skill: '' },
+      { name: 'Let slide', text: 'Nobody sees to it, and it goes wrong.', solution: false, way: 'fail', say: 'give up the matter', at: at(0), with: '', skill: '' },
     ]
     const line = (kind: string, giver: { key: string; name: string }, title: string, stages: (ReturnType<typeof stage> & { lived?: unknown; word?: string })[], extra: Record<string, unknown> = {}) => ({
       name: title,

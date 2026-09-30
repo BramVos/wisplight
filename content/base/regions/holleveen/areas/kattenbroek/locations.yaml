@@ -36,6 +36,12 @@ locations:
         ladder drawn up. Fish bones hang from the eaves on strings and turn in
         the wind, clicking softly. A cat sits on the top rung and does not
         blink. The reed path runs back west.
+    # A verb for the deed of the grey cat (M10.33 AA): BURN THE HUT is typed on the hut, never only a sentence.
+    details:
+      - words: [hut, planks, stilts, eaves, roof, fish bones]
+        look: Grey planks gone soft with damp, a roof of reed pulled low over them, and fish bones on strings clicking under the eaves.
+        verbs:
+          burn: The reed of the roof is dry enough under the eaves to take a spark. Whether it should is another matter, and not one the fen would forget.
     exits:
       west: { to: loc_kattenbroek_edge, minutes: 5 }
       east: { to: loc_kattenbroek_catyard, minutes: 2 }

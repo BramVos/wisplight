@@ -8,7 +8,7 @@ import { knob } from './knobs'
 import { playModeOf } from './modes'
 import { factById, recordFact } from './news'
 import { activeIn, questlog, regionOfPlace } from './quests/engine'
-import { endingProblems, fit, questFromSketch, readSketch, sketchSchema } from './quests/sketch'
+import { DEED_RULE, endingProblems, fit, placeThings, questFromSketch, readSketch, sketchSchema } from './quests/sketch'
 import { worldText } from './safety'
 import type { GameState, MadeQuest, NightQuestWant } from './state'
 import type { World } from './world'
@@ -49,6 +49,7 @@ const RULES = [
   'ENDINGS (always): at least three ways the quest may end, each a deed (say, at, with, skill as a stage has) with a name and what came of it (text): at least two solutions by different ways (way: talk, give for giving or paying, deed for doing something with the world), and at least one where it goes wrong (solution false, way fail). The endings are the deeds of the last stage, so only the last stage may leave its own say, at and done empty; every stage before it has its deed.',
   // Secret and shut places (M10.32): marked in PLACES.
   SECRET_PLACES_RULE,
+  DEED_RULE,
   'TRUTHS: what the story keeps hidden, if anything: text, the plain words that would give it away (words), and the stage from which people may say it (from, counted from 1). What the world keeps true stands in THE WORLD\'S OWN TRUTH: never against it.',
   'Keep to what was said: the ask, the talks and the storyline. No death, no fight, no money out of nothing; it can be done with what is there. Use only keys given. JSON only.',
 ].join('\n')
@@ -149,7 +150,7 @@ export function nightQuestRequest(world: World, want: NightQuestWant): LlmReques
       'PEOPLE:',
       ...people.map(([k, n]) => `  ${k} ${n.name}, ${content.professions.get(n.profession)?.name ?? n.profession}, at ${key[n.home] ?? n.home}. ${n.public_facts[0] ?? ''}`),
       'PLACES:',
-      ...places.map(([k, l]) => `  ${k} ${l.name}: ${l.summary ?? l.description.day.split(/(?<=[.!?])\s/)[0]}${secretNote(content, l.id)}`),
+      ...places.map(([k, l]) => `  ${k} ${l.name}: ${l.summary ?? l.description.day.split(/(?<=[.!?])\s/)[0]}${placeThings(content, l)}${secretNote(content, l.id)}`),
       `SKILLS: ${skills.length ? skills.join(', ') : 'none'}`,
       `QUESTS RUNNING HERE: ${running.length ? running.join('; ') : 'none'}`,
     ].join('\n'),

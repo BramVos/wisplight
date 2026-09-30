@@ -404,6 +404,8 @@ function enterStage(world: World, host: QuestHost, questId: string, stageId: str
   q.stageAt = world.now
   q.path.push(stageId)
   out.push({ kind: 'system', text: `${quest.name}: ${stage.text}` })
+  // What to do now changes with it, in view (M10.33 AA).
+  if (stage.goal?.trim()) out.push({ kind: 'system', text: `Now: ${stage.goal.trim()}` })
   host.heard?.(stage.text)
   applyEffects(world, host, questId, stage.on_enter ?? [], out)
 }
@@ -618,6 +620,8 @@ function perform(world: World, host: QuestHost, questId: string, q: QuestState, 
   }
   if (success) {
     q.done.push(action.id)
+    // A deed shows as a deed (M10.33 AA): what you did, and where the story stands, before what it brings.
+    out.push({ kind: 'system', text: deedLine(world, questId, q, action) })
     out.push({ kind: 'narration', text: action.text })
     applyEffects(world, host, questId, action.effects, out)
   } else {
@@ -659,23 +663,36 @@ export function doDeed(world: World, host: QuestHost, key: string, deed: Deed): 
 /**
  * The quest actions that can be done here and now with someone (M7.2): the
  * voice gets them, so that free speech in a conversation can mean one of
- * them, even in other words than the fixed phrases.
+ * them, even in other words than the fixed phrases. Only a deed with this
+ * person (M10.33 AA: the voice chose "copy the recordings" and "trace the
+ * fault" for the player in a talk with Niko); a deed on the world is the
+ * player's own verb.
  */
 export function conversationActions(world: World, npcId: string): { key: string; intent: string }[] {
-  const here = world.state.player.location
-  const area = world.content.locations.get(here)?.area
   const list: { key: string; intent: string }[] = []
   for (const [quest, q] of active(world)) {
     for (const action of quest.actions ?? []) {
       if (action.once && q.done.includes(action.id)) continue
-      const withThem = action.with === npcId
-      const hereOnly = !action.with && (action.at.length === 0 || action.at.includes(here) || (area !== undefined && action.at.includes(area)))
-      if (!withThem && !hereOnly) continue
+      if (action.with !== npcId) continue
       if (actionBlocked(world, quest.id, action) !== undefined) continue
       list.push({ key: `${quest.id}:${action.id}`, intent: action.intent ?? plainWords(action.say[0]!) })
     }
   }
   return list.slice(0, 12)
+}
+
+/** "You copy the original recordings. (The Orison Recordings, 2 of 5)": the deed in plain words, and the stage. */
+function deedLine(world: World, questId: string, q: QuestState, action: QuestAction): string {
+  const quest = world.content.quests.get(questId)!
+  const stages = quest.stages ?? []
+  const at = Math.max(0, stages.findIndex((s) => s.id === q.stage)) + 1
+  let words = (action.intent ?? plainWords(action.say[0] ?? '')).trim().replace(/[.!]+$/, '')
+  // The people it names by their names as written (intents are lower case: "ask niko about the station").
+  for (const npc of world.content.npcs.values()) {
+    const call = callName(npc)
+    words = words.replace(new RegExp(`\\b${call.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g'), call)
+  }
+  return `You ${words}. (${quest.name}, ${at} of ${stages.length})`
 }
 
 /** A quest action by its key, when the voice recognised it in what the player said. */
@@ -741,9 +758,15 @@ export function questPage(world: World, questId: string): { name: string; lines:
     const givers = quest.givers.filter((g) => world.content.npcs.has(g) && world.state.npcs[g] && !world.state.npcs[g]!.dead).map((g) => `[${world.knowsName(g) ? world.npc(g).name : world.seenName(g)}]`)
     const now = lines.findIndex((l) => l.startsWith('Now: '))
     if (givers.length) lines.splice(now >= 0 ? now : lines.length, 0, `Given by ${givers.join(' and ')}.`)
-    const places = [...new Set((quest.actions ?? []).filter((a) => !(a.once && q.done.includes(a.id)) && allHold(world, a.when, quest.id)).flatMap((a) => a.at))]
+    const open = (quest.actions ?? []).filter((a) => !(a.once && q.done.includes(a.id)) && allHold(world, a.when, quest.id))
+    // Only places the stranger knows of: a secret one (the Cable Gallery) is found, not read here (M10.33 AA).
+    const known = world.state.player.journal ?? {}
+    const places = [...new Set(open.flatMap((a) => a.at))].filter((p) => known[p] !== undefined)
     const named = places.flatMap((p) => (world.content.locations.get(p)?.name ? [`[${world.content.locations.get(p)!.name}]`] : []))
     if (named.length) lines.push(`Where: ${named.join(', ')}.`)
+    // A deed with someone is done where they are (M10.33 AA): with whom.
+    const people = [...new Set(open.filter((a) => a.with && !a.at.length).map((a) => a.with!))].filter((n) => world.content.npcs.has(n))
+    if (people.length) lines.push(`With: ${people.map((n) => `[${world.knowsName(n) ? world.npc(n).name : world.seenName(n)}]`).join(', ')}.`)
   }
   const clock = Object.values(world.state.clocks ?? {}).find((c) => (c as Clock).id.startsWith(questId) || (quest.stages ?? []).some((s) => s.on_enter.some((e) => 'clock' in e && e.clock.id === (c as Clock).id))) as Clock | undefined
   if (clock && !q.ended) lines.push(`${clock.name}: ${clock.filled}/${clock.size}.`)

@@ -340,6 +340,8 @@ items:
     aliases: [draught, potion, cat draught, cat's draught, brew, drankje]
     description: A small brown bottle of Aaltje's. It smells of valerian and river mud.
     tags: [remedy, magic]
+    verbs:
+      drink: It smells of valerian and river mud. Aaltje made it for a reason, and you are not sure yet what it is.
     value: 0
 
   - id: measuring_chest

@@ -51,6 +51,12 @@ object_types:
     aliases: [lamp, great lamp, light, lamp of skerrow]
     description: The Lamp of Skerrow, a bowl of bronze as wide as a cartwheel behind a lens of green glass, cold and black with old soot.
     affordances: []
+    # FILL THE LAMP (M10.33 AA): the deed of Off Skerrow is typed on the lamp's bowl.
+    details:
+      - words: [bowl, bronze bowl, wick, lamp bowl]
+        look: The bronze bowl of the lamp, dry and black with old soot around a wick as thick as your thumb.
+        verbs:
+          fill: The bowl is dry, and one flask would hardly wet it. It wants casks of oil.
 
   - id: waystone
     name: waystone

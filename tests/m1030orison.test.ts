@@ -19,7 +19,10 @@ export const ORISON: { step: string; shows?: RegExp }[] = [
   { step: 'wait for niko' },
   { step: 'ask niko about the station', shows: /access sequence/ },
   { step: 'copy the original recordings', shows: /several segments of the repeating transmission were removed/ },
-  { step: 'trace the antenna fault', shows: /unofficial bypass/ },
+  // The feed runs under the floor (M10.33 AA): the hatch behind the consoles, and the deed typed on the splice.
+  { step: 'search behind the consoles', shows: /hatch/ },
+  { step: 'open the hatch' },
+  { step: 'trace the antenna feed', shows: /unofficial bypass/ },
   { step: '@goto loc_workshop' },
   { step: 'wait for tessa' },
   { step: 'ask tessa about the drive test', shows: /7411/ },

@@ -45,8 +45,10 @@ async function playShortest(content: Content, id: string): Promise<string | unde
       continue
     }
     if (!action) return undefined
-    engine.state.player.location = action.at[0]!
-    if (action.with) Object.assign(engine.state.npcs[action.with]!, { location: action.at[0], activity: 'standing about', busyUntil: engine.world.now + 600, plan: [] })
+    // A deed with someone may have no place (M10.33 AA): it is done where they work.
+    const person = action.with ? content.npcs.get(action.with) : undefined
+    engine.state.player.location = action.at[0] ?? person?.work ?? person?.home ?? engine.state.player.location
+    if (action.with) Object.assign(engine.state.npcs[action.with]!, { location: engine.state.player.location, activity: 'standing about', busyUntil: engine.world.now + 600, plan: [] })
     // A check may fail; the deed may be tried again.
     for (let tries = 0; tries < 20 && !action.effects.every((e) => !('set' in e) || flags[e.set] !== undefined); tries++) await engine.handle(action.intent ?? '')
   }

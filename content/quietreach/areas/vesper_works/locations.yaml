@@ -125,6 +125,9 @@ locations:
       - words: [crates, stacked crates, stores crates]
         look: A stack of crates against the hangar wall, stencilled with the port's stores marks and taped over with fresh labels in another hand.
         take: They are heavy, and they belong to somebody. Whose is the question.
+        # CARRY THE CRATES BACK is typed on them (M10.33 AA).
+        verbs:
+          carry: They are heavy, and they belong to somebody. Carrying them anywhere wants a reason, and whose they are.
 
   - id: loc_peregrine_common_deck
     name: Peregrine — Common Deck

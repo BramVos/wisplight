@@ -1,5 +1,21 @@
 # Changelog
 
+## M10.33 deel: een daad is zichtbaar, en een daad op de wereld doe je zelf (AA), 30 september 2026
+
+- **In een gesprek alleen een daad met die persoon (AA).** Oorzaak: `conversationActions` gaf de stem alle daden van de plek, ook die zonder persoon, zodat een gesprek met Niko de opnamen kopieerde en de fout opspoorde. Nu biedt een gesprek alleen daden met die persoon (`with`). Opgelost in de motor, voor elke wereld.
+- **Een daad staat er als daad (AA).** "You copy the original recordings. (The Orison Recordings, 2 of 5)" staat voor wat de daad oplevert. Een nieuw stadium zegt meteen "Now: ...".
+- **Een daad op de wereld typ je zelf (AA).** Check meldt een daad zonder persoon die alleen een zin is: het eerste woord moet een werkwoord van het spel zijn, of een werkwoord van een ding op zijn plek. De stap Verhalen, de streekronde en `night_quest` zien per plek de dingen met hun werkwoorden, met dezelfde regel.
+- **Inhoud.** In The Quiet Reach doe je het spoor van de antenne nu op de feed in de Cable Gallery, onder de vloer ("trace the antenna feed", "touch the splice"). Het rek heeft `copy`, de Commons een scherm met `play`, de kratten in de hangar `carry`. Daden met iemand hebben geen plek meer, dus "ask tessa about the drive test" werkt waar Tessa ook is. De Nethermarch kreeg werkwoorden op de hut (`burn`), de stakes (`pull`), de kast met grootboeken (`burn`), het drankje van Aaltje (`drink`), de kom (`leave`) en de wortels (`set`). Tegen de envoy kun je het ook de markt vertellen. Skerrow kreeg `fill` op de kom van de lamp.
+- **De questpagina.** "Where:" noemt alleen plekken die je kent, zodat de geheime Cable Gallery niet uitlekt. Een daad met iemand staat er als "With: [Niko Serrin]".
+
+Testen, in The Quiet Reach: kopieer de opnamen, doe `search behind the consoles` en `open the hatch`, en typ `trace the antenna feed`. Kijk naar de regel met de stand, en naar Now. Tests in `tests/m1033deeds.test.ts`; de nieuwe-speler-run van AE vindt geen vastgelopen stadium meer.
+
+Kosten: geen nieuwe aanroep. De prompts van de stap Verhalen, de streekronde en `night_quest` hebben één regel meer en per plek hooguit vijf dingen. Hun vaste deel wordt één keer opnieuw in de cache geschreven.
+
+Wat de editor en de kroniekverteller leerden: een regel onder Check voor een daad die alleen een zin is; het contract (een daad zonder `with` typ je met een werkwoord, en alleen een daad met `with` kan in een gesprek); de stap Verhalen van de wereldgids en `docs/NEW-WORLD.md`; de drie schrijvers van quests en de mock.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 14, alinea "Stand na M10.33: een daad is zichtbaar, en een daad op de wereld doe je zelf".
+
 ## M10.33 deel: elke quest gespeeld als nieuwe speler (AE), 30 september 2026
 
 - **Oorzaak:** de controle of een quest te doen is, keek naar plekken, vlaggen en aflopen. Of het ding dat een daad noemt er is, of dat de "Now"-regel is wat je typt, controleerde niemand. De speeltest typte de toverwoorden van de hoofdlijn letterlijk, dus die slaagde altijd.

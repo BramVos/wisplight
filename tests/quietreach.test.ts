@@ -34,7 +34,7 @@ describe('The Quiet Reach, as Bram built it in the app', () => {
     const advice = /^quest (story_short_on_the_count|story_a_second_opinion): 2 solutions, the design asks/
     // The station cut in two areas (M10.33 L) waits for Bram's choice: Vesper Works into Port Vesper, or the ways put right.
     // Orison s3's Now line waits for M10.33 AA, which moves the trace to the splice.
-    const station = /do not fit one plan|one settlement in two areas|story_the_orison_recordings, stage s3: the Now line/
+    const station = /do not fit one plan|one settlement in two areas/
     expect(warnings(reach).filter((w) => !/made nowhere and brought by no route|no origin, so nobody knows where it belongs/.test(w) && !advice.test(w) && !station.test(w))).toEqual([])
   })
 

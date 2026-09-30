@@ -53,7 +53,7 @@ quests:
       - id: a2
         say: [ask (?:(?:the|a|an) )?sorell (?:(?:the|a|an) )?about (?:(?:the|a|an) )?spares]
         intent: ask Sorell about the spares
-        at: [loc_guest_quarters]
+        # A deed with someone is done where they are (M10.33 AA): the story asks no place.
         with: npc_ilyan_sorell
         when:
           - { flag: story_short_on_the_count_1 }
@@ -65,7 +65,7 @@ quests:
       - id: e1
         say: [tell (?:(?:the|a|an) )?mara (?:(?:the|a|an) )?about (?:(?:the|a|an) )?spares]
         intent: tell mara about the spares
-        at: [loc_arrival_lock]
+        # A deed with someone is done where they are (M10.33 AA): the story asks no place.
         with: npc_mara_venn
         when:
           - { flag: story_short_on_the_count_2 }
@@ -92,7 +92,7 @@ quests:
       - id: e3
         say: [keep (?:(?:the|a|an) )?quiet (?:(?:the|a|an) )?about (?:(?:the|a|an) )?spares]
         intent: keep quiet about the spares
-        at: [loc_guest_quarters]
+        # A deed with someone is done where they are (M10.33 AA): the story asks no place.
         with: npc_ilyan_sorell
         when:
           - { flag: story_short_on_the_count_2 }
@@ -269,8 +269,8 @@ quests:
             to: s3
       - id: s3
         text: Someone cut the recordings, but that does not explain why the station itself is failing. The fault lies somewhere in the antenna system.
-        goal: Trace the fault in the station's antenna system
-        asks: "The copies are one thing, but the station is still failing. Find out why. I would look at the antenna system first."
+        goal: Trace the antenna feed where it runs under the floor
+        asks: "The copies are one thing, but the station is still failing. Find out why. I would follow the antenna feed first, wherever it goes."
         knows:
           npc_niko_serrin: Niko Serrin knows he fitted the antenna bypass himself to keep the measurements running and never reported it; once the stranger has found it, he admits it and asks them to let him put it right.
           npc_ilyan_sorell: Ilyan Sorell knows nothing of the bypass and is relieved the fault has an ordinary cause; he still says nothing about the cut segments.
@@ -310,7 +310,7 @@ quests:
       - id: a1
         say: [ask (?:(?:the|a|an) )?niko (?:(?:the|a|an) )?about (?:(?:the|a|an) )?station]
         intent: ask niko about the station
-        at: [loc_orison_listening_room]
+        # A deed with someone is done where they are (M10.33 AA): the story asks no place.
         with: npc_niko_serrin
         when:
           - { not_flag: story_the_orison_recordings_1 }
@@ -330,9 +330,12 @@ quests:
         text: The raw buffer copies across in fits and starts. When you compare it with the archive index, you find that several segments of the repeating transmission were removed at this console, and their timestamps were rewritten to close the gaps.
         once: false
       - id: a3
-        say: [trace (?:(?:the|a|an) )?antenna (?:(?:the|a|an) )?fault]
-        intent: trace the antenna fault
-        at: [loc_orison_listening_room]
+        # Typed on the feed in the Cable Gallery (M10.33 AA), never a sentence in the Listening Room.
+        say:
+          - '(?:trace|follow) (?:(?:the|a|an) )?(?:antenna )?(?:feed|fault|cable|newer cable|splice)(?: .*)?'
+          - '(?:touch|examine|look at|x) (?:(?:the|a|an) )?(?:splice|newer cable|tape)'
+        intent: trace the antenna feed
+        at: [loc_orison_cable_gallery]
         when:
           - { flag: story_the_orison_recordings_2 }
           - { not_flag: story_the_orison_recordings_3 }
@@ -344,7 +347,7 @@ quests:
         say:
           - ask (?:(?:the|a|an) )?tessa (?:(?:the|a|an) )?about (?:(?:the|a|an) )?drive (?:(?:the|a|an) )?test
         intent: ask tessa about the drive test
-        at: [loc_workshop]
+        # A deed with someone is done where they are (M10.33 AA): the story asks no place.
         with: npc_tessa_rook
         when:
           - { flag: story_the_orison_recordings_3 }

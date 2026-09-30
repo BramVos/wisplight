@@ -200,6 +200,11 @@ locations:
         take: It is screwed to the wall.
         verbs:
           read: Names and dates, some of them crossed out, in several hands.
+      # Where the old ledgers are (M10.33 AA): the deed on a page of one is typed on it.
+      - words: [cupboard, ledger, old ledger, ledgers]
+        look: A low cupboard under the beam, where the old ledgers of the weighings are kept.
+        verbs:
+          burn: Burning a whole ledger would be missed by morning. If one page matters, you would need to know which.
 
   - id: loc_waagdam_dirck_house
     name: The Weighmaster's House

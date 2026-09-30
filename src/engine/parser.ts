@@ -234,6 +234,11 @@ const VERB_ALIASES: Record<string, string> = {
   trouw: 'marry',
 }
 
+/** Whether a word is a verb of the game, in English or Dutch (M10.33 AA: a deed on the world is typed with one). */
+export function isGameVerb(word: string): boolean {
+  return Object.hasOwn(VERB_ALIASES, word.toLowerCase())
+}
+
 export function parseDirection(word: string | undefined): Direction | undefined {
   return word ? DIRECTION_ALIASES[word.toLowerCase()] : undefined
 }

@@ -6,7 +6,7 @@ import { voiceSummary } from './dialogue/voice'
 import { recheckDraft, type Draft, type DraftChange } from './editor'
 import { worldPrefix } from './edit'
 import { storyReply, storySchema } from './growth/regionstory'
-import { endingProblems, questFromSketch, readSketch, SKETCH_KINDS, type QuestSketch } from './quests/sketch'
+import { DEED_RULE, endingProblems, placeThings, questFromSketch, readSketch, SKETCH_KINDS, type QuestSketch } from './quests/sketch'
 import { solvableProblems } from './quests/solvable'
 import { hasPlayed, type PlayedGame } from './played'
 import { worldText } from './safety'
@@ -78,6 +78,7 @@ export const STORY_STEP_RULES = [
   'A DEED MAY BE A WORD (word): a code or a password the stranger says to the person (with) in a talk, or says or types at the place (at), in place of a command (say stays empty). Give the word first where the stranger can learn it: a deed\'s done, what someone knows at a stage, or a secret. A lock that takes a code (see PLACES) opens with its own code. An ending may go by a word too (way word).',
   // Secret and shut places (M10.32): marked in PLACES.
   SECRET_PLACES_RULE,
+  DEED_RULE,
   'ENDINGS (every line): at least three ways it may end, each a deed (say, at, with, skill as a stage has) with a name and what came of it (text): at least two solutions by different ways (way: talk, give for giving or paying, deed for doing something with the world, word for a code or a password), three for the main line; and at least one where it goes wrong (solution false, way fail) or the lapse. A line of one stage (a small request) needs only two: a solution, and one where it goes wrong or runs out; a second solution only by another way. Two solutions are two only by different ways, never two versions of one talk. The endings are the deeds of the last stage: only the last stage may leave its own say, at and done empty; every stage before it has its deed.',
   'SIZES: small (one person and one place, one or two stages), middle (two or three people, two places or a thing, two stages), large (the main line: three to five stages, across the settlements, with more people). Choose the size by what the matter is.',
   'THE MAIN LINE (kind main, begins start): from the stranger\'s task, three to five stages across the world; its truths: what the story keeps hidden, each with the words a reply would give it away by (plain phrases, three letters or more: "cut the recordings") and the stage from which it may be said (a number; leave the last stage for the whole truth); and lapses: what the world does if the stranger does nothing (after how many game days, and the line that says what came of it: the recordings are wiped, the supply ship leaves without them).',
@@ -138,7 +139,7 @@ export function storiesRequest(files: ContentFile[], scope: StoryScope, fullness
     prompt: [
       `${scope.kind === 'main' ? 'THE WHOLE WORLD' : scope.kind === 'land' ? 'THE LAND BETWEEN' : 'THE SETTLEMENT'}: ${scope.name}. ${scope.areas.map((a) => content.areas.get(a)?.summary ?? '').filter(Boolean).join(' ')}`,
       'PLACES:',
-      ...cast.places.map((l) => `  ${key.place.get(l.id)} ${l.name}: ${l.summary ?? l.description.day.split(/(?<=[.!?])\s/)[0]}${codeHere(l)}${secretNote(content, l.id)}`),
+      ...cast.places.map((l) => `  ${key.place.get(l.id)} ${l.name}: ${l.summary ?? l.description.day.split(/(?<=[.!?])\s/)[0]}${codeHere(l)}${placeThings(content, l)}${secretNote(content, l.id)}`),
       'PEOPLE:',
       ...cast.people.map(person),
       `SKILLS: ${skills.length ? skills.join(', ') : 'none'}`,

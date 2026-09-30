@@ -131,6 +131,12 @@ locations:
         Somewhere out among them a small light floats a hand above the water,
         patient, as if it is waiting for you to follow. The crossroads is
         north-west.
+    # The surveyor's stakes (M10.33 AA): PULL THE STAKES is typed on them.
+    details:
+      - words: [stakes, survey stakes, line of stakes]
+        look: A line of thin survey stakes runs out across the strips of peat between the pits, each with a rag of red cloth tied at the top.
+        verbs:
+          pull: Pulling up the surveyor's stakes in daylight, with the whole road able to see you, would be a poor secret.
     exits:
       northwest: { to: loc_route_crossroads, minutes: 10 }
 

@@ -95,6 +95,11 @@ locations:
         take: You leave the notices where people can see them.
         verbs:
           read: The newest notice lists this morning's arrivals, your name among them, and asks new staff to report to the Medical Bay before any field trip.
+      # Where the recordings can be shown to the port (M10.33 AA): PLAY THE RECORDINGS is typed on it.
+      - words: [screen, wall screen, commons screen]
+        look: A scuffed wall screen beside the serving hatch, used for the shift roster, the weather and not much else.
+        verbs:
+          play: There is nothing on it but the shift roster and tomorrow's weather.
       - words: [window, observation window, glass]
         look: A wide pane of thick glass, scratched at its edges, looking out on the swell and the black rock. At its foot, the deck is worn smooth where people have stood.
         take: It is part of the hull.

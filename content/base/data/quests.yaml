@@ -1133,7 +1133,7 @@ quests:
         fail_text: Nobody in Waagdam wants to talk about a man of the Church to a stranger.
         effects: [{ set: envoy_dirt }]
       - id: expose_envoy
-        say: ['(?:expose|denounce|accuse|shame) (?:the )?envoy(?: .*)?']
+        say: ['(?:expose|denounce|accuse|shame) (?:the )?envoy(?: .*)?', 'tell (?:the )?(?:market|town|people|crowd|everyone) (?:about|of) (?:the )?envoy(?: .*)?']
         at: [loc_waagdam_waag, loc_waagdam_town_hall, loc_waagdam_market]
         when: [{ flag: envoy_dirt }]
         not_yet: You'd need something on him first.

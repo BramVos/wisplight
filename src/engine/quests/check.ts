@@ -1,5 +1,6 @@
 import type { Content } from '../content'
 import { STANDARD_SKILLS } from '../dialogue/checks'
+import { isGameVerb } from '../parser'
 import type { Condition, QuestEffect } from './schema'
 import type { PlanEffect } from './plans'
 
@@ -215,6 +216,36 @@ export function checkQuests(c: Refs): string[] {
 }
 
 /** Quests the design rule would frown on: fewer than three real ways to solve them. */
+/** The first words a say pattern can begin with: each choice of a leading group, or its first word. */
+function firstWords(pattern: string): string[] {
+  const p = pattern.replace(/^\^/, '')
+  if (p.startsWith('(?:')) {
+    let depth = 0
+    for (let i = 0; i < p.length; i++) {
+      if (p[i] === '(') depth++
+      else if (p[i] === ')' && --depth === 0) return p.slice(3, i).split('|').flatMap((alt) => /^[a-z']+/i.exec(alt.trim())?.[0]?.toLowerCase() ?? [])
+    }
+  }
+  return [/^[a-z']+/i.exec(p)?.[0]?.toLowerCase() ?? ''].filter(Boolean)
+}
+
+/** The verbs of the things at these places (M10.33 AA): their details, what is hidden there, objects, things carried. */
+function placeVerbs(c: Refs, at: string[]): Set<string> {
+  const verbs = new Set<string>()
+  const places = at.flatMap((id) => (c.locations.has(id) ? [c.locations.get(id)!] : [...c.locations.values()].filter((l) => l.area === id)))
+  const detailVerbs = (details: { verbs?: Record<string, unknown> }[] | undefined) => {
+    for (const d of details ?? []) for (const v of Object.keys(d.verbs ?? {})) verbs.add(v.toLowerCase())
+  }
+  for (const l of places) {
+    detailVerbs(l.details)
+    for (const h of l.hidden ?? []) for (const v of h.verbs ?? []) verbs.add(v.toLowerCase())
+    for (const o of l.objects ?? []) detailVerbs(c.objectTypes.get(o.type)?.details)
+  }
+  for (const item of c.items.values()) for (const v of Object.keys(item.verbs ?? {})) verbs.add(v.toLowerCase())
+  for (const words of Object.values(c.voice?.verb_words ?? {})) for (const w of words) verbs.add(w.toLowerCase())
+  return verbs
+}
+
 export function questWarnings(c: Refs): string[] {
   const warnings: string[] = []
   for (const q of c.quests.values()) {
@@ -233,6 +264,13 @@ export function questWarnings(c: Refs): string[] {
         }
       })
       if (early.some(says)) warnings.push(`quest ${q.id}: truth ${i + 1} ("${truth.text}") is in the ask or a journal line before its stage, so the stranger reads it before anyone may say it`)
+    }
+    // A deed on the world is the player's own verb on a thing of its place (M10.33 AA: "trace the antenna fault" was a
+    // sentence the voice chose for the player), never a sentence only; a deed with someone is said to them.
+    for (const a of q.actions ?? []) {
+      if (a.with) continue
+      const verbs = placeVerbs(c, a.at)
+      if (!a.say.some((p) => firstWords(p).some((w) => isGameVerb(w) || verbs.has(w)))) warnings.push(`quest ${q.id}, action ${a.id}: a deed on the world is only a sentence ("${a.intent ?? a.say[0]}"); give it the verb of a thing at its place (a detail's verbs), or the person it is done with (with)`)
     }
     // What the giver wants at a stage (M10.33 E): a stage with something to do and nobody to say it opens no talk.
     if (q.givers.length) for (const s of q.stages) if (s.goal && !s.asks?.trim()) warnings.push(`quest ${q.id}, stage ${s.id}: the giver never says what they want here (asks), so they will not open a talk with it; write it in their voice`)
