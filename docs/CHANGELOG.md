@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.33 deel: waar een weg heen gaat (I), 30 september 2026
+
+- **Over de rand van een gebied (I).** Oorzaak: de plattegrond was er per gebied, dus de Workshop (Vesper Works) stond nooit op die van Port Vesper. Nu volgt de plattegrond de begaanbare uitgangen naar een aangrenzend bewoond gebied. De plekken van het gebied zelf liggen zoals altijd, wat erbij komt in de vakjes die over zijn, naast waar het aansluit, zodat geen lijn door een andere plek loopt. De naam van het andere gebied staat erboven. Opgelost in de motor, voor elke wereld.
+- **Exits zegt waarheen (I).** Bij in, out en een uitgang naar een ander gebied staat nu de bestemming, als je die kent: "northeast (Workshop)", "east (Skerrow Hythe)". Anders de naam van dat gebied als je die kent, anders alleen de richting.
+- **Nu of laatst gezien (I).** Een stip is vol waar je iemand nu ziet, en hol waar je iemand het laatst zag, met "last seen here 20 minutes ago" als je erover zweeft. Na twee uur verdwijnt hij. In de terminal staat "(here now)" of hoe lang geleden.
+
+Testen, in The Quiet Reach: loop naar de Workshop en terug, en kijk naar de plattegrond. Praat met Sana in de Commons en loop weg. Tests in `tests/m1033plan.test.ts`. In de browser nagekeken.
+
+Kosten: geen aanroep.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: geen wijziging.
+
 ## M10.33 deel: een geheim met een recht (U), 30 september 2026
 
 - **Een code krijg je als het ertoe doet (U).** Oorzaak: een geheim kende alleen een worp en vertrouwen, en de worp was onzichtbaar, zodat een eerlijke vraag om de hangarcode niets deed. Een geheim kan nu `given_when` hebben: geldt dat, dan geeft de persoon het aan wie ernaar vraagt, zonder worp. In The Quiet Reach geeft Tessa de hangarcode zodra de fout in de antenne gevonden is. Op Skerrow vertelt Maren een schipbreukeling dat ze olie voor het baken heeft.

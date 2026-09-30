@@ -180,7 +180,7 @@ export function PlanView({ plan, onWalk, large = false, onOpen, onClose }: { pla
           const walk = b.kind === 'seen' && onWalk ? () => !dragged.current && onWalk(`walk to ${b.name}`) : undefined
           return (
             <g key={b.id} className={`plan-place ${b.kind}${walk ? ' walkable' : ''}`} onClick={walk} role={walk ? 'button' : undefined} aria-label={walk ? t('app.plan.walk', { name: b.name }) : b.name}>
-              <title>{b.kind === 'heard' ? t('app.plan.heard', { name: b.name }) : b.name}</title>
+              <title>{b.kind === 'heard' ? t('app.plan.heard', { name: b.name }) : b.other ? t('app.plan.other', { name: b.name, area: b.other }) : b.name}</title>
               <rect x={c.x - box.w / 2} y={c.y - box.h / 2} width={box.w} height={box.h} rx={3} />
               {name.rows.map((row, i) => (
                 <text key={i} x={c.x} y={c.y + (i - (name.rows.length - 1) / 2) * (name.small ? 10 : 11) + 3.5} className={name.small ? 'small' : undefined}>
@@ -192,9 +192,16 @@ export function PlanView({ plan, onWalk, large = false, onOpen, onClose }: { pla
                   {b.words.join(' ')}
                 </text>
               )}
+              {/* Of another area (M10.33 I): its name above the place. */}
+              {b.other && (
+                <text x={c.x} y={c.y - box.h / 2 - 4} className="plan-other">
+                  {b.other}
+                </text>
+              )}
+              {/* Seen here now, filled; last seen here, hollow, for two hours (M10.33 I). */}
               {b.people.map((p, i) => (
-                <circle key={p.id} cx={c.x - box.w / 2 + 6 + i * 9} cy={c.y - box.h / 2} r={3.5} fill={p.colour} className="plan-person">
-                  <title>{p.name}</title>
+                <circle key={p.id} cx={c.x - box.w / 2 + 6 + i * 9} cy={c.y - box.h / 2} r={3.5} fill={p.now ? p.colour : 'var(--panel)'} style={p.now ? undefined : { stroke: p.colour }} className={`plan-person${p.now ? '' : ' last-seen'}`}>
+                  <title>{p.now ? p.name : t('app.plan.lastSeen', { name: p.name, ago: p.ago ?? '' })}</title>
                 </circle>
               ))}
             </g>

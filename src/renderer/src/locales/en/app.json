@@ -183,7 +183,9 @@
     "close": "Close",
     "moves": "Move it with the wheel or by dragging.",
     "centre": "Where you are",
-    "centreTitle": "Put where you are back in the middle (Home)"
+    "centreTitle": "Put where you are back in the middle (Home)",
+    "lastSeen": "{name}, last seen here {ago}",
+    "other": "{name}, in {area}"
   },
   "next": {
     "label": "Things to try next",

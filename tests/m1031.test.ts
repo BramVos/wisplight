@@ -119,11 +119,11 @@ describe('M10.31 B: a secret way', () => {
     const engine = new Engine(isle, { seed: 2, builder: true })
     engine.start()
     await engine.handle('@goto loc_skerrow_tidepools')
-    expect(exitsLine(await engine.handle('look'))).toBe('Exits: west, east, up')
+    expect(exitsLine(await engine.handle('look'))).toBe('Exits: west, east (Skerrow Hythe), up')
     expect(said(await engine.handle('in'))).toMatch(/^You can't go in from here\./)
     expect(said(await engine.handle('part weed'))).toMatch(/a low cave mouth, black and booming/)
     expect(said(await engine.handle('pull weed'))).toMatch(/The weed hangs aside where you parted it/)
-    expect(exitsLine(await engine.handle('look'))).toBe('Exits: west, east, up, in')
+    expect(exitsLine(await engine.handle('look'))).toBe('Exits: west, east (Skerrow Hythe), up, in')
     expect(said(await engine.handle('in'))).toMatch(/^The Sea Cave\n/)
   })
 

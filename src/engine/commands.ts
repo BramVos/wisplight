@@ -22,7 +22,7 @@ import { gainXp, playerCheck } from './rules/player'
 import { GameClock, isOpenAt, MINUTES_PER_DAY, parseHours, startOfDay } from './clock'
 import { knob } from './knobs'
 import { carried, doWithCarried } from './carried'
-import { callName, firstName as untitledName, type Affordance, type Direction, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
+import { areaTopicId, callName, firstName as untitledName, type Affordance, type Direction, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
 import { add, hasAll, itemName, listItems, matchItem, withArticle } from './items'
 import { applyEffect } from './dialogue/relations'
 import { canSetOut, crossCountryLine, describeHex, hexOfId, isHexId, walk, waysLine } from './map/travel'
@@ -401,10 +401,23 @@ export function describeRoom(world: World): Output {
 
 export function exitLine(world: World): string {
   // A secret way not yet found is no exit to see (M10.31).
-  const exits = shownExits(world, world.state.player.location)
-  const across = crossCountryLine(world, world.state.player.location)
+  const here = world.state.player.location
+  const exits = shownExits(world, here)
+  const across = crossCountryLine(world, here)
   if (exits.length === 0) return across ?? 'There is no obvious way out.'
-  return `Exits: ${exits.join(', ')}${across ? `\n${across}` : ''}`
+  // In, out and a way into another area say where they go, as far as the stranger knows it (M10.33 I: OUT said
+  // nothing about the coast): the place when known, else its area when known.
+  const area = world.content.locations.get(here)?.area
+  const journal = world.state.player.journal ?? {}
+  const seen = new Set(world.state.player.seen ?? [])
+  const named = exits.map((dir) => {
+    const place = world.content.locations.get(world.location(here).exits[dir]?.to ?? '')
+    if (!place || !(dir === 'in' || dir === 'out' || place.area !== area)) return dir
+    // The area only for a way into another one: within this area it says nothing.
+    const name = seen.has(place.id) || journal[place.id] !== undefined ? place.name : place.area !== area && journal[areaTopicId(world.content, place.area)] !== undefined ? world.content.areas.get(place.area)?.name : undefined
+    return name ? `${dir} (${name})` : dir
+  })
+  return `Exits: ${named.join(', ')}${across ? `\n${across}` : ''}`
 }
 
 function examine(host: CommandHost, target: string): Output[] {

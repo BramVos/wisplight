@@ -2042,6 +2042,14 @@ pre.sheet {
   stroke: var(--bg);
   stroke-width: 1;
 }
+.plan-person.last-seen {
+  stroke-width: 1.5;
+}
+.plan-place text.plan-other {
+  fill: var(--muted);
+  font-size: 8px;
+  text-anchor: middle;
+}
 .plan-text {
   font-size: calc(12px * var(--text-scale));
   line-height: 1.35;

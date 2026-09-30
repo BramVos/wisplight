@@ -41,6 +41,10 @@ export interface PlanPerson {
   id: string
   name: string
   colour: string
+  /** Seen here now (a filled dot), or last seen here (a hollow one, M10.33 I). */
+  now: boolean
+  /** How long ago, for a hollow dot: "20 minutes ago". */
+  ago?: string
 }
 
 export interface PlanBox {
@@ -54,6 +58,8 @@ export interface PlanBox {
   words: string[]
   /** People you know (you talked with them) whom you last saw here. */
   people: PlanPerson[]
+  /** The name of its area, when that is not the area of the plan (M10.33 I: the Workshop, of Vesper Works). */
+  other?: string
 }
 
 export interface PlanData {
@@ -72,9 +78,10 @@ export interface PlanData {
  * along the exits (north up), so a place keeps its cell whatever the stranger
  * found first. A cell already taken moves the place on the same way, or aside.
  */
-function layout(world: World, area: string): Map<string, [number, number]> {
-  const places = [...world.content.locations.values()].filter((l) => l.area === area).map((l) => l.id)
+function layout(world: World, own: string[], across: string[] = []): Map<string, [number, number]> {
   const cells = new Map<string, [number, number]>()
+  // The area's own places first, as they always lay (M10.33 I); then what joins across its edge, in the cells left.
+  let places = own
   const taken = new Set<string>()
   const put = (id: string, at: [number, number]) => {
     cells.set(id, at)
@@ -104,6 +111,25 @@ function layout(world: World, area: string): Map<string, [number, number]> {
       }
     }
   }
+  if (across.length) {
+    places = [...own, ...across]
+    const queue = [...cells.keys()]
+    while (queue.length) {
+      const id = queue.shift()!
+      const [c, r] = cells.get(id)!
+      for (const [dir, exit] of Object.entries(world.content.locations.get(id)?.exits ?? {}) as [Direction, { to: string }][]) {
+        if (cells.has(exit.to) || !places.includes(exit.to)) continue
+        const step = STEP[dir]
+        let at: [number, number] | undefined
+        // Next to where it joins, never further along a line that would cross another place: the step, or its halves.
+        if (step) at = ([step, [0, step[1]], [step[0], 0]] as [number, number][]).filter(([a, b]) => a || b).map(([a, b]) => [c + a, r + b] as [number, number]).find(free)
+        at ??= ASIDE.map(([dc, dr]) => [c + dc, r + dr] as [number, number]).find(free)
+        for (let n = 2; !at && n < 12; n++) at = ASIDE.map(([dc, dr]) => [c + dc * n, r + dr * n] as [number, number]).find(free)
+        put(exit.to, at!)
+        queue.push(exit.to)
+      }
+    }
+  }
   return cells
 }
 
@@ -118,12 +144,26 @@ export function planOf(world: World, areaId: string): PlanData | undefined {
   const here = world.state.player.location
   const area = world.content.areas.get(areaId)
   if (!area || !SETTLED.has(area.kind)) return undefined
-  const ofArea = [...world.content.locations.values()].filter((l) => l.area === area.id)
+  // The settlement and what walkable ways join to it across an area's edge (M10.33 I: the Workshop, of Vesper Works,
+  // was never on the plan of Port Vesper): places of settled areas, from the area's own along their exits.
+  const settled = (id: string) => SETTLED.has(world.content.areas.get(world.content.locations.get(id)?.area ?? '')?.kind ?? '')
+  const joined = new Set([...world.content.locations.values()].filter((l) => l.area === area.id).map((l) => l.id))
+  for (const id of [...joined]) {
+    const queue = [id]
+    while (queue.length) {
+      for (const exit of Object.values(world.content.locations.get(queue.shift()!)?.exits ?? {}) as { to: string }[]) {
+        if (joined.has(exit.to) || !world.content.locations.has(exit.to) || !settled(exit.to)) continue
+        joined.add(exit.to)
+        queue.push(exit.to)
+      }
+    }
+  }
+  const ofArea = [...joined].map((id) => world.content.locations.get(id)!)
   if (ofArea.length < 2) return undefined
   const seen = new Set(world.state.player.seen ?? [])
   const journal = world.state.player.journal ?? {}
   const kindOf = (id: string): PlanBox['kind'] | undefined => (id === here ? 'here' : seen.has(id) ? 'seen' : journal[id] !== undefined ? 'heard' : undefined)
-  const cells = layout(world, area.id)
+  const cells = layout(world, ofArea.filter((l) => l.area === area.id).map((l) => l.id), ofArea.filter((l) => l.area !== area.id).map((l) => l.id))
   const shown = ofArea.filter((l) => kindOf(l.id))
   // A plan of one place says nothing (M10.33 R): it comes once a second place is known.
   if (shown.length < 2) return undefined
@@ -132,10 +172,16 @@ export function planOf(world: World, areaId: string): PlanData | undefined {
     const [col, row] = cells.get(l.id)!
     const kind = kindOf(l.id)!
     const words = kind === 'heard' ? [] : shownExits(world, l.id).filter((d) => !STEP[d])
+    // Where you see someone now, filled; where you last saw them, hollow and for two hours (M10.33 I).
     const met = Object.entries(people)
       .filter(([id, p]) => p.seen?.where === l.id && world.content.npcs.has(id) && (world.state.relations?.[id]?.familiarity ?? 0) > 0 && world.alive(id))
-      .map(([id]) => ({ id, name: knownName(world, id), colour: personColour(world, id) }))
-    return { id: l.id, name: l.name, col, row, kind, words, people: met }
+      .flatMap(([id, p]): PlanPerson[] => {
+        const now = l.id === here && world.state.npcs[id]?.location === here
+        const minutes = world.now - (p.seen?.t ?? world.now)
+        if (!now && minutes > 120) return []
+        return [{ id, name: knownName(world, id), colour: personColour(world, id), now, ...(now ? {} : { ago: minutes < 5 ? 'just now' : minutes < 60 ? `${Math.round(minutes / 5) * 5} minutes ago` : minutes < 90 ? 'an hour ago' : 'two hours ago' }) }]
+      })
+    return { id: l.id, name: l.name, col, row, kind, words, people: met, ...(l.area !== area.id ? { other: world.content.areas.get(l.area)?.name ?? l.area } : {}) }
   })
   const on = new Set(boxes.map((b) => b.id))
   const links: PlanData['links'] = []
@@ -188,7 +234,7 @@ export function planText(plan: PlanData): string[] {
   for (const b of plan.boxes) {
     const [open, close] = b.kind === 'heard' ? ['(', ')'] : ['[', ']']
     const mark = b.kind === 'here' ? '*' : b.kind === 'heard' ? '?' : ''
-    drawn.set(b.id, `${open}${cut(b.name, W - 2 - mark.length)}${mark}${close}`)
+    drawn.set(b.id, `${open}${cut(b.other ? `${b.name}, ${b.other}` : b.name, W - 2 - mark.length)}${mark}${close}`)
     write(b.row * 2, b.col * (W + 3), drawn.get(b.id)!)
   }
   for (const link of plan.links) {
@@ -209,7 +255,7 @@ export function planText(plan: PlanData): string[] {
   const lines = grid.map((row) => row.join('').trimEnd())
   const ways = plan.stubs.map((s) => `${plan.boxes.find((b) => b.id === s.from)!.name}: a way ${s.direction}`)
   const words = plan.boxes.filter((b) => b.words.length).map((b) => `${b.name}: ${b.words.join(', ')}`)
-  const people = plan.boxes.filter((b) => b.people.length).map((b) => `${b.name}: ${b.people.map((p) => p.name).join(', ')}`)
+  const people = plan.boxes.filter((b) => b.people.length).map((b) => `${b.name}: ${b.people.map((p) => (p.now ? `${p.name} (here now)` : `${p.name} (${p.ago})`)).join(', ')}`)
   return [
     `${plan.area}, as you know it (${plan.known} ${plan.known === 1 ? 'place' : 'places'}; * where you are, ( ) only heard of):`,
     ...lines,

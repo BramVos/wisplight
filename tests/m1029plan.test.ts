@@ -38,6 +38,7 @@ describe('M10.29 I: a plan of here', () => {
     for (const step of ['e', 'n', 's', 's', 'n']) await engine.handle(step)
     const plan = planHere(engine.world)!
     expect(plan.known).toBe(4)
+    // The area's own places lie as they always did; what joins across the edge (M10.33 I) takes the cells left.
     expect(planText(plan).slice(1, 6)).toEqual([
       '                   [Guest Quarters]',
       '                     |',
@@ -56,10 +57,10 @@ describe('M10.29 I: a plan of here', () => {
     expect(planHere(engine.world)).toBeUndefined()
     expect(await said(engine, 'plan')).toMatch(/^There is no plan of here/)
     engine.state.player.location = 'loc_workshop'
-    // One place known is no plan yet (M10.33 R); with the hangar heard of, there is one.
-    expect(planHere(engine.world)).toBeUndefined()
-    ;(engine.state.player.journal ??= {})['loc_peregrine_hangar'] = engine.world.now
-    expect(planHere(engine.world)!.area).toBe('Vesper Works')
+    // Joined across the edge (M10.33 I): the Arrival Lock, of Port Vesper, stands on the plan of Vesper Works.
+    const plan = planHere(engine.world)!
+    expect(plan.area).toBe('Vesper Works')
+    expect(plan.boxes.find((b) => b.id === 'loc_arrival_lock')).toMatchObject({ kind: 'seen', other: 'Port Vesper' })
   })
 
   it('a click on a place you have seen walks there along the exits; PLAN and the area page give the text', async () => {
@@ -83,7 +84,8 @@ describe('M10.29 I: a plan of here', () => {
     const colour = personColour(engine.world, 'npc_sana_holt')
     expect(colour).toMatch(/^#[0-9a-f]{6}$/)
     const commons = planHere(engine.world)!.boxes.find((b) => b.id === 'loc_commons')!
-    expect(commons.people).toEqual([{ id: 'npc_sana_holt', name: 'Sana Holt', colour }])
+    // Seen here now (M10.33 I): a filled dot.
+    expect(commons.people).toEqual([{ id: 'npc_sana_holt', name: 'Sana Holt', colour, now: true }])
     expect(personView(engine.world, 'npc_sana_holt').colour).toBe(colour)
     // A world may set it (Skerrow's Maren); Deepwell leaves it out, and gets one from the id.
     expect(personColour({ content: isle }, 'npc_maren')).toBe('#c8643c')
