@@ -633,6 +633,8 @@ export interface PersonNote {
   age?: { value: number; t: number }
   /** The stranger knows what they do (M10.8): they said it, someone told, or the stranger saw them at it. */
   work?: number
+  /** How many talks the stranger has begun with them (M10.34 F): one talk, and they have met. */
+  talks?: number
 }
 
 export interface ServiceState {

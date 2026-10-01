@@ -1,6 +1,6 @@
 import { knob } from '../knobs'
 import { amendsIn } from '../amends'
-import { asksAge, knownName, knowsOfPerson, learnTie, learnWork, publicShort, saysOwnAge, toldAge } from '../acquaintance'
+import { asksAge, countTalk, knownName, knowsOfPerson, learnTie, learnWork, publicShort, saysOwnAge, toldAge } from '../acquaintance'
 import type { Output } from '../commands'
 
 import { areaTopicId, callName } from '../content'
@@ -156,6 +156,8 @@ export class Dialogue {
     if (band === 'Warm' || band === 'Devoted') turns += 2
     if (band === 'Wary' || band === 'Unfriendly' || band === 'Hostile') turns -= 3
     if (/at work|baking|cutting|grinding|seeing to|spinning/.test(world.npcState(npcId).activity)) turns -= 2
+    // Counted before it begins (M10.34 F): whoever has spoken with the stranger once has met them.
+    countTalk(world, npcId)
     world.state.talk = { npc: npcId, turnsLeft: Math.max(2, turns), history: [], effects: 0, revealed: [], began: world.now, ...(opened ? { opened: true } : {}) }
     rel.familiarity = Math.min(100, rel.familiarity + 1)
     this.learn(npcId)

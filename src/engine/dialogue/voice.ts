@@ -1,3 +1,4 @@
+import { metBand } from '../acquaintance'
 import { faithOf } from '../faith'
 import type { Content } from '../content'
 import { allFaiths, frameOf } from '../lands'
@@ -85,7 +86,7 @@ export function addressFor(world: World, npcId: string, seed: number): string | 
   const pronoun = world.state.player.character?.pronoun ?? 'they'
   const middle = middlePurse(world)
   const high = middle > 0 && world.state.player.money >= middle * 3 && kit.address.high.length > 0
-  const forms = high ? kit.address.high : rel.familiarity >= 50 && kit.address.friend.length ? kit.address.friend : rel.familiarity >= 6 && kit.address.known.length ? kit.address.known : kit.address.stranger
+  const forms = high ? kit.address.high : rel.familiarity >= 50 && kit.address.friend.length ? kit.address.friend : metBand(world, npcId) !== 'never met' && kit.address.known.length ? kit.address.known : kit.address.stranger
   const form = pick(forms, 1, seed)[0]
   return form ? byPronoun(form, pronoun) : undefined
 }

@@ -1,3 +1,4 @@
+import { metBand } from '../acquaintance'
 import { knob } from '../knobs'
 import { ownWorkPrompt, pupilPrompt } from '../outcomes'
 import { GameClock, weekdayName } from '../clock'
@@ -231,11 +232,13 @@ function sentTo(world: World, npcId: string): string[] {
 /** Who the player is to this NPC: a stranger, or someone known and perhaps trusted. */
 export function listener(world: World, npcId: string): string {
   const rel = relation(world.state, npcId)
-  const who =
-    rel.familiarity < 6 ? 'a stranger' : rel.familiarity < 20 ? 'someone you have spoken with once or twice' : rel.familiarity < 50 ? 'someone you know' : 'someone you know well'
+  // Met once is met (M10.34 F: Sana greeted Bram as new after two short talks).
+  const band = metBand(world, npcId)
+  const who = { 'never met': 'a stranger you have never met', met: 'someone you have met once before', 'spoken with a few times': 'someone you have spoken with a few times', known: 'someone you know', 'known well': 'someone you know well' }[band]
   const trust = rel.trust >= 30 ? ', and you trust them' : rel.trust <= -10 ? ", and you don't trust them" : ''
-  // A stranger has no past with them (M10.29, Bram's playtest: "I showed you this morning" to someone never met).
-  const none = rel.familiarity < 6 ? '. You do not know them: you have done nothing together, and nothing has happened between you that is not in MEMORIES or CONVERSATION SO FAR' : ''
+  // A stranger has no past with them (M10.29, Bram's playtest: "I showed you this morning" to someone never met);
+  // someone met has only what MEMORIES and the talk before hold.
+  const none = band === 'never met' ? '. You do not know them: you have done nothing together, and nothing has happened between you that is not in MEMORIES or CONVERSATION SO FAR' : band === 'met' ? '. What passed between you is only what MEMORIES and the talk before hold' : ''
   return `the player is ${who}${trust}${none}`
 }
 

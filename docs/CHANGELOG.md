@@ -1,5 +1,17 @@
 # Changelog
 
+## M10.34 deel: een ontmoeting telt (F), 1 oktober 2026
+
+- **Eén gesprek en je bent ontmoet (F).** Oorzaak: "kennen" hing aan een drempel van `familiarity` (6), die met 1 per gesprek en 2 per regel groeit. Zo bleef je na twee korte gesprekken "a stranger; you have done nothing together", en begroette Sana je als nieuw. Het spel telt nu per persoon de gesprekken die je begon. De band is "never met" vóór het eerste gesprek, "met" daarna, en dan "spoken with a few times", "known" en "known well". De begroeting van de regels, LISTENER voor de stem en de aanspreekvorm volgen de band. Voor iemand die je één keer sprak, zegt LISTENER dat wat er tussen jullie gebeurde alleen in de herinneringen en het vorige gesprek staat, ook zonder relatiepunten. De telling staat in de save; een save van vóór de telling telt de gesprekken die het spel bewaarde, en een `familiarity` van 6 blijft "spoken with a few times". Opgelost in de motor, voor elke wereld.
+
+Testen: praat in The Quiet Reach kort met Sana, zeg bye, en praat weer. Tests in `tests/m1034f.test.ts`.
+
+Kosten: geen.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: geen wijziging.
+
 ## M10.34 deel: een antwoord alleen opnieuw zolang het waar is (E), 1 oktober 2026
 
 - **Hergebruik met een geheugen (E).** Oorzaak, in `byrule.ts`: dezelfde vraag in dezelfde woorden kreeg binnen een gesprek hetzelfde antwoord terug ("As I said: ..."), ook als intussen een daad, een geheim of een recht iets veranderd had. Een antwoord onthoudt nu waarin het waar was: het stadium van elke quest, de geheimen die deze persoon gaf, en de afspraken met hem. Is dat nog hetzelfde, dan zegt de persoon het opnieuw zonder model; is het veranderd, dan wordt de vraag opnieuw gesteld. Antwoorden uit een oudere save worden niet hergebruikt. Opgelost in de motor, voor elke wereld.

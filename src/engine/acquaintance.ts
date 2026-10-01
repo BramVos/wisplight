@@ -1,6 +1,7 @@
 import { personColour } from './colour'
 import { callName } from './content'
 import { attitude, relation } from './dialogue/relations'
+import { historyOf } from './pasttalks'
 import type { PersonNote } from './state'
 import type { World } from './world'
 
@@ -16,6 +17,41 @@ const KEEP_PLACES = 5
 
 function note(world: World, npcId: string): PersonNote {
   return ((world.state.player.people ??= {})[npcId] ??= {})
+}
+
+/** How well someone knows the stranger (M10.34 F): one talk, and they have met; then by how often and how close. */
+export type MetBand = 'never met' | 'met' | 'spoken with a few times' | 'known' | 'known well'
+
+/**
+ * The talks the stranger began with someone before the one going on now (M10.34 F). A save from before the count:
+ * the talks the game kept of them.
+ */
+export function talksBefore(world: World, npcId: string): number {
+  const talk = world.state.talk?.npc === npcId ? world.state.talk : undefined
+  const counted = world.state.player.people?.[npcId]?.talks
+  if (counted !== undefined) return Math.max(0, counted - (talk ? 1 : 0))
+  return historyOf(world, npcId).flatMap((d) => d.talks).filter((t) => !talk?.began || t[0]!.t < talk.began).length
+}
+
+/** A talk begins (M10.34 F): counted, so whoever has spoken with the stranger once has met them. */
+export function countTalk(world: World, npcId: string): void {
+  if (!world.content.npcs.has(npcId)) return
+  const n = note(world, npcId)
+  n.talks = (n.talks ?? talksBefore(world, npcId)) + 1
+}
+
+/**
+ * How well someone knows the stranger (M10.34 F; Sana greeted Bram as new after two short talks, since "met" was a
+ * familiarity of 6): never met before this talk, met once, spoken with a few times, known, known well.
+ */
+export function metBand(world: World, npcId: string): MetBand {
+  const familiarity = relation(world.state, npcId).familiarity
+  if (familiarity >= 50) return 'known well'
+  if (familiarity >= 20) return 'known'
+  const before = talksBefore(world, npcId)
+  // A familiarity of 6 was "met" before the count (an older save); now one talk is.
+  if (before >= 3 || familiarity >= 6) return 'spoken with a few times'
+  return before >= 1 ? 'met' : 'never met'
 }
 
 /**
