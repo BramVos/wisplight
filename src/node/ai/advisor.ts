@@ -90,6 +90,8 @@ export interface KeptAnswer {
   byModel: boolean
   /** What the model was given for it, its changing part (M10.33 W), for counting what it made up. */
   given?: string
+  /** The model's own reply, as it gave it (M10.33 Q): before the game's guards and cuts, for comparing prompts. */
+  reply?: string
 }
 
 /** How a model came out of its trial, and why (M9.3). */
@@ -301,8 +303,12 @@ export async function trial(gateway: Gateway, content: Content, provider: Provid
       const run = await runSituation(content, situation, meter, 7, () => meter.answer++)
       // What each answer was given (M10.33 W): the end of what its last call sent, where the changing part is.
       for (const [i, turn] of run.turns.entries()) {
-        const given = [...meter.calls].reverse().find((c) => c.answer === first + i + 1)?.given
-        kept.push({ npc: situation.npc, said: turn.said, ...answerOf(turn.outputs), ...(given ? { given: given.slice(-2400) } : {}) })
+        // The count goes up for TALK, then for each line, then for BYE: line i is answer first + i + 2.
+        const calls = [...meter.calls].reverse().filter((c) => c.answer === first + i + 2)
+        const given = calls[0]?.given
+        const accepted = calls.find((c) => !c.rejected && !c.failed && c.text)
+        const reply = accepted ? parseReply(accepted.text!)?.reply : undefined
+        kept.push({ npc: situation.npc, said: turn.said, ...answerOf(turn.outputs), ...(given ? { given: given.slice(-2400) } : {}), ...(reply ? { reply } : {}) })
       }
     }
     const byAnswer = new Map<number, Call[]>()

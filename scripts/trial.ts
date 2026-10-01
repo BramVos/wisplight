@@ -10,6 +10,8 @@ import { resolve } from 'node:path'
 // npm run trial -- --kind talk_twenty [--model <id>] [--world isle] [--npc <id>]: a talk of twenty lines with the baker, per line what it read from the cache, wrote and cost (M10.28)
 // npm run trial -- --kind keep_warm [--model <id>]: whether the block of a place is still in the cache after six minutes, kept an hour (M10.28)
 // npm run trial -- --kind story_twenty [--model <id>]: ten lines each to Niko and Tessa in The Quiet Reach on the recordings, to read side by side (M10.30)
+// npm run trial -- --kind voice_set --count 12 --times 2 --dump a.jsonl --label new --read 0: the situation set with every answer kept to a file, the model's reply and what it was given (M10.33 Q)
+// npm run trial -- --kind read_dumps --dump a.jsonl,b.jsonl: the read score of each kept series per label, the made-up facts counted (M10.33 Q, W)
 //
 // Tries a kind of model call for real (M10.20), in the app, with the key and
 // the models the player chose under Settings > AI: never in CI, never with a
@@ -34,10 +36,11 @@ if (!existsSync(resolve(root, 'out/main/index.js'))) {
   process.exit(2)
 }
 const env: Record<string, string> = { ...process.env as Record<string, string>, WISPLIGHT_TRIAL: kind }
-for (const [flag, name] of [['cap', 'CAP'], ['steps', 'STEPS'], ['doc', 'DOC'], ['build', 'BUILD'], ['out', 'OUT'], ['name', 'NAME'], ['setting', 'SETTING'], ['world', 'WORLD'], ['models', 'MODELS'], ['model', 'MODEL'], ['npc', 'NPC'], ['times', 'TIMES'], ['effort', 'EFFORT']] as const) {
-  if (value(flag)) env[`WISPLIGHT_TRIAL_${name}`] = flag === 'doc' || flag === 'out' ? resolve(value(flag)) : value(flag)
+for (const [flag, name] of [['cap', 'CAP'], ['steps', 'STEPS'], ['doc', 'DOC'], ['build', 'BUILD'], ['out', 'OUT'], ['name', 'NAME'], ['setting', 'SETTING'], ['world', 'WORLD'], ['models', 'MODELS'], ['model', 'MODEL'], ['npc', 'NPC'], ['times', 'TIMES'], ['effort', 'EFFORT'], ['count', 'COUNT'], ['dump', 'DUMP'], ['label', 'LABEL']] as const) {
+  if (value(flag)) env[`WISPLIGHT_TRIAL_${name}`] = flag === 'doc' || flag === 'out' || flag === 'dump' ? value(flag).split(',').map((f) => resolve(f)).join(',') : value(flag)
 }
 if (args.includes('--same-model')) env['WISPLIGHT_TRIAL_SAME_MODEL'] = '1'
 if (args.includes('--record')) env['WISPLIGHT_TRIAL_RECORD'] = '1'
+if (value('read')) env['WISPLIGHT_TRIAL_READ'] = value('read')
 const run = spawnSync('npx', ['electron', '.'], { cwd: root, env, stdio: 'inherit' })
 process.exit(run.status ?? 1)

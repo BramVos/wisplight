@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.33 deel: de prompt van de stem gemeten, en welk model (Q, W), 1 oktober 2026
+
+- **Gemeten op je sleutel (Q, W).** Twaalf situaties uit de vaste set, twee series per variant, gelezen met de leesscore op Sonnet 5. Die telt sinds W ook per antwoord de feiten die niet in wat de spreker gegeven werd staan. Kosten: $0,80 in 122 aanroepen, binnen de grens van $3.
+- **De prompt van vandaag tegen die van 29 september (Q).** Met Haiku 4.5 leest vandaag beter: 0,760 tegen 0,670. Hij verzint minder (0,08 tegen 0,19 feiten per antwoord), beantwoordt meer wat gevraagd werd, en houdt het gesprek veel vaker gaande. Hij klinkt iets minder als de persoon zelf (2,54 tegen 2,69). Er hoeft geen regel terug. Of de persoon genoeg doorklinkt, komt terug in M10.35 A.
+- **Welk model voor de stem (W).** Haiku 4.5 blijft. Sonnet 5 leest iets beter en verzon in deze set niets, maar kost per serie twee à drie keer zoveel, en de lezer is van dezelfde familie. Gpt-5-mini verzint het meest (0,29 per antwoord) en viel zeven keer op 28 terug op een vaste regel. Haiku 4.5 kent geen inspanningsniveau, dus de keuze ging alleen over het model.
+- **Meetgereedschap.** `voice_set` neemt nu `--count` en bewaart met `--dump` per antwoord wat het model zei en wat het gegeven werd. `read_dumps` leest zulke bestanden per label met de leesscore. Een fout in mijn W-code is eruit: regel i van een situatie hoort bij antwoord i + 2, want TALK telt eerst mee.
+- **Speeltest.** De Orison-lijn in `npm run playtest` neemt nu het luik en spoort de feed na (AA). De lijn haalt weer zijn afloop.
+
+Lezen: `docs/playtest/voice/2026-10-01-q-and-w.md`, met de antwoorden van elke variant ernaast. Test: `tests/m1033kept.test.ts`.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: geen wijziging; het model voor de stem blijft wat het ontwerp en de instellingen al zeggen.
+
 ## M10.33 deel: één station en een drempel (L, en de drempel van M), 1 oktober 2026
 
 - **Vesper Works ging op in Port Vesper (L).** Oorzaak: de wereldbouw sneed één station in twee gebieden, vier minuten binnendoor uit elkaar, en de richtingen pasten niet op één plattegrond. Op jouw keuze is het nu één gebied en één nederzetting. De Workshop ligt noordwest van de Commons, de hangaar en zijn dek erachter. Het gebied en de nederzetting houden een grafsteen in `ids.lock`, zodat oude saves laden. Check is voor The Quiet Reach nu leeg.

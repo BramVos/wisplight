@@ -274,7 +274,10 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
       const model = env('MODEL') || chosen.model
       const provider = model === chosen.model ? chosen.provider : providerOf(model)
       for (let n = 1; n <= Math.max(1, Math.min(Number(env('TIMES')) || 1, 10)); n++) {
-        const r = await trial(ai.gateway, content, provider, model, 'voice')
+        // More situations than the six of a settings try, for a comparison (M10.33 Q).
+        const r = await trial(ai.gateway, content, provider, model, 'voice', Number(env('COUNT')) || undefined)
+        // Every answer kept to a file (M10.33 Q): the model's reply and what it was given, to read beside another prompt.
+        if (env('DUMP') && r.kept) for (const k of r.kept) appendFileSync(env('DUMP'), `${JSON.stringify({ label: env('LABEL') || 'now', model: r.model, series: n, ...k })}\n`)
         // What it cost as billed, the cache read and written included (M10.28); without a price, at the full input price.
         const usd = r.costUsd ?? costUsd(r.model, { inputTokens: r.inputTokens, outputTokens: r.outputTokens, cachedTokens: 0 }) ?? 0
         // Every answer kept, and how the series reads (M10.28: the rules score words and facts, not how a line reads).
@@ -282,6 +285,23 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
         const counts = `${r.answers} answers, ${r.valid} valid, ${r.retries} retries, ${r.fallbacks} set lines, character ${r.characterScore?.toFixed(3) ?? '-'}, leaks ${r.leaks}, invented ${r.factualErrors}, breaks ${r.characterBreaks}, ${(r.averageLatencyMs / 1000).toFixed(1)}s an answer (at most ${(r.maxLatencyMs / 1000).toFixed(1)}s)`
         if (r.kept) keepAnswers(appPath, content, r.model, `The situation set, series ${n}`, r.kept, `${counts}, $${usd.toFixed(4)}`, read)
         say(`voice_set #${n}: ${r.model}, ${counts}, in ${r.inputTokens} (read ${r.cachedTokens ?? 0}), out ${r.outputTokens}, $${usd.toFixed(4)}${read ? `; read ${read.score.toFixed(3)} (${read.model}, $${read.costUsd.toFixed(4)})` : ''}${r.errors.length ? `; ${r.errors.join('; ')}` : ''}`)
+      }
+      continue
+    }
+    if (kind === 'read_dumps') {
+      // The read score of each kept series (M10.33 Q, W): per label, the model's own replies, the made-up facts counted.
+      const content = await loadContentFromDir(contentRoot, 'base')
+      const rows = env('DUMP').split(',').filter(Boolean).flatMap((file) => readFileSync(file, 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line) as KeptAnswer & { label: string; model: string; reply?: string }))
+      for (const label of [...new Set(rows.map((r) => r.label))]) {
+        if (ai.usage.summary().session.costUsd >= cap) {
+          say(`read_dumps ${label}: not read, the cap of $${cap.toFixed(2)} is spent`)
+          ok = false
+          continue
+        }
+        const kept = rows.filter((r) => r.label === label && r.reply).map((r) => ({ ...r, answer: r.reply!, byModel: true }))
+        const read = await readScore(ai.gateway, content, kept).catch(() => undefined)
+        say(read ? `read_dumps ${label}: ${kept.length} answers, read ${read.score.toFixed(3)} (this person ${read.byQuestion.person.toFixed(2)}, natural ${read.byQuestion.natural.toFixed(2)}, answers ${read.byQuestion.answers.toFixed(2)}, onward ${read.byQuestion.onward.toFixed(2)}), made-up facts per answer ${read.invented?.toFixed(2) ?? '-'}, words per answer ${(kept.reduce((s, k) => s + k.answer.split(/\s+/).length, 0) / Math.max(1, kept.length)).toFixed(1)}, by ${read.model}, $${read.costUsd.toFixed(4)}${read.weakest.map((w) => `; weakest ${w.n}: ${w.why}`).join('')}` : `read_dumps ${label}: the read score could not be read`)
+        if (!read) ok = false
       }
       continue
     }
