@@ -41,8 +41,8 @@ const passphrase: QuestSketch = {
   ],
   outcome: { name: 'Logs opened', text: 'Niko opens the old logs.' },
   endings: [
-    { name: 'The callsign', text: 'Niko hears the callsign, nods, and opens the old logs to you.', solution: true, way: 'word', say: '', at: 'l2', with: 'p2', skill: '', word: 'orison nine' },
-    { name: 'A favour', text: 'You fix his headset, and he opens the logs for you.', solution: true, way: 'deed', say: 'fix the headset', at: 'l2', with: 'p2', skill: '' },
+    { name: 'The callsign', text: 'Niko hears the callsign, nods, and opens the old logs to the stranger.', solution: true, way: 'word', say: '', at: 'l2', with: 'p2', skill: '', word: 'orison nine' },
+    { name: 'A favour', text: 'The stranger fixed his headset, and he opened the logs for them.', solution: true, way: 'deed', say: 'fix the headset', at: 'l2', with: 'p2', skill: '' },
     { name: 'Shut out', text: 'Niko shrugs and keeps the logs shut.', solution: false, way: 'fail', say: 'give up on the logs', at: 'l2', with: '', skill: '' },
   ],
 }

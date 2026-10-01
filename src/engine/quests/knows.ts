@@ -1,6 +1,7 @@
 import type { Quest } from '../content'
 import type { World } from '../world'
 import { allHold, type QuestState } from './engine'
+import { factOrArchived, heardBy, versionOf } from '../news'
 
 // What people know of a story, per stage (M10.30, Bram's log of 29 September
 // 2026: Niko, Tessa and an improvisation each told their own plot of the
@@ -41,10 +42,32 @@ export function storyLines(world: World, npcId: string): string[] {
     const line = stageNow(world, quest)?.knows?.[npcId]
     if (line) lines.push(`  ${quest.name}: ${line.trim()}`)
   }
+  // How a story ended, as they saw or heard it (M10.34 G): only what reached them, and a thank-you once.
+  lines.push(...endingLines(world, npcId))
   // What they want of the stranger now, as the giver (M10.33 E): the voice says it as they would.
   const wants = wantsNow(world, npcId)
   if (wants?.asks) lines.push(`  ${wants.quest.name}, what you want of the stranger now: ${wants.asks}`)
   return lines.length ? ['THE STORY AS YOU KNOW IT: this is all you know of it. Say no more of it than this; never make up what happened, who did it or why, and what you do not know, say you do not know.', ...lines] : []
+}
+
+/** The endings a person saw or heard of, as they know them; whether they spoke of it with the stranger before. */
+function endingLines(world: World, npcId: string): string[] {
+  const log = (world.state.questlog ?? {}) as Record<string, QuestState>
+  const heard = heardBy(world, npcId)
+  const out: string[] = []
+  for (const quest of world.content.quests.values()) {
+    const q = log[quest.id]
+    if (!q?.ended) continue
+    const fact = Object.keys(heard)
+      .map((id) => factOrArchived(world, id))
+      .filter((f) => f?.kind === `quest:${quest.id}`)
+      .at(-1)
+    if (!fact) continue
+    const before = (q.told ?? []).includes(npcId)
+    ;(q.told ??= []).includes(npcId) || q.told.push(npcId)
+    out.push(`  ${quest.name}, how it ended, as you ${heard[fact.id]!.from === 'witness' ? 'saw it' : 'heard it'}: ${versionOf(fact, heard[fact.id]!)}${before ? ' You have spoken of it with the stranger before: do not thank them or tell it again unless they ask.' : ''}`)
+  }
+  return out
 }
 
 /** The places of a quest: where it begins, where its actions are done, and the places it reacts to. */

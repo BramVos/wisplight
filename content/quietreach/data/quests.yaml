@@ -107,18 +107,21 @@ quests:
       - id: end1
         name: Back on the count
         text: The heating and water spares go back to the emergency stores, and Mara's count matches her shelves again. From now on she reads every research requisition twice, and she remembers who told her the truth.
+        news: { precise: "The stranger told Mara where her heating and water spares had gone, and they are back in the emergency stores.", village: "Mara's spares are back, and it was the new contractor who told her where they went.", far: "A count of stores came right at Port Vesper, they say." }
         solution: true
         when:
           - { flag: story_short_on_the_count_end_1 }
       - id: end2
         name: Back on the shelf
         text: The spares are back where Mara's count says they should be, though nobody told her how. She guesses, and she reads every research requisition twice from now on.
+        news: { precise: "The stranger carried the spares back from the Peregrine's hangar to the stores, without a word to anyone.", village: "The missing spares turned up on the shelves again, and nobody says who put them back." }
         solution: true
         when:
           - { flag: story_short_on_the_count_end_2 }
       - id: end3
         name: Left short
         text: When the heating fails in the Guest Quarters a fortnight later, there are no spares to mend it. Mara's count stays short, and she stops asking anyone for help with it.
+        news: { precise: "The stranger kept quiet about the spares, and Mara's count stays short.", village: "Mara's count is still short, and nobody has helped her with it." }
         solution: false
         when:
           - { flag: story_short_on_the_count_end_3 }
@@ -208,18 +211,21 @@ quests:
       - id: end1
         name: Not alone with it
         text: Tessa has someone who has read her numbers and did not wave them away. She decides to put her doubt on record at the next meeting instead of carrying it alone, whatever the research lead says.
+        news: { precise: "The stranger read Tessa's test notes and took her doubts seriously, and she means to put them on record.", village: "Tessa means to say her doubts about the drive out loud at the next meeting." }
         solution: true
         when:
           - { flag: story_a_second_opinion_end_1 }
       - id: end2
         name: Two names on the record
         text: With Niko's name under hers, Tessa puts her doubt on record at the next meeting. The research lead calls it noise again, but this time the meeting writes it down.
+        news: { precise: "Niko checked Tessa's readings at the stranger's asking, and put his name under hers.", village: "Tessa and Niko both say the drive readings drift, and the meeting wrote it down." }
         solution: true
         when:
           - { flag: story_a_second_opinion_end_2 }
       - id: end3
         name: Signed off
         text: Tessa signs off on the next run and keeps her doubt to herself. She does not bring you her notes again.
+        news: { precise: "The stranger told Tessa her readings were only noise, and she signed off on the next run.", village: "Tessa signed off on the next run after all." }
         solution: false
         when:
           - { flag: story_a_second_opinion_end_3 }
@@ -429,24 +435,28 @@ quests:
       - id: end1
         name: The report is made
         text: "The stranger delivers an investigation report built on the evidence: the complete recordings, the bypass, the edits and the match with the drive test. What the signal is remains unknown. What Port Vesper does about Sorell and the Peregrine is now the port's own argument."
+        news: { precise: "The stranger put the evidence to Dr Sorell aboard the Peregrine: the cut segments, the bypass and the drive test. Sorell admitted cutting the recordings.", village: "The new contractor caught Dr Sorell out over the Orison recordings, and he admitted cutting them.", far: "Something was found out about the research at Port Vesper, they say." }
         solution: true
         when:
           - { flag: story_the_orison_recordings_end_1 }
       - id: end2
         name: Before the whole port
         text: The port has seen the gaps with its own eyes. By morning it has voted to hold the Peregrine until the drive is understood, and Sorell answers to the Commons, not to you. What the signal is remains unknown.
+        news: { precise: "At the evening meal the stranger put the raw copies and Tessa's telemetry up on the Commons screen, and the port saw the gaps for itself.", village: "The whole port saw the gaps in the Orison recordings on the Commons screen, and the Peregrine is held.", far: "Port Vesper has grounded its own ship, they say." }
         solution: true
         when:
           - { flag: story_the_orison_recordings_end_2 }
       - id: end3
         name: Kept safe on the ridge
         text: The complete recordings are safe on Orison Ridge with the man who found the signal, and the station listens again. Whatever Sorell says in his own report, the originals can prove it true or false.
+        news: { precise: "The stranger left the complete recordings with Niko on the ridge, and Niko took his bypass out.", village: "Niko has the whole recordings up on the ridge now, and the station listens again." }
         solution: true
         when:
           - { flag: story_the_orison_recordings_end_3 }
       - id: end4
         name: The edited copies
         text: The Peregrine flies on schedule, on a drive nobody understands, and the gaps in the recordings stay hidden. Only Sorell and you know what was cut.
+        news: { precise: "The stranger kept Dr Sorell's secret and took his edited copies as the originals.", village: "The contractor brought back clean copies of the Orison recordings, and found nothing amiss." }
         solution: false
         when:
           - { flag: story_the_orison_recordings_end_4 }

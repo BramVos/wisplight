@@ -336,6 +336,8 @@ export function endingProblems(sketch: QuestSketch): string[] {
   const most = main ? 3 : small ? 1 : 2
   const count = endings.length + (sketch.lapses ? 1 : 0)
   const problems: string[] = []
+  // What came of it is told as people tell it (M10.34 G): the witnesses repeat it, so never "you".
+  for (const e of endings) if (/\byou(?:r|rs|rself)?\b/i.test(e.text)) problems.push(`${sketch.name}: the ending "${e.name}" says "you": tell what came of it as people tell it, the stranger as "the stranger"`)
   // A deed that says it gives the stranger something names it (M10.34 C): otherwise nothing is held.
   for (const d of [...(Array.isArray(sketch.stages) ? sketch.stages.map((s) => ({ said: s.done, gives: s.gives })) : []), ...endings.map((e) => ({ said: e.text, gives: e.gives }))]) {
     const given = typeof d.said === 'string' ? GIVES_YOU.exec(d.said) : null

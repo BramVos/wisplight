@@ -154,8 +154,8 @@ export class MockLlm implements LlmClient {
         // Three ways it may end (M10.30): told, set right, or let go.
         endings: [
           { name: 'Told', text: `${first} knows now, and is easier for it.`, solution: true, way: 'talk', say: `tell ${first.toLowerCase()} what you found`, at: places[1] ?? places[0]!, with: asker.key, skill: '' },
-          { name: 'Set right', text: 'You put right what you found, and nobody need hear of it.', solution: true, way: 'deed', say: 'put the place right', at: places[0]!, with: '', skill: '' },
-          { name: 'Let go', text: `You let it lie, and ${first} stops asking.`, solution: false, way: 'fail', say: 'let the matter lie', at: places[1] ?? places[0]!, with: '', skill: '' },
+          { name: 'Set right', text: 'The stranger put right what they found, and nobody need hear of it.', solution: true, way: 'deed', say: 'put the place right', at: places[0]!, with: '', skill: '' },
+          { name: 'Let go', text: `The stranger let it lie, and ${first} stops asking.`, solution: false, way: 'fail', say: 'let the matter lie', at: places[1] ?? places[0]!, with: '', skill: '' },
         ],
         truths: other ? [{ text: `${other.name.split(' ')[0]} was there that night.`, words: [`${other.name.split(' ')[0]!.toLowerCase()} was there`], from: 2 }] : [],
       },
@@ -194,7 +194,7 @@ export class MockLlm implements LlmClient {
             // Three ways to end (M10.30): two solutions by different ways, and one where it goes wrong.
             endings: [
               { name: 'The tally made whole', text: 'The two halves fit, and the carters pay what they owe.', solution: true, way: 'talk', say: `ask ${(b ?? a).name.split(' ')[0]!.toLowerCase()} for the other half`, at: there, with: (b ?? a).key, skill: '' },
-              { name: 'A new tally', text: 'You cut a new tally from what the carters own to, and they pay by it, grumbling.', solution: true, way: 'deed', say: 'cut a new tally', at: here, with: '', skill: '' },
+              { name: 'A new tally', text: 'The stranger cut a new tally from what the carters own to, and they pay by it, grumbling.', solution: true, way: 'deed', say: 'cut a new tally', at: here, with: '', skill: '' },
               { name: 'Every carter swears', text: 'Without a tally nobody owes anything, and the debts are lost.', solution: false, way: 'fail', say: 'give up on the tally', at: here, with: '', skill: '' },
             ],
           }
@@ -227,8 +227,8 @@ export class MockLlm implements LlmClient {
     })
     // Three ways to end (M10.30): talking it through, doing something with the world, and letting it go wrong; the main line a third solution.
     const endings = (giver: { key: string; name: string }, main: boolean) => [
-      { name: 'Talked through', text: `${first(giver)} hears you out, and it is settled with words.`, solution: true, way: 'talk', say: `talk ${first(giver).toLowerCase()} round`, at: at(0), with: giver.key, skill: '' },
-      { name: 'Put right', text: 'You put it right with your own hands.', solution: true, way: 'deed', say: 'search the place', at: at(1), with: '', skill: '' },
+      { name: 'Talked through', text: `${first(giver)} hears the stranger out, and it is settled with words.`, solution: true, way: 'talk', say: `talk ${first(giver).toLowerCase()} round`, at: at(0), with: giver.key, skill: '' },
+      { name: 'Put right', text: 'The stranger put it right with their own hands.', solution: true, way: 'deed', say: 'search the place', at: at(1), with: '', skill: '' },
       ...(main ? [{ name: 'Paid off', text: 'A payment closes the matter, if not the questions.', solution: true, way: 'give', say: 'pay the debt', at: at(0), with: giver.key, skill: '' }] : []),
       { name: 'Let slide', text: 'Nobody sees to it, and it goes wrong.', solution: false, way: 'fail', say: 'give up the matter', at: at(0), with: '', skill: '' },
     ]

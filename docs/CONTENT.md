@@ -338,7 +338,7 @@ A list; each has:
 | ask | What the giver says when it begins. | text | no |  |
 | stages | The stages in order: what the journal says at each, and when it is reached. | list of a map: id, text, goal, asks, knows, on_enter, next | no | [] |
 | actions | What the stranger can do in it besides talking (give, show, use), and what that does. | list of a map: id, say, intent, at, with, when, not_yet, check, effects, fail, ... | no | [] |
-| outcomes | The ways it can end: when, what the journal says, and what follows. | list of a map: id, name, text, solution, when, effects | no | [] |
+| outcomes | The ways it can end: when, what the journal says, and what follows. | list of a map: id, name, text, solution, when, effects, news | no | [] |
 | truths | What the story keeps hidden (M10.30): the guard refuses a reply or an improvisation that names one before its stage, so people do not each tell their own plot. | list of a map: text, words, from, when | no | [] |
 | on_death | A death of someone with a part: to an outcome or a stage (design: quests react to the world). | a map of names to text | no | {} |
 | on_place | A place destroyed or flooded: to an outcome or a stage. | a map of names to text | no | {} |
@@ -354,6 +354,8 @@ A stage may have `asks`, what the giver wants of the stranger at this stage, one
 A condition `talked`: the stranger talked with someone (npc id), and with `about`, about one of these words from either side, in the talks the game keeps: `{ talked: npc_niko_serrin, about: [signal, station] }`. A stage the stranger lived in a game from before the story was written passes by it (with `effects` setting the flag its deed would set); the step Stories writes it when it is shown that game, and loading a save from before a quest that begins with the game begins it where the stranger stands.
 
 An effect `evidence` (id, `name`, `text`) gives the stranger something to hold: a line in the dossier with what it is, from whom, by which deed and who saw it; READ and SHOW work on it by its name, and the condition `holds` (its id) asks for it. A deed whose text says someone gives or hands the stranger something gives it (`give` a thing, or `evidence`); Check names one that only says so.
+
+An outcome becomes a fact where the stranger ended it, with whoever stood there as witnesses; the others know it only when the news reaches them. An outcome whose text speaks to the stranger ("you") has `news` (`precise`, and `village` and `far` where they differ), as a witness tells it, the stranger as "the stranger"; Check names one without.
 
 A quest may have `truths`: what the story keeps hidden (`text`), how a reply would name it (`words`, patterns as in an action's say) and when people may say it (`from` a stage, or `when` conditions hold; without either, once it has ended). Before that the guard refuses a reply or an improvisation that names it, unless the game gave it to the speaker: their knows line, or a secret they told. Keep a truth out of the ask and out of the journal lines before its stage.
 

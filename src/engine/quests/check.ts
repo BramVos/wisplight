@@ -281,6 +281,10 @@ export function questWarnings(c: Refs): string[] {
       const gives = GIVES_YOU.exec(a.text)
       if (gives && !a.effects.some((e) => 'give' in e || 'seize' in e || 'evidence' in e || 'learn' in e)) warnings.push(`quest ${q.id}, action ${a.id}: its text says "${gives[0]}", and nothing is given: add the thing (give) or evidence (evidence: id, name, text)`)
     }
+    // An ending people can tell (M10.34 G): one that speaks to the stranger ("you") is told by witnesses in its news.
+    for (const o of q.outcomes ?? []) {
+      if (/\byou(?:r|rs|rself)?\b/i.test(o.text) && !o.news && !o.effects.some((e) => 'fact' in e)) warnings.push(`quest ${q.id}, outcome ${o.id}: its text speaks to the stranger, and nobody can tell it so: give it news (precise, and village and far if they differ), as a witness would tell it`)
+    }
     // What the giver wants at a stage (M10.33 E): a stage with something to do and nobody to say it opens no talk.
     if (q.givers.length) for (const s of q.stages) if (s.goal && !s.asks?.trim()) warnings.push(`quest ${q.id}, stage ${s.id}: the giver never says what they want here (asks), so they will not open a talk with it; write it in their voice`)
   }

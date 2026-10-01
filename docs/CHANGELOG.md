@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.34 deel: een afloop leeft door bij wie het weet (G), 1 oktober 2026
+
+- **Een afloop is een feit met getuigen (G).** Oorzaak: na het einde van een verhaal stopte de kennis per stadium, dus niemand wist nog wat er gebeurd was. Het feit van de afloop lag bovendien waar de gever toevallig stond. Nu ligt het feit waar jij de afloop bereikte. Wie daar stond, zag het; de rest hoort het pas via het nieuws, in de versie die bij hen aankomt. Een afloop die vanzelf kwam, gebeurt waar de gever is.
+- **Hoe mensen het vertellen.** Een afloop krijgt `news`: de versies precies, dorp en ver, in de derde persoon ("the stranger", op Skerrow "the castaway"). De stem van wie het zag of hoorde, weet hoe het afliep. Vanaf het tweede gesprek staat erbij dat het al besproken is, zodat het bedankje niet bij elk bezoek terugkomt. Een save houdt wie het zag en wie niet.
+- **Bij de bron.** Check meldt een afloop die jou aanspreekt ("you") zonder `news`. De verhalenschrijvers vertellen een afloop zoals mensen het daarna vertellen, en een afloop met "you" gaat terug.
+
+Testen: speel in The Quiet Reach de Orison-lijn uit met "play the recordings in the commons". Praat daarna met wie in de Commons stond en met Niko op de heuvel: de een zag het, de ander weet van niets tot het nieuws hem bereikt. Tests in `tests/m1034ending.test.ts`.
+
+Kosten: geen nieuwe aanroep. De streekronde en de stap Verhalen krijgen zo'n 110 tokens meer, de wereldstappen 90 (het contract). Wie een afloop zag of hoorde, krijgt in een gesprek één regel mee.
+
+Wat de editor en de kroniekverteller leerden: het veld `news` van een afloop met zijn beschrijving in `docs/CONTENT.md`, een regel onder Check, en in de stap Verhalen dat een afloop in de derde persoon verteld wordt. Skerrow heeft zijn eigen versies, met de schipbreukeling; Deepwell heeft geen verhalen.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 14, alinea "Stand na M10.34: een afloop leeft door bij wie het weet".
+
 ## M10.35 deel: gissen over mensen, nooit over de wereld (B aangescherpt), 1 oktober 2026
 
 - **Een aanwijzing is geen gok (B).** De onderzoeker scherpte B aan. "Misschien ligt er iets onder die bank" stuurt de speler toch zoeken, en "Mara heeft de sleutel" kan onwaar zijn terwijl Mara en de sleutel allebei bestaan. Oorzaak blijft de regel, die alleen feit of "ik weet het niet" kende; mijn eerste versie liet een als gok gemarkeerde zin over dingen door, en dat was te ruim. De regel zegt nu: gissen mag over de beweegredenen van mensen ("I'd guess"), nooit over waar iets is, wie iets heeft, wie je binnenlaat of wat helpt. De bewaker laat een "maybe" niet meer door bij dingen, plekken en wegen. Hij toetst wie iets heeft, waar het ligt en wie je binnenlaat aan de stand van het spel: wat mensen bij zich hebben, wat er op de grond ligt, en wie de sleutel of het woord van een slot kent (een geheim, de eigen feiten of de kennisregel van een verhaal). Dat geldt ook nadat de wereld veranderde. Is een aanwijzing niet zo, dan hoort de stem alleen dat ze niet klopt en nooit wat wel waar is, want dat zou ze doorvertellen. Een zin met "if" en een gok over een mens gaan door. Opgelost in de motor (`src/engine/dialogue/hints.ts`), voor elke wereld.
@@ -15,6 +29,7 @@ Kosten: geen.
 Wat de editor en de kroniekverteller leerden: niets; de toets leest wat een wereld al heeft (sloten met `key` en `word`, geheimen, `knows`, voorwerpen).
 
 Ontwerp: geen wijziging.
+
 ## M10.34 deel: bewijs is iets wat je hebt (C), 1 oktober 2026
 
 - **Een dossier (C).** Oorzaak: "Tessa gives you the test telemetry" was een regel tekst en verder niets. INVENTORY toonde niets, en je kon het bewijs niet lezen, tonen of gebruiken. Nu zet een daad bewijs in je dossier: wat het is, van wie, door welke daad en wie erbij stond. INVENTORY noemt het, READ geeft het, en SHOW <bewijs> TO <iemand> laat het zien. Die persoon onthoudt het, en in een gesprek hoort het volgende antwoord het. Een daad kan om bewijs vragen (`holds`), en de questpagina zegt welk bewijs een verhaal gaf.

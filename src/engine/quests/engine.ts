@@ -38,6 +38,8 @@ export interface QuestState {
   ended?: number
   /** The stages whose asks line the giver has said to open a talk (M10.33 E): once a stage. */
   asked?: string[]
+  /** Who has spoken of the ending with the stranger since (M10.34 G): a thank-you once, not at every visit. */
+  told?: string[]
 }
 
 /** What the quest engine needs from the engine: time, effect plans and encounters. */
@@ -426,26 +428,37 @@ export function endQuest(world: World, host: QuestHost, questId: string, outcome
   // Experience for every solution, not only the violent ones (FO, chapter 14, "Beloningen").
   if (outcome?.solution) gainXp(world, knob(world, 'rules.quest_xp')[quest.kind] ?? 150, quest.name)
   // Every outcome is a fact the world can hear of (M8.1), unless it has one of its own.
-  if (!outcome?.effects.some((e) => 'fact' in e)) outcomeFact(world, quest, outcomeId, outcome?.name, outcome?.text)
+  if (!outcome?.effects.some((e) => 'fact' in e)) outcomeFact(world, quest, outcomeId, outcome?.name, outcome?.text, outcome ? { news: outcome.news, byDeed: deedEnding(quest, q, outcome.when) } : undefined)
   if (outcome) applyEffects(world, host, questId, outcome.effects, out)
 }
 
 /** The fact of a quest's outcome: where the giver is, about the people with a part, with a claim for the watchers. */
-function outcomeFact(world: World, quest: Quest, outcomeId: string, name: string | undefined, text: string | undefined): void {
+function outcomeFact(world: World, quest: Quest, outcomeId: string, name: string | undefined, text: string | undefined, how?: { news?: { precise: string; village?: string; far?: string }; byDeed: boolean }): void {
+  // Where it happened (M10.34 G): where the stranger did the deed that ended it, with whoever stood there as witnesses;
+  // an ending that came by itself (the days ran out) where the giver is. Nobody else knows it until the news reaches them.
   const giver = quest.givers.find((g) => world.state.npcs[g] && !world.state.npcs[g]!.note) ?? quest.givers[0]
-  const at = giver && world.state.npcs[giver] && !world.state.npcs[giver]!.dead ? world.state.npcs[giver]!.location : world.state.player.location
+  const theirs = giver && world.state.npcs[giver] && !world.state.npcs[giver]!.dead ? world.state.npcs[giver]!.location : world.state.player.location
+  const at = how?.byDeed ? world.state.player.location : theirs
   const place = world.content.locations.has(at) ? at : world.state.player.location
   const people = [...new Set([...quest.givers, ...quest.helpers, ...quest.opponents])].filter((id) => world.content.npcs.has(id))
-  const told = text ?? `${quest.name} is over.`
+  // As people tell it: the ending's news, or its text when it is not said to the stranger, or only its name.
+  const plain = text && !/\byou(?:r|rs|rself)?\b/i.test(text) ? text : undefined
+  const precise = how?.news?.precise ?? plain ?? `${quest.name} came to an end: ${(name ?? 'it is over').toLowerCase()}.`
   recordFact(world, {
     kind: `quest:${quest.id}`,
     about: people,
     place,
     belang: quest.kind === 'main' ? 3 : 2,
     title: `${quest.name}: ${name ?? 'the end of it'}`,
-    text: { precise: told, village: told, far: `Something happened in ${world.content.areas.get(world.location(place).area)?.name ?? world.words.region}, they say.` },
+    text: { precise, village: how?.news?.village ?? precise, far: how?.news?.far ?? `Something came of it in ${world.content.areas.get(world.location(place).area)?.name ?? world.words.region}, they say.` },
     claim: { subject: quest.id, key: 'outcome', value: outcomeId },
   })
+}
+
+/** Whether an ending came by the stranger's deed (a flag a done deed set), not by itself. */
+function deedEnding(quest: Quest, q: QuestState, when: Condition[]): boolean {
+  const flags = new Set(when.flatMap((c) => ('flag' in c ? [c.flag] : 'any' in c ? c.any.flatMap((x) => ('flag' in x ? [x.flag] : [])) : [])))
+  return (quest.actions ?? []).some((a) => q.done.includes(a.id) && a.effects.some((e) => 'set' in e && flags.has(e.set)))
 }
 
 /** Stages move on and endings are reached when their conditions hold; loops until nothing changes. */

@@ -152,19 +152,23 @@ quests:
       - id: in_the_kittiwake
         name: In the Kittiwake
         text: On the morning tide the Kittiwake goes out past the harbour wall, Brannoc at the tiller and you at the sheet. Two days later she noses into Havenmoor. Brannoc buys the boy a knife in the market, and sails home a braver man.
+        news: { precise: "Brannoc sailed the castaway to Havenmoor in the Kittiwake on the morning tide, and came home a braver man.", village: "Brannoc took the castaway across to Havenmoor in the Kittiwake, and he is back, and not the man he was." }
         when: [{ flag: brannoc_sails }]
         effects: [{ relation: npc_brannoc, affinity: 15 }]
       - id: a_ship_for_the_light
         name: A ship for the light
         text: Two nights after the Lamp of Skerrow was lit again, the Heron out of Havenmoor stands in to the Hythe to see what the light is about. Her master takes you across for the price of your story, and Skerrow has ships again.
+        news: { precise: "The Heron out of Havenmoor came in to see the Lamp lit again, and her master took the castaway across.", village: "The Lamp is lit again, and a ship came for it and took the castaway off.", far: "Skerrow has its light again, they say." }
         when: [{ flag: beacon_burning }, { since: beacon_lit, hours: 36 }]
         effects: [{ relation: npc_maren, affinity: 15 }]
       - id: through_the_waystone
         name: Through the waystone
         text: You step into the grey light and out onto a wet hillside above a harbour full of masts. Behind you there is only a standing stone with moss on it. Somewhere very far off, the sea says goodbye.
+        news: { precise: "The castaway went through the waystone in the grey light, and was gone.", village: "The castaway walked into the standing stones and never came out, they say." }
         when: [{ flag: waystone_open }]
       - id: winter_closes_the_sea
         name: Winter closes the sea
         solution: false
         text: The first of the winter gales closes the Glass Sea. No boat will cross now until spring; you winter on Skerrow, among the fishers and the gulls.
+        news: { precise: "The winter gales closed the Glass Sea with the castaway still on Skerrow.", village: "The castaway is wintering with us; no boat crosses now." }
         when: [{ days: 40 }]

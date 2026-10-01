@@ -518,6 +518,7 @@ quests:
       - id: reported
         name: Reported
         text: Harmen pays his fine and puts the stone back at his own cost. The lights go out. He will never forgive you.
+        news: { precise: "The stranger told the schout that Harmen had moved the boundary stone, and Harmen paid his fine and put it back.", village: "Harmen was fined for moving the boundary stone, and the lights are gone from his field." }
         when: [{ flag: harmen_reported }]
         effects:
           - { relation: npc_harmen, affinity: -30 }
@@ -527,11 +528,13 @@ quests:
       - id: blackmailed
         name: Blackmailed
         text: Harmen pays for your silence, and the lights keep dancing over his field.
+        news: { precise: "Harmen pays the stranger to keep quiet about the moved stone.", village: "The lights still dance over Harmen's field, and he is short of money lately." }
         when: [{ flag: harmen_blackmailed }]
         effects: [{ relation: npc_harmen, affinity: -20, fear: 20 }]
       - id: stone_back
         name: The stone put back
         text: The stone stands where it belongs, the lights are gone, and Harmen owes you more than he'll ever say.
+        news: { precise: "The stranger helped put Harmen's boundary stone back where it belongs, and the lights went out.", village: "Harmen's boundary stone is back where it was, and the lights are gone." }
         when: [{ flag: stone_back }]
         effects:
           - { relation: npc_harmen, affinity: 20, trust: 20 }
@@ -607,6 +610,7 @@ quests:
       - id: driven_off
         name: Driven off with iron
         text: The Haakman has gone down into the deepest part of the Blackmere and won't come up soon. Old women nod at you in the lane. Wouter isn't sure you did a good thing.
+        news: { precise: "The stranger stood up to the Haakman at the Blackmere, and he went down into the deep water.", village: "The Haakman was driven down into the deep of the Blackmere, and not by a priest." }
         when: [{ flag: haakman_beaten }]
         effects: [{ set: haakman_at_peace }, { reputation: fen_folk, delta: 5 }, { reputation: water_spirits, delta: -30 }]
       - id: named
@@ -795,6 +799,7 @@ quests:
       - id: joined
         name: One of them
         text: You wear the goat-skin now. The skippers pay you, too.
+        news: { precise: "The stranger joined the Goat-Riders, and takes toll on the Vaart with them.", village: "That stranger wears a goat-skin now and takes toll with Black Mathijs." }
         when: [{ flag: joined_goat_riders }]
         effects: [{ reputation: counts_men, delta: -10 }, { relation: npc_trijntje, affinity: -25 }]
 
@@ -837,16 +842,19 @@ quests:
       - id: solved
         name: Solved with lore
         text: The White Women remember the dead of the flood with you, and gave you a name to carry.
+        news: { precise: "The stranger answered the White Women's riddle at Reuzenrust.", village: "The White Women got their answer at Reuzenrust, they say." }
         when: [{ flag: riddle_solved }]
         effects: [{ reputation: white_women, delta: 20 }, { learn: white_women }]
       - id: offering
         name: An offering with respect
         text: You didn't answer, but you showed respect. The mist at Reuzenrust will let you pass.
+        news: { precise: "The stranger left an offering for the White Women at Reuzenrust.", village: "Someone left bread for the White Women at Reuzenrust." }
         when: [{ flag: white_women_offering }]
         effects: [{ reputation: white_women, delta: 10 }, { learn: white_women }]
       - id: walked_away
         name: Walked away
         text: Some riddles are better left alone. You'll never know what they wanted.
+        news: { precise: "The stranger walked away from the White Women's riddle.", village: "The White Women asked their riddle again, and nobody answered." }
         when: [{ flag: walked_away }]
 
   # ------------------------------------------------------------------ the regional conflict
@@ -1038,6 +1046,7 @@ quests:
       - id: polder_comes_helped
         name: The polder comes
         text: The survey is done, with your help. Cornelis sends his report to Graafhaven, and in spring the digging begins.
+        news: { precise: "The stranger helped Master Cornelis finish his survey; his report goes to Graafhaven, and the digging begins in spring.", village: "The survey is done, and the stranger carried the chains for it. The fen will be dug in spring." }
         when: [{ clock_full: survey }, { flag: helped_cornelis }]
         effects: [{ set: polder_coming }, { set: fen_dying }, { reputation: counts_men, delta: 10 }, { relation: npc_gerrit, affinity: -30 }, { grievance: npc_gerrit, line: "You held his chains. Don't come near the pits again." }]
       - id: polder_comes
@@ -1214,6 +1223,7 @@ quests:
       - id: used
         name: The secret used
         text: Aaltje walks free because Dirck is afraid of you. It works. It isn't pretty.
+        news: { precise: "The stranger threatened Dirck with his own secret, and Aaltje walks free.", village: "Aaltje walks free; Dirck saw to it, and nobody knows why he changed his mind." }
         when: [{ flag: secret_used }]
         effects: [{ relation: npc_dirck, affinity: -30, fear: 20 }, { relation: npc_aaltje, affinity: 5 }]
       - id: hearing_lost

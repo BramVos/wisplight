@@ -291,6 +291,15 @@ export const OutcomeSchema = z
     solution: z.boolean().default(true).describe('A real way to solve it (the design rule asks for three); otherwise a failure or a turn of events.'),
     when: z.array(ConditionSchema).default([]).describe('Reached by itself when these hold, in any stage.'),
     effects: z.array(QuestEffectSchema).default([]),
+    news: z
+      .object({
+        precise: z.string().describe('What happened, as a witness tells it: in the third person, the stranger as "the stranger" ("The stranger put the gaps up on the Commons screen, and the port saw them").'),
+        village: z.string().optional().describe('As it goes round the settlement, a little less exact; without it the precise one.'),
+        far: z.string().optional().describe('As it is told far off; without it a plain line that something came of it.'),
+      })
+      .strict()
+      .optional()
+      .describe('The ending as people tell it (M10.34 G): those who saw it know the precise version, the others what reaches them by the news. For an ending whose text speaks to the stranger (you); without it and without a fact of its own, the ending is told by its name only.'),
   })
   .strict()
 
