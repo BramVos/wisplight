@@ -1,5 +1,7 @@
 import { Engine, GameClock, type Content, type LlmClient, type LlmRejection, type LlmRequest, type LlmRole, type LlmResponse } from '../engine'
 import { callName } from '../engine/content'
+import { sentText } from '../engine/dialogue/llm'
+import { parseReply } from '../engine/dialogue/schema'
 import { costUsd } from './ai/pricing'
 
 // The measure of M10.28 (Bram, 29 September 2026: "a real talk of twenty
@@ -109,6 +111,9 @@ export interface LineMeasure {
   latencyMs: number
   /** Why the rules answered it without a call (M10.28 (4)). */
   byRule?: string
+  /** What the last call of the line was given, its end, and the model's own reply to it (M10.35 E): for the read score. */
+  given?: string
+  reply?: string
 }
 
 /** A client that passes every call on and books it to the line being said. */
@@ -135,6 +140,9 @@ class LineMeter implements LlmClient {
       m.outputTokens += response.usage.outputTokens
       m.costUsd += costUsd(this.model(response), response.usage) ?? 0
       m.latencyMs += response.latencyMs
+      m.given = sentText(request).slice(-2400)
+      const reply = parseReply(response.text)?.reply
+      if (reply) m.reply = reply
     }
     return response
   }

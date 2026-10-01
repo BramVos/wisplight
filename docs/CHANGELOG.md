@@ -1,5 +1,20 @@
 # Changelog
 
+## M10.35 deel: verzonnen aanwijzingen geteld (E, de telling), 1 oktober 2026
+
+- **De leesscore telt verzonnen aanwijzingen (E).** Oorzaak: de telling van M10.33 W telde verzonnen feiten per antwoord, maar geen verzonnen aanwijzingen. Toch kost een valse aanwijzing de speler een uur, en een vals feit een zin. De lezer telt nu per antwoord ook `hints`: de handelingen, vindplaatsen, dingen om te halen en mensen die je zouden binnenlaten waar het antwoord de speler heen wijst, terwijl de GIVEN ze niet bevat. Een gok naar iemands beweegredenen telt niet. De voorbeelden in de opdracht van de lezer komen uit Brams transcripten: "the multimeter under the bench", "bring the last three run logs", "ask Sorell for the raw power traces", "photograph it", "Mara can let you in".
+- **De negatieve voorbeelden als set.** `docs/playtest/voice/false-hints-2026-09-30.jsonl` bevat zes probleemregels uit de review van 30 september, elk met de prompt die het spel nu geeft. `read_dumps` leest ze als een eigen reeks en moet in elk antwoord minstens één verzonnen aanwijzing tellen.
+- **Ook de proef met Niko en Tessa bewaart nu wat hij kreeg.** `story_twenty` schrijft met `--dump` en `--label` elk antwoord weg, met het eigen antwoord van het model en het einde van de prompt. `read_dumps` leest elke rij in zijn eigen wereld en meldt verzonnen feiten en verzonnen aanwijzingen per antwoord.
+
+Testen: niets om te spelen. Tests in `tests/m1035e.test.ts`.
+
+Bekende gaten: de keuze van model en inspanning per laag (gewone gesprekken goedkoop, gesprekken met een gever of over een lopende quest beter als de telling dat vraagt) wacht op een meting op Brams sleutel. Ik vraag Bram daarvoor een akkoord met een schatting.
+
+Kosten: geen; een leesronde krijgt per antwoord een getal meer, een paar tokens.
+
+Wat de editor en de kroniekverteller leerden: niets.
+
+Ontwerp: geen wijziging.
 ## M10.35 deel: een verhalenbank per persoon (A), 1 oktober 2026
 
 - **Verhalen (A).** Oorzaak: wat leuk was, kwam alleen uit het model, want een persoon had feiten, voorbeeldzinnen en kennis, en geen verhalen. Nu heeft elke persoon in de drie werelden drie kleine ware verhalen, over echte mensen en plekken. Sana houdt de stoelen aan de lange tafel zoals ze waren. Garrick kent de nacht van elk wrak. Dirck vergeeft de man nooit die op de grote schaal leunde.

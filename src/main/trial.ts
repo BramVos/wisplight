@@ -277,7 +277,7 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
         // More situations than the six of a settings try, for a comparison (M10.33 Q).
         const r = await trial(ai.gateway, content, provider, model, 'voice', Number(env('COUNT')) || undefined)
         // Every answer kept to a file (M10.33 Q): the model's reply and what it was given, to read beside another prompt.
-        if (env('DUMP') && r.kept) for (const k of r.kept) appendFileSync(env('DUMP'), `${JSON.stringify({ label: env('LABEL') || 'now', model: r.model, series: n, ...k })}\n`)
+        if (env('DUMP') && r.kept) for (const k of r.kept) appendFileSync(env('DUMP'), `${JSON.stringify({ label: env('LABEL') || 'now', model: r.model, world: 'base', series: n, ...k })}\n`)
         // What it cost as billed, the cache read and written included (M10.28); without a price, at the full input price.
         const usd = r.costUsd ?? costUsd(r.model, { inputTokens: r.inputTokens, outputTokens: r.outputTokens, cachedTokens: 0 }) ?? 0
         // Every answer kept, and how the series reads (M10.28: the rules score words and facts, not how a line reads).
@@ -290,8 +290,10 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
     }
     if (kind === 'read_dumps') {
       // The read score of each kept series (M10.33 Q, W): per label, the model's own replies, the made-up facts counted.
-      const content = await loadContentFromDir(contentRoot, 'base')
-      const rows = env('DUMP').split(',').filter(Boolean).flatMap((file) => readFileSync(file, 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line) as KeptAnswer & { label: string; model: string; reply?: string }))
+      // Each row in its own world (M10.35 E: Niko and Tessa are of The Quiet Reach), the Nethermarch when it says none.
+      const worlds = new Map<string, Awaited<ReturnType<typeof loadContentFromDir>>>()
+      const rows = env('DUMP').split(',').filter(Boolean).flatMap((file) => readFileSync(file, 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line) as KeptAnswer & { label: string; model: string; world?: string; reply?: string }))
+      for (const w of new Set(rows.map((r) => r.world ?? 'base'))) worlds.set(w, await loadContentFromDir(contentRoot, w))
       for (const label of [...new Set(rows.map((r) => r.label))]) {
         if (ai.usage.summary().session.costUsd >= cap) {
           say(`read_dumps ${label}: not read, the cap of $${cap.toFixed(2)} is spent`)
@@ -299,14 +301,15 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
           continue
         }
         const kept = rows.filter((r) => r.label === label && r.reply).map((r) => ({ ...r, answer: r.reply!, byModel: true }))
+        const content = worlds.get(kept[0]?.world ?? 'base')!
         const read = await readScore(ai.gateway, content, kept).catch(() => undefined)
-        say(read ? `read_dumps ${label}: ${kept.length} answers, read ${read.score.toFixed(3)} (this person ${read.byQuestion.person.toFixed(2)}, natural ${read.byQuestion.natural.toFixed(2)}, answers ${read.byQuestion.answers.toFixed(2)}, onward ${read.byQuestion.onward.toFixed(2)}), made-up facts per answer ${read.invented?.toFixed(2) ?? '-'}, words per answer ${(kept.reduce((s, k) => s + k.answer.split(/\s+/).length, 0) / Math.max(1, kept.length)).toFixed(1)}, by ${read.model}, $${read.costUsd.toFixed(4)}${read.weakest.map((w) => `; weakest ${w.n}: ${w.why}`).join('')}` : `read_dumps ${label}: the read score could not be read`)
+        say(read ? `read_dumps ${label}: ${kept.length} answers, read ${read.score.toFixed(3)} (this person ${read.byQuestion.person.toFixed(2)}, natural ${read.byQuestion.natural.toFixed(2)}, answers ${read.byQuestion.answers.toFixed(2)}, onward ${read.byQuestion.onward.toFixed(2)}), made-up facts per answer ${read.invented?.toFixed(2) ?? '-'}, false hints per answer ${read.hints?.toFixed(2) ?? '-'}, words per answer ${(kept.reduce((s, k) => s + k.answer.split(/\s+/).length, 0) / Math.max(1, kept.length)).toFixed(1)}, by ${read.model}, $${read.costUsd.toFixed(4)}${read.weakest.map((w) => `; weakest ${w.n}: ${w.why}`).join('')}` : `read_dumps ${label}: the read score could not be read`)
         if (!read) ok = false
       }
       continue
     }
     if (kind === 'story_twenty') {
-      ok = (await storyTrial(ai, contentRoot, { model: env('MODEL'), capUsd: cap, appPath }, say)) && ok
+      ok = (await storyTrial(ai, contentRoot, { model: env('MODEL'), capUsd: cap, appPath, dump: env('DUMP'), label: env('LABEL') }, say)) && ok
       continue
     }
     if (kind === 'talk_twenty' || kind === 'keep_warm') {
@@ -346,7 +349,7 @@ function providerOf(model: string): 'openai' | 'anthropic' {
  * by side, with the guard's reasons where it asked again (a hidden truth named
  * too early is a leak).
  */
-export async function storyTrial(ai: AiService, contentRoot: string, how: { model: string; capUsd: number; appPath?: string }, say: (line: string) => void): Promise<boolean> {
+export async function storyTrial(ai: AiService, contentRoot: string, how: { model: string; capUsd: number; appPath?: string; dump?: string; label?: string }, say: (line: string) => void): Promise<boolean> {
   const chosen = ai.overview().settings.roles.voice
   if (!chosen) {
     say('story_twenty: no model chosen for the voice under Settings > AI')
@@ -370,13 +373,15 @@ export async function storyTrial(ai: AiService, contentRoot: string, how: { mode
           if (spent > how.capUsd) throw new Error(`the cap of $${how.capUsd.toFixed(2)} is spent`)
         },
       })
-      kept.push(...lines.map((l) => ({ npc: talk.npc, said: l.line, answer: l.said, byModel: l.calls > 0 })))
+      kept.push(...lines.map((l) => ({ npc: talk.npc, said: l.line, answer: l.said, byModel: l.calls > 0, ...(l.given ? { given: l.given } : {}), ...(l.reply ? { reply: l.reply } : {}) })))
     }
   } catch (error) {
     say(`story_twenty: stopped: ${error instanceof Error ? error.message : String(error)}`)
     return false
   }
   say(`story_twenty: ${other?.model ?? chosen.model}, ${kept.filter((k) => k.byModel).length} lines asked, $${spent.toFixed(4)} in all`)
+  // Every answer kept to a file (M10.35 E), the model's reply and what it was given, for read_dumps to count false hints.
+  if (how.dump) for (const k of kept) appendFileSync(how.dump, `${JSON.stringify({ label: how.label || 'now', model: other?.model ?? chosen.model, world: 'quietreach', series: 1, ...k })}\n`)
   if (how.appPath) keepAnswers(how.appPath, content, other?.model ?? chosen.model, 'Niko and Tessa on the recordings (M10.30)', kept, `$${spent.toFixed(4)}`, undefined)
   return true
 }
@@ -614,7 +619,7 @@ function keepAnswers(appPath: string, content: Content, model: string, title: st
   const name = (npc: string) => content.npcs.get(npc)?.name ?? npc
   const lines = answers.map((a) => (a.byModel ? `${++n}. ${name(a.npc)}. The player: "${a.said}"\n   ${a.answer}` : `- ${name(a.npc)}. The player: "${a.said}"\n   ${a.answer} (rules)`))
   const scored = read
-    ? [`Read score ${read.score.toFixed(2)} (0 to 1; per question 0 to 3: this person ${read.byQuestion.person.toFixed(1)}, natural ${read.byQuestion.natural.toFixed(1)}, answers and adds ${read.byQuestion.answers.toFixed(1)}, keeps it going ${read.byQuestion.onward.toFixed(1)})${read.invented !== undefined ? `; made-up facts per answer ${read.invented.toFixed(2)}` : ''}, read by ${read.model}.`, ...read.weakest.map((w) => `Weakest: ${w.n}, ${w.why}`)]
+    ? [`Read score ${read.score.toFixed(2)} (0 to 1; per question 0 to 3: this person ${read.byQuestion.person.toFixed(1)}, natural ${read.byQuestion.natural.toFixed(1)}, answers and adds ${read.byQuestion.answers.toFixed(1)}, keeps it going ${read.byQuestion.onward.toFixed(1)})${read.invented !== undefined ? `; made-up facts per answer ${read.invented.toFixed(2)}` : ''}${read.hints !== undefined ? `; false hints per answer ${read.hints.toFixed(2)}` : ''}, read by ${read.model}.`, ...read.weakest.map((w) => `Weakest: ${w.n}, ${w.why}`)]
     : []
   appendFileSync(file, `${head}\n## ${title}\n\n${counts}.\n${scored.length ? `\n${scored.join('\n')}\n` : ''}\n${lines.join('\n')}\n`)
 }

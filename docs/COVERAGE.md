@@ -52,7 +52,7 @@ Every kind puts what stays the same first and what changes after it (M10.26). A 
 | `npc_goals` | claude-sonnet-5 | 1,458 | one, an hour | 1,072 | - | 1,024 | the next call 74% |
 | `chronicle` | claude-opus-5-5 | 5,638 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `spark` | claude-sonnet-5 | 853 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |
-| `read_score` | - | 599 | none | - | - | - | not marked: nothing reads it back in time, so a mark would only pay a write |
+| `read_score` | - | 713 | none | - | - | - | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `lore_check` | claude-sonnet-5 | 386 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `legends` | claude-opus-5-5 | 652 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `outline` | claude-opus-5-5 | 3,543 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
