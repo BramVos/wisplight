@@ -39,7 +39,7 @@ describe('M10.35 A: a bank of tales per person', () => {
     const isleGame = new Engine(isle, { seed: 1 })
     isleGame.start()
     const wenna = isleGame.topics.find('Wenna')!
-    isleGame.state.npcs['npc_wenna']!.dead = true
+    isleGame.state.npcs['npc_wenna']!.dead = { t: 0, fact: 'fact_0' }
     expect(new Knowledge(isleGame.world, isleGame.topics).packet('npc_maren', [wenna], true).known[0]?.tale).toBeUndefined()
   })
 
