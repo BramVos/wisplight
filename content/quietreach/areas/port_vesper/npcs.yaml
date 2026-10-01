@@ -50,6 +50,14 @@ npcs:
         where: at the Arrival Lock, from Mara Venn, who writes the hire contract; Tessa Rook hands the cart over at the Workshop
         line: "Mara writes you into the hire contract: driver, vehicle, cargo, condition, return time. Maintenance track only, back to the Workshop on time, and Tessa gives you the safety talk before you touch it."
         free_for_friends: false
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "The first winter Mara ran the port, the supply ship came eleven days late, and she counted every ration by hand twice a day until it came. She still keeps that tally sheet in the desk at the Arrival Lock."
+        about: [loc_arrival_lock]
+      - text: "Mara says Sana is the only one on Nacre who can get a full Commons to go quiet without raising her voice, and that she has tried and failed to learn how."
+        about: [npc_sana_holt, loc_commons]
+      - text: "Mara reads every requisition for the Peregrine twice, because once one came in dressed as ordinary research stock, and she nearly signed it."
+        about: [npc_ilyan_sorell, loc_peregrine_hangar]
 
   - id: npc_ilyan_sorell
     name: Dr Ilyan Sorell
@@ -95,6 +103,14 @@ npcs:
         hint: He changes the subject quickly when the blocked requisition comes up.
         admission: Yes, I called them research stock. The test was research. I'd have replaced every one of them.
         dc: 14
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Ilyan likes to say that the first to hear the Orison signal was not Niko but the antenna, and that the rest of them are only catching up with it."
+        about: [npc_niko_serrin, loc_orison_listening_room]
+      - text: "He kept the briefing table on the Peregrine set for six through a whole week of storms, so that the crew would remember it was a ship and not a shed."
+        about: [loc_peregrine_common_deck]
+      - text: "He says Edda is the only person on Nacre who has told him no in a way he could not argue with, and he means it as praise."
+        about: [npc_edda_vale]
 
   - id: npc_tessa_rook
     name: Tessa Rook
@@ -144,6 +160,14 @@ npcs:
         # By right (M10.33 U): once the antenna fault is traced, the hangar matters, and she gives it to whoever asks; and
         # once Sorell owns that the spares went to the Peregrine (M10.34 B: the crates are carried back to the hangar).
         given_when: [{ any: [{ flag: story_the_orison_recordings_3 }, { flag: story_short_on_the_count_2 }] }]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Tessa learnt to splice cable on a transit hauler before she could read a manifest, and she still checks a splice by the sound it makes under her thumb."
+        about: [loc_workshop, transit_families]
+      - text: "When a part goes missing from the Workshop, Tessa writes its number on the board by the door and leaves it there until it comes back. One number has been up since the spring."
+        about: [loc_workshop]
+      - text: "Tessa says Niko is the most careful technician she has worked with, and she wishes he would sit at her end of the table instead of the far one."
+        about: [npc_niko_serrin, loc_commons]
 
   - id: npc_niko_serrin
     name: Niko Serrin
@@ -191,6 +215,14 @@ npcs:
         hint: He goes quiet whenever someone mentions the antenna wiring or one of Tessa's inspections.
         admission: I put a bypass in. The array was dropping out, and I'd have lost the recordings. I know I should have logged it.
         dc: 13
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Niko counts the steps of the steep route up to the listening room: four hundred and twelve on a dry day, and more in the rain, he swears."
+        about: [loc_ridge_shelter, loc_orison_listening_room]
+      - text: "He says Sana is the only reason he eats on field days, because she keeps a plate under a cloth for him whatever the hour."
+        about: [npc_sana_holt, loc_commons]
+      - text: "The first time he heard the repeating pattern, he thought the receiver was failing and spent a night taking it apart before he believed his ears."
+        about: [loc_orison_listening_room]
 
   - id: npc_edda_vale
     name: Dr Edda Vale
@@ -226,6 +258,14 @@ npcs:
       - { to: npc_ilyan_sorell, role: acquaintance, bond: -1, note: Resists his pressure on crew fitness. }
       - { to: npc_sana_holt, role: friend, bond: 1 }
       - { to: npc_mara_venn, role: neighbour, bond: 1 }
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Edda keeps the recovery cradle warm all winter, because the one time she let it go cold a hauler came in frostbitten at three in the morning."
+        about: [loc_medical_bay]
+      - text: "She says the people of Port Vesper are healthier than their lungs have any right to be, and she puts it down to Sana's soup."
+        about: [npc_sana_holt, loc_commons]
+      - text: "She told Ilyan once, in front of the whole table, that a crew is fit when she says so and not before, and the Commons went quiet for a long time after."
+        about: [npc_ilyan_sorell, loc_commons]
 
   - id: npc_sana_holt
     name: Sana Holt
@@ -261,3 +301,11 @@ npcs:
       - { to: npc_niko_serrin, role: friend, bond: 2, note: Sees that he sleeps badly and does not know why. }
       - { to: npc_edda_vale, role: friend, bond: 1 }
       - { name: a cousin with the Transit Families, pronoun: they, role: kin, bond: 2, status: away }
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Sana keeps the chairs at the long table as they were: that one is Mara's, that one is Tessa's, and Niko's is the empty one at the far end."
+        about: [loc_commons, npc_mara_venn, npc_tessa_rook, npc_niko_serrin]
+      - text: "She keeps the names for the Harbour Record, and on the Night of the Open Door she reads every one of them aloud in the Commons, the newest last."
+        about: [harbour_record, night_of_the_open_door, loc_commons]
+      - text: "Her cousin with the Transit Families sends a message on every supply ship, and Sana reads the weather in it before she reads the news."
+        about: [transit_families]

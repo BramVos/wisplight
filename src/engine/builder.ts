@@ -103,6 +103,42 @@ export function directionProblems(content: Content, only?: ReadonlySet<string>):
 }
 
 /**
+ * Tales (M10.35 A) that name someone or somewhere this world does not have (a
+ * capital word inside a sentence that no name, place, topic, thing or the
+ * world's own words hold), or that say a truth a story keeps hidden.
+ */
+export function taleWarnings(content: Content): string[] {
+  const out: string[] = []
+  const tellers = [...content.npcs.values()].filter((n) => n.tales.length)
+  if (!tellers.length) return out
+  // Every capital word the world itself writes in its names and its own frame.
+  const named = new Set<string>()
+  const add = (text: string | undefined) => {
+    for (const w of (text ?? '').match(/\b[A-Z][a-z'’]+\b/g) ?? []) named.add(w.replace(/['’]s$/, ''))
+  }
+  // People and their kin by name, the dead among them (Tobin, Ysolde).
+  for (const n of content.npcs.values()) [n.name, n.short, ...(n.aliases ?? []), ...n.public_facts, ...n.relations.map((r) => r.name ?? '')].forEach(add)
+  for (const l of content.locations.values()) [l.name, ...l.aliases, l.summary].forEach(add)
+  for (const a of content.areas.values()) [a.name, ...(a.aliases ?? []), a.summary].forEach(add)
+  for (const t of content.topics.values()) [t.name, ...(t.aliases ?? []), t.summary].forEach(add)
+  for (const i of content.items.values()) add(i.name)
+  for (const f of content.factions.values()) add(f.name)
+  add(JSON.stringify(content.world))
+  const truths = [...content.quests.values()].flatMap((q) => (q.truths ?? []).map((t) => ({ q, t })))
+  for (const n of tellers) {
+    for (const tale of n.tales) {
+      const inner = tale.text.replace(/(^|[.!?:"“]\s*)[A-Z][a-z'’]+/g, '$1').match(/\b[A-Z][a-z'’]+\b/g) ?? []
+      const unknown = [...new Set(inner.map((w) => w.replace(/['’]s$/, '')).filter((w) => !named.has(w) && !['I'].includes(w)))]
+      if (unknown.length) out.push(`${n.id}: a tale names ${unknown.join(', ')}, who or what this world does not have: "${tale.text.slice(0, 60)}..."`)
+      for (const { q, t } of truths) {
+        if (t.words.some((w) => new RegExp(w, 'i').test(tale.text))) out.push(`${n.id}: a tale tells what ${q.name} keeps hidden ("${t.text}"): tell something else`)
+      }
+    }
+  }
+  return out
+}
+
+/**
  * Places of the stories with nothing to do (M10.33 N; review S7: places the
  * stranger passes through and can only look at): a place in an area where a
  * story is played (a deed is done there, or its giver lives or works there)
@@ -152,6 +188,8 @@ export function warnings(content: Content): string[] {
   if (!content.quests.size && content.npcs.size) out.push('This world has no stories: people make the plot up as they talk, and nothing can be solved. The step Stories of the world build writes them.')
   // Places of the stories with nothing to do (M10.33 N).
   out.push(...idlePlaces(content))
+  // Tales that name nobody of this world, or tell what a story keeps hidden (M10.35 A).
+  out.push(...taleWarnings(content))
   // Ways that do not fit one plan, and one settlement in two areas (M10.33 L).
   out.push(...directionProblems(content))
   // The first scene (M10.33 M): someone at the start place and at its meeting place, for at least half an hour.

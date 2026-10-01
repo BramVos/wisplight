@@ -19,7 +19,8 @@ describe('M10.35 D: the question back comes from the content', () => {
     engine.start()
     expect(hooksFor(engine.world, { npcId: 'npc_ilyan_sorell', packet: none })).toEqual(['what you want of the stranger now in The Orison Recordings (THE STORY AS YOU KNOW IT)'])
     expect(hooksFor(engine.world, { npcId: 'npc_niko_serrin', packet: none })).toEqual(['how the stranger is getting on with The Orison Recordings; their next step: Ask Niko about the station'])
-    expect(hooksFor(engine.world, { npcId: 'npc_sana_holt', packet: none })).toEqual(['The Orison Recordings (THE STORY AS YOU KNOW IT)'])
+    // And a tale of her own (M10.35 A) about someone where the stranger stands: Mara at the lock.
+    expect(hooksFor(engine.world, { npcId: 'npc_sana_holt', packet: none })).toEqual(['The Orison Recordings (THE STORY AS YOU KNOW IT)', expect.stringMatching(/^a tale of your own: Sana keeps the chairs at the long table/)])
   })
 
   it('adds a request, an offer said yes to, news heard and a topic known well; Skerrow plays it in its own words', async () => {

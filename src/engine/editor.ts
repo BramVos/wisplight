@@ -317,7 +317,18 @@ export function withReturnExits(files: ContentFile[], edits: Edit[]): Edit[] {
       setExits(exit.to, raw, theirs)
     }
   }
-  return [...out, ...[...changed].map((id) => ({ kind: 'location' as const, id, data: others.get(id)! }))]
+  // A tale about a place that goes forgets that place (M10.35 A), and a tale about nothing else goes with it.
+  const teller: Edit[] = []
+  if (deleted.size) {
+    for (const npc of entities(files, 'npc')) {
+      if (out.some((e) => e.kind === 'npc' && e.id === npc.id)) continue
+      const tales = (npc.raw['tales'] ?? []) as { text: string; about: string[] }[]
+      if (!tales.some((t) => t.about.some((id) => deleted.has(id)))) continue
+      const kept = tales.map((t) => ({ ...t, about: t.about.filter((id) => !deleted.has(id)) })).filter((t) => t.about.length)
+      teller.push({ kind: 'npc', id: npc.id, data: { ...structuredClone(npc.raw), tales: kept } })
+    }
+  }
+  return [...out, ...[...changed].map((id) => ({ kind: 'location' as const, id, data: others.get(id)! })), ...teller]
 }
 
 // ---------------------------------------------------------------- a new world

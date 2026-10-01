@@ -30,3 +30,11 @@ npcs:
         admission: "The charter holds. It was never revoked. But the Count feeds this house, and I have forty mouths to think of."
         dc: 19
         about: [drainage, fen_charter]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Prior Ansfried says the priory brewery and the priory library were built in the same year, and that the brothers have argued ever since about which keeps them alive."
+        about: [loc_kloosterveen_library]
+      - text: "He keeps a drowned book in the library that nobody can read, and says he dries a page of it every summer in the sun."
+        about: [loc_kloosterveen_library]
+      - text: "He says Sister Wendela writes to him every season to ask for a priest for Veenhoek, and that he answers every letter, and never with a priest."
+        about: [npc_wendela]

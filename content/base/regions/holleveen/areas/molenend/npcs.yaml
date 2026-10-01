@@ -33,6 +33,14 @@ npcs:
         role: neighbour
         bond: -1
         note: Her field borders yours.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Harmen's grandfather built De Zwaan, and Harmen says the sails have been mended so often that not one thread of the first ones is left."
+        about: [loc_molenend_mill]
+      - text: "He says Klaas is the best lad he ever had at the sails, and the worst at keeping his mind on them."
+        about: [npc_klaas]
+      - text: "Mirte owes him three guilders, and he says he would sooner have them in bread, if she would only offer."
+        about: [npc_mirte]
 
   - id: npc_klaas
     name: Klaas
@@ -63,3 +71,11 @@ npcs:
       - to: npc_harmen
         role: employer
         bond: 0
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Klaas can tell from the sound of the sails how strong the wind is, to within a knot, he says, and he is usually right."
+        about: [loc_molenend_mill]
+      - text: "He says Master Harmen talks to the mill when it sticks, and that the mill seems to answer him back."
+        about: [npc_harmen]
+      - text: "He walks the long way round to Veenhoek on market days, past the Vissers' house, and says it is for the view."
+        about: [loc_visser_house]

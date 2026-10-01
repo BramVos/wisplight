@@ -52,6 +52,14 @@ npcs:
         role: employer
         bond: 1
         note: She lodges with you and pays in fish.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Maren keeps a lamp in the window of the Salt Kettle every night, as she has since the winter Tobin did not come home."
+        about: [loc_skerrow_salt_kettle]
+      - text: "She says Garrick drinks too much since the light went out, and that she lets him, because a lightkeeper without a light has to keep something."
+        about: [npc_garrick]
+      - text: "Wenna pays for her room in salt fish, and Maren says it is the best bargain she ever made, because nobody on the island salts a fish like Wenna."
+        about: [npc_wenna]
 
   - id: npc_brannoc
     name: Brannoc Reed
@@ -96,6 +104,14 @@ npcs:
       - to: npc_maren
         role: neighbour
         bond: 1
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Brannoc built the Kittiwake with his own father the year Pip was born, and named her for the bird that followed them home on her first run."
+        about: [loc_skerrow_harbour, npc_pip]
+      - text: "He says Pip knows every rock on the shore by name, and that half the names the boy made up himself."
+        about: [npc_pip, loc_skerrow_tidepools]
+      - text: "Since Ysolde died he has not taken the Kittiwake past the harbour wall, and he will tell you it is the weather if you ask."
+        about: [loc_skerrow_harbour]
 
   - id: npc_pip
     name: Pip Reed
@@ -133,6 +149,14 @@ npcs:
         role: friend
         bond: 2
         note: She tells the best stories on the island.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Pip says there is a crab in the tidepools older than Old Tamsin, and he has named it, but he will not tell you the name."
+        about: [loc_skerrow_tidepools, npc_tamsin]
+      - text: "He says his father talks to the Kittiwake when he thinks nobody is listening, and that she listens better than people do."
+        about: [npc_brannoc, loc_skerrow_harbour]
+      - text: "Old Tamsin told him the story of the Starfall so many times that he can tell it back to her, and she pretends not to know the ending."
+        about: [npc_tamsin, the_starfall]
 
   - id: npc_wenna
     name: Wenna Dray
@@ -168,3 +192,11 @@ npcs:
       - to: npc_maren
         role: employee
         bond: 1
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Wenna has fished the inshore water from her coracle since she was a girl, and says the sea off the harbour has its moods, like Maren."
+        about: [loc_skerrow_harbour, npc_maren]
+      - text: "She salts her fish the way her mother did, in layers with the weed from the strand, and will not say how much."
+        about: [loc_skerrow_wreck_strand]
+      - text: "She says she once landed a fish with a ring in its belly, and gave it to Maren, who keeps it on a nail behind the bar."
+        about: [npc_maren, loc_skerrow_salt_kettle]

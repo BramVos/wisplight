@@ -25,6 +25,14 @@ npcs:
       - "Beads, not copper. The copper stays at the landing."
     money: 800
     knows_areas: [ynys_wen]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Eluned has kept the long hall on Ynys Wen for longer than the oldest fisher on Skerrow has been alive, and she still sets a place for strangers from the east."
+        about: [loc_ynys_wen_hall]
+      - text: "She says Gwion spends too long among the short-lived, and that he comes back from Skerrow smelling of smoke and salt fish."
+        about: [npc_gwion]
+      - text: "Ask her of the old land and she will talk of the light on the water at evening, and never of the night it drowned."
+        about: [loc_ynys_wen_landing]
 
   - id: npc_gwion
     name: Gwion Whitesand
@@ -52,3 +60,11 @@ npcs:
         role: kin
         bond: 1
         note: Your mother's sister, who thinks you spend too long among the short-lived.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Gwion sails the white boat by the stars, and says the crossing to Skerrow is the only one where the sea seems pleased to see him."
+        about: [loc_ynys_wen_landing, loc_skerrow_harbour]
+      - text: "He says his mother's sister Eluned has never once set foot in the white boat, and has never once failed to meet it."
+        about: [npc_eluned, loc_ynys_wen_landing]
+      - text: "He likes Skerrow for its noise, he says: on Ynys Wen nobody shouts across a harbour."
+        about: [loc_skerrow_harbour]

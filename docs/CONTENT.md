@@ -188,7 +188,10 @@ A list; each has:
 | romance | Open to romance (FO, chapter 8; Wereldboek, "Romance"): with whom, from which attitude. | a map: open_to, from, note | no |  |
 | hires | What this person hires out (M10.17, before M7.2's punt of Wouter in code): a punt, a horse, a skiff, a sled. HIRE <name> with the owner there; for the hours given it lets the stranger cross what it crosses. A friend pays nothing. | list of a map: id, name, aliases, price, hours, crosses, where, line, free_for_friends | no | [] |
 | relations | Who they are bound to and how: kin, friends, rivals, masters, with how close they are. | list of a map: to, name, pronoun, role, bond, status, private, owes, note | no | [] |
+| tales | Their tales (M10.35 A): three to five small true stories they may tell when the talk comes to it, never read out, shorter, with something of their own. Without them the voice has only facts and knowledge. | list of a map: text, about | no | [] |
 | secrets | What they keep to themselves: the secret, a hint at it, what they say when it comes out, how hard it is to get out of them, and what it teaches. | list of a map: id, text, hint, admission, dc, teaches, about, given_when | no | [] |
+
+`tales`: three to five small true stories a person may tell when the talk comes to it (`text`, one or two sentences: a memory, a view of someone they work with, something of the work, something lived at a place) and what each is about (`about`: people, places, areas or topics by id). The voice gets one with its topic, to tell in its own words, never read out. Check names a tale that names someone or somewhere this world does not have, or tells a truth a story keeps hidden.
 
 `secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).
 

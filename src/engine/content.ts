@@ -613,6 +613,17 @@ export const NpcSchema = z.object({
     )
     .default([]).describe('What this person hires out (M10.17, before M7.2\'s punt of Wouter in code): a punt, a horse, a skiff, a sled. HIRE <name> with the owner there; for the hours given it lets the stranger cross what it crosses. A friend pays nothing.'),
   relations: z.array(RelationSchema).default([]).describe('Who they are bound to and how: kin, friends, rivals, masters, with how close they are.'),
+  tales: z
+    .array(
+      z
+        .object({
+          text: z.string().describe('A small true story of their own, one or two sentences in plain words: a memory, a view of someone they work with, something of the work, something they lived at a place ("Sana keeps the chairs as they were: Mara\'s, Tessa\'s, and Niko\'s is the empty one"). Never a truth a story keeps hidden.'),
+          about: z.array(z.string()).min(1).describe('The people, places or topics it is about, by id: the voice is given the tale when the talk comes to one of them.'),
+        })
+        .strict(),
+    )
+    .default([])
+    .describe('Their tales (M10.35 A): three to five small true stories they may tell when the talk comes to it, never read out, shorter, with something of their own. Without them the voice has only facts and knowledge.'),
   secrets: z
     .array(
       z.object({
@@ -1568,6 +1579,8 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     location(n.work, `${n.id}.work`)
     for (const id of Object.keys(n.inventory)) item(id, `${n.id}.inventory`)
     for (const a of n.knows_areas) if (!c.areas.has(a)) problems.push(`${n.id}: unknown area ${a} in knows_areas`)
+    // A tale is about people, places or topics that are there (M10.35 A).
+    for (const t of n.tales) for (const id of t.about) if (!c.npcs.has(id) && !c.locations.has(id) && !c.areas.has(id) && !c.topics.has(id)) problems.push(`${n.id}: a tale is about ${id}, which is no person, place, area or topic`)
     for (const r of n.relations) {
       if (r.to && !c.npcs.has(r.to) && !c.topics.has(r.to)) problems.push(`${n.id}: relation to unknown person ${r.to}`)
       if (r.to === n.id) problems.push(`${n.id}: relation to itself`)

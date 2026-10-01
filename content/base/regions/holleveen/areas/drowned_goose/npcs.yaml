@@ -38,6 +38,14 @@ npcs:
         role: acquaintance
         bond: -1
         note: He is sweet on Geesje. An eel-fisher's hut is no life for her.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Trijntje has run the Goose alone since her husband died, and says she kept his chair by the fire for a year before she let a guest sit in it."
+        about: [loc_goose_common]
+      - text: "She says Geesje could sell ale to a man who came in for water, and that this is exactly why she wants her home."
+        about: [npc_geesje]
+      - text: "She knows every rumour in the Holleveen, she says, because every rumour stops at the Goose for a drink on its way."
+        about: [loc_goose_common]
 
   - id: npc_geesje
     name: Geesje Kroes
@@ -87,6 +95,14 @@ npcs:
         note: You love him, but you will not marry into the eel smoke.
 
   # Kobus the pedlar (Wereldboek, chapter 9). He sleeps by the fire in the common room.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Geesje says she has served every skipper on the Vaart, and that each one promised to take her to Graafhaven, and none did."
+        about: [loc_goose_common]
+      - text: "She says Wouter smells of eel smoke even on a Rustdag, and that she would know him in the dark by it."
+        about: [npc_wouter]
+      - text: "Her mother keeps a ledger of who owes the Goose what, and Geesje keeps one of who owes her a story."
+        about: [npc_trijntje]
   - id: npc_kobus
     name: Kobus
     short: Kobus the pedlar
@@ -125,6 +141,14 @@ npcs:
         bond: 0
         private: true
         note: He pays you to tell people the mill won't turn before winter.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Kobus walks the same round every week, and says he has worn a path in the Holleveen that the Count's surveyor could use for a straight line."
+        about: [npc_cornelis]
+      - text: "He says the market at Waagdam on a Zaterdag is the loudest place he knows, and that he sells best there by whispering."
+        about: [loc_waagdam_market]
+      - text: "He keeps a bootlace for every village on his round, and says he has never yet run out in Veenhoek."
+        about: [loc_veenhoek_green]
 
   - id: npc_cornelis
     name: Cornelis de Wit
@@ -169,3 +193,11 @@ npcs:
         admission: "Drained peat sinks. The old survey says so. The Count does not want to hear it, so I do not say it."
         dc: 21
         about: [drainage]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Master Cornelis measures a sector of the fen every working day, and says the fen moves its own stakes when nobody is looking."
+        about: [loc_route_peat_pits]
+      - text: "He lodges at the Goose, and says Trijntje charges him twice what she charges a skipper and serves him half the stew."
+        about: [npc_trijntje, loc_goose_rooms]
+      - text: "He says the schout keeps order while he measures, and that it is the only order in the Holleveen he has seen."
+        about: [npc_everhard]

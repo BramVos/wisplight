@@ -44,6 +44,14 @@ npcs:
         bond: 0
         private: true
         note: You owe him three guilders.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Mirte has baked for Veenhoek since she was fourteen, and she says the oven knows the weather before she does: it draws badly a day before rain."
+        about: [loc_veenhoek_bakery]
+      - text: "Her Joris is on the tow barge more than he is home, and she says she married a man and got a barge's timetable."
+        about: [loc_veenhoek_quay]
+      - text: "She says Old Aaltje is the only one who ever paid her in herbs instead of coins and left her feeling she had the better of it."
+        about: [npc_aaltje]
 
   - id: npc_gerrit
     name: Gerrit Turfsteker
@@ -85,6 +93,14 @@ npcs:
         role: rival
         bond: -1
         note: The Count's man. He would see the fen drained.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Gerrit cut his first peat at nine, beside his father, and says the fen tells you where to dig if you stand still long enough to listen."
+        about: [loc_peat_cuttings]
+      - text: "He says the schout would drain the whole Holleveen for the Count if he could, and stand on the dry bed to watch."
+        about: [npc_everhard]
+      - text: "He keeps the peat sheds by the quay stacked so that the oldest turf goes first, and he can tell a wet stack by the smell."
+        about: [loc_veenhoek_quay]
 
   - id: npc_aaltje
     name: Aaltje Hendriks
@@ -131,6 +147,14 @@ npcs:
         role: acquaintance
         bond: -1
         note: The sister thinks your herbs are the Old Powers' work.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Aaltje was weighed at the Waag as a young woman and found honest, and she hung the certificate where every visitor has to look at it."
+        about: [loc_aaltje_cottage, npc_dirck]
+      - text: "She says Sister Wendela means well, and that meaning well has drowned more people in the Holleveen than the Blackmere ever did."
+        about: [npc_wendela]
+      - text: "She grows her yarrow on the side of her garden that faces Harmen's field, and says the lights over it at night do it no harm at all."
+        about: [npc_harmen]
 
   - id: npc_wouter
     name: Wouter Aalman
@@ -199,6 +223,14 @@ npcs:
         role: acquaintance
         bond: 0
         note: Geesje's mother. She wants better for Geesje than an eel-fisher.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Wouter's grandmother taught him the old fen songs, and he still sings one to the eel traps before he lifts them."
+        about: [loc_wouter_hut]
+      - text: "He says Geesje laughs at his eel smoke, and that he would give up eels tomorrow if she would give up laughing."
+        about: [npc_geesje]
+      - text: "He says the Blackmere is quieter than it used to be, and that a quiet water is a water thinking."
+        about: [loc_blackmere_open_water]
 
   - id: npc_wendela
     name: Wendela
@@ -252,6 +284,14 @@ npcs:
         role: acquaintance
         bond: -1
         note: You distrust her herbs and her old customs.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Wendela keeps the Chapel of the Lantern alone, and sweeps it every morning as if a priest might walk in that day."
+        about: [loc_veenhoek_chapel]
+      - text: "Her little brother drowned in the Blackmere when they were children, and she still does not walk the shore path after dark."
+        about: [loc_blackmere_open_water]
+      - text: "She says Old Aaltje's herbs work, and that this is exactly what worries her."
+        about: [npc_aaltje]
 
   - id: npc_everhard
     name: Everhard van Lienden
@@ -282,6 +322,14 @@ npcs:
         role: spouse
         private: true
         note: As a girl she was weighed at the Waag. You dread any talk of witches.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Everhard has kept the Count's peace in Veenhoek for six winters, and says the hardest part is that nobody here thinks of it as the Count's."
+        about: [loc_schout_house]
+      - text: "He says Gerrit would rather drown in his own peat pit than see it drained, and that he half respects him for it."
+        about: [npc_gerrit]
+      - text: "His wife was weighed at the Waag as a girl, and he will change the subject the moment anyone says the word witch."
+        about: [npc_dirck]
 
   - id: npc_jan_visser
     name: Jan Visser
@@ -319,6 +367,14 @@ npcs:
       - to: npc_gerrit
         role: foreman
         bond: 1
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Jan cuts peat in Gerrit's gang, and says he has never once beaten Gerrit to the end of a row, and has stopped trying."
+        about: [npc_gerrit, loc_peat_cuttings]
+      - text: "He made Fenna's first little spade himself, from an old blade, and she wore it out in a summer."
+        about: [loc_visser_house]
+      - text: "He says Pim asks him every night when his sister is coming home, and that he has run out of ways to say he does not know."
+        about: [npc_pim]
 
   - id: npc_grietje_visser
     name: Grietje Visser
@@ -355,6 +411,14 @@ npcs:
         bond: 3
         status: missing
         note: Missing since the evening of 10 Herfstmaand.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Grietje spins at the window so that she can see the lane, and she has not moved her wheel since Fenna went missing."
+        about: [loc_visser_house]
+      - text: "The blue shawl Fenna wears was the first thing Grietje ever wove on her own loom, and she says it was too good for a girl who climbs walls."
+        about: [loc_visser_house]
+      - text: "She says Jan has hardly slept since Fenna vanished, and that she pretends to sleep so that he can lie awake in peace."
+        about: [npc_jan_visser]
 
   - id: npc_pim
     name: Pim Visser
@@ -392,6 +456,14 @@ npcs:
         bond: 3
         status: missing
         note: Your big sister. You miss her.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Pim says he once followed a will-o'-the-wisp halfway to Molenend before Old Aaltje caught him by the collar and walked him home."
+        about: [npc_aaltje, loc_molenend_field]
+      - text: "He says his sister can climb anything, even the chapel wall, and that Sister Wendela has never found out who did it."
+        about: [loc_veenhoek_chapel]
+      - text: "He feeds the grey cat on the doorstep the crusts from his supper, and says she only eats them when nobody is watching."
+        about: [loc_visser_house]
 
   - id: npc_fenna
     name: Fenna Visser
@@ -429,3 +501,11 @@ npcs:
         bond: 1
         private: true
         note: You went to the widow for a love charm for Klaas, and paid with a lie.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Fenna says she has climbed every roof in Veenhoek except the chapel's, and the chapel's she will not say."
+        about: [loc_veenhoek_chapel]
+      - text: "She says Klaas blushes when he says good morning, and that she has made a game of saying it first."
+        about: [npc_klaas]
+      - text: "Her mother wove her blue shawl, and she wears it in all weathers, she says, so that her mother can find her across a field."
+        about: [npc_grietje_visser]

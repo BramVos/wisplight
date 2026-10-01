@@ -36,3 +36,11 @@ npcs:
         admission: "Goat-skins, a bladder of bog gas and a lantern on a pole. Farmers see what they fear."
         dc: 18
         about: [goat_riders]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Black Mathijs says he has never been caught because the reeds keep faith with him, and that he keeps faith with the reeds."
+        about: [loc_rietdoolhof_camp]
+      - text: "He says the skippers on the Vaart pay his toll with a scowl, and that the scowl is the part he enjoys."
+        about: [loc_rietdoolhof_camp]
+      - text: "He says a goat is a better mount than a horse in the reed, and that he has the bruises to prove both."
+        about: [loc_rietdoolhof_mathijs]

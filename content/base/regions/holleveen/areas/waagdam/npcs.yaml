@@ -23,6 +23,14 @@ npcs:
     inventory: { lubberts_key: 1 }
     money: 1600
     knows_areas: [waagdam, drowned_goose, roads, veenhoek, molenend]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Lubbert says his grain store has never once run dry, not in the bad winter, not after the storm, and he is proud of it."
+        about: [loc_waagdam_graanhandel]
+      - text: "He says Teunis grinds a fair sack for a stuiver, and that a fair sack is no way to grow rich."
+        about: [npc_teunis]
+      - text: "He says the people of Veenhoek buy their flour from him and curse him for it, and that he would rather be cursed than idle."
+        about: [loc_waagdam_graanhandel]
 
   - id: npc_teunis
     name: Teunis Ros
@@ -47,6 +55,14 @@ npcs:
     money: 150
     # Oude Zijl too (M10.6): he takes flour out along the dyke road, where he came upon the leak.
     knows_areas: [waagdam, drowned_goose, roads, veenhoek, molenend, oude_zijl]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Teunis's horse walks the mill round from first light, and he says she knows the count of turns to a sack better than he does."
+        about: [loc_waagdam_horse_mill]
+      - text: "He grinds for a stuiver a sack whatever the weather, and says the storm brought him more work than he could eat."
+        about: [loc_waagdam_horse_mill]
+      - text: "He says Lubbert asks him every week to raise his price, and every week he says no."
+        about: [npc_lubbert]
 
   - id: npc_dirck
     name: Dirck Schaal
@@ -70,6 +86,14 @@ npcs:
       - "The scale is honest. People are merely heavier or lighter than they fear."
     money: 400
     knows_areas: [waagdam, drowned_goose, roads, veenhoek, molenend]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Dirck says the great scale at the Waag has been out of true once in his life, for a day, and he has never forgiven the man who leaned on it."
+        about: [loc_waagdam_waag]
+      - text: "He says people come to be weighed afraid, and leave surprised that it was only a scale."
+        about: [loc_waagdam_waag]
+      - text: "He says Old Aaltje's certificate is the one he is proudest of signing, though he will not say why."
+        about: [npc_aaltje]
 
   - id: npc_hendrik
     name: Hendrik Smid
@@ -95,6 +119,14 @@ npcs:
       - "Iron keeps more than doors shut, if you ask the old women."
     money: 300
     knows_areas: [waagdam, drowned_goose, roads, veenhoek, molenend]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Hendrik forges the iron nails that wise women hammer into doorsteps, and says he sells more of them every year the Lantern grows stricter."
+        about: [loc_waagdam_smithy]
+      - text: "He says Dirck once brought him the pan of the great scale to mend, and stood over him the whole time as if he might steal a grain of it."
+        about: [npc_dirck]
+      - text: "He keeps the first horseshoe he ever made nailed over the door of the smithy, and says it is crooked on purpose."
+        about: [loc_waagdam_smithy]
 
   - id: npc_aleid
     name: Aleid Vos
@@ -131,6 +163,14 @@ npcs:
         admission: "The coffers are empty. If the polder board comes to Waagdam, so will the money."
         dc: 18
         about: [drainage]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Aleid Vos says the town hall of Waagdam has never once agreed with the priory, and that she counts it among the town's oldest liberties."
+        about: [loc_waagdam_town_hall, npc_ansfried]
+      - text: "She says Master Pen writes down everything the council says, and that she has learnt to say less."
+        about: [npc_pen]
+      - text: "She says the market on a Zaterdag pays for half the town, and the other half argues about the market."
+        about: [loc_waagdam_market]
 
   - id: npc_pen
     name: Pieter Pen
@@ -164,6 +204,14 @@ npcs:
         about: [drainage, fen_charter]
 
   # The landlady of De Schaal (M7.2): the world book names the inn but not who keeps it.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Master Pen is writing a chronicle of the Holleveen, and says it grows a page longer every time somebody tells him what really happened."
+        about: [loc_waagdam_notary]
+      - text: "He keeps the land register in a chest that only he and the burgomaster may open, and says he has opened it more often than she has."
+        about: [npc_aleid, loc_waagdam_notary]
+      - text: "He says the people of Veenhoek tell the best stories in the Holleveen, and the least reliable."
+        about: [loc_veenhoek_green]
   - id: npc_neeltje
     name: Neeltje Kuiper
     short: Neeltje the landlady
@@ -187,4 +235,12 @@ npcs:
       - "Tankard's a duit. Your slate's full, burgher, and so is my patience."
     money: 400
     knows_areas: [waagdam, drowned_goose, veenhoek, roads]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Neeltje keeps De Schaal behind the church, and says the burghers drink at her tap where the prior's men cannot see them, and pay better for it."
+        about: [loc_waagdam_de_schaal]
+      - text: "She says Master Pen drinks one small beer an evening and writes down everything said at the next table."
+        about: [npc_pen, loc_waagdam_de_schaal]
+      - text: "She says the burgomaster comes in on a Woensdag, sits by the door, and hears more of the town in an hour than the council does in a month."
+        about: [npc_aleid]
 

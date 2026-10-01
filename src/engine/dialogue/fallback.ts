@@ -81,7 +81,7 @@ export function fallbackReply(world: World, npcId: string, act: Act, packet: Pac
   if (known) {
     // Someone else's first-person story cannot be read out as one's own; fall back to the plain facts.
     // Read in the speaker's own words (M10.8): "my daughter Fenna", not the content's "Fenna Visser, the daughter of Jan".
-    const fact = act === 'AskStory' && known.story && !known.toldBy ? known.story.split(/(?<=[.!?])\s+/).slice(0, 3).join(' ') : ownWords(world, npcId, known.facts.slice(0, 2).join(' '))
+    const fact = act === 'AskStory' && known.story && !known.toldBy && !known.tale ? known.story.split(/(?<=[.!?])\s+/).slice(0, 3).join(' ') : ownWords(world, npcId, known.facts.slice(0, 2).join(' '))
     return `${name} ${pick(world, ['thinks a moment.', 'nods slowly.', 'scratches an ear.'])} ${quote(fact)}`
   }
   if (packet.unknown.length > 0) {

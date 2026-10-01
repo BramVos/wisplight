@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.35 deel: een verhalenbank per persoon (A), 1 oktober 2026
+
+- **Verhalen (A).** Oorzaak: wat leuk was, kwam alleen uit het model, want een persoon had feiten, voorbeeldzinnen en kennis, en geen verhalen. Nu heeft elke persoon in de drie werelden drie kleine ware verhalen, over echte mensen en plekken. Sana houdt de stoelen aan de lange tafel zoals ze waren. Garrick kent de nacht van elk wrak. Dirck vergeeft de man nooit die op de grote schaal leunde.
+- **Hoe ze verteld worden.** Vraag je iemand om een verhaal over een persoon of plek, dan krijgt de stem er een mee, met de regel voor overlevering: nooit voorlezen, korter, met iets van jezelf. Zonder model wordt een verhaal nooit letterlijk gezegd, en over iemand die dood is, valt het weg. Bij de vraag terug kan een verhaal de haak zijn.
+- **Bij de bron.** Check meldt een verhaal met een naam die de wereld niet kent of met een verborgen waarheid. Een verhaal over iets dat niet bestaat, laadt niet. Verwijder je een plek in de editor, dan verdwijnt hij ook uit de verhalen. De stap Mensen vraagt om verhalen.
+
+Testen: in The Quiet Reach in de Commons `talk sana` en "Tell me a story about the Commons", of in Veenhoek Mirte om een verhaal over Aaltje vragen. Dat leest pas goed met een model. Tests in `tests/m1035tales.test.ts`.
+
+Kosten: geen nieuwe aanroep. Een beurt die om een verhaal vraagt, krijgt één verhaal mee (30 tot 50 tokens). De wereldstappen en de stap Verhalen krijgen 120 tokens meer (de regel in het contract en de gids).
+
+Wat de editor en de kroniekverteller leerden: het veld `tales` met zijn beschrijving in `docs/CONTENT.md`, twee regels onder Check, en de stap Mensen in de wereldgids en `docs/NEW-WORLD.md`. De editor haalt een verwijderde plek uit de verhalen. Skerrow heeft zijn eigen verhalen; Deepwell heeft er geen, en een test speelt dat.
+
+Ontwerp: functioneel ontwerp, hoofdstuk over gesprekken, alinea "Stand na M10.35: een verhalenbank per persoon".
+
 ## M10.35 deel: de proef per soort (I), 1 oktober 2026
 
 - **Wat de bewakers vangen, per soort (I).** Een vaste proef van 22 zinnen die een model zou kunnen zeggen, de meeste uit Brams transcripten van 29 en 30 september. Elke zin gaat door het hele gesprek zoals het spel het speelt: het model zegt hem eerst, de bewakers sturen hem terug of laten hem door. Daarnaast vijf ware zinnen, die erdoor moeten.
@@ -39,6 +53,7 @@ Kosten: een regel meer in de wisselende helft van een beurt met een wens, minder
 Wat de editor en de kroniekverteller leerden: niets; het oordeel leest wat een wereld al heeft (aanbiedingen, verhalen, achtergronden).
 
 Ontwerp: geen wijziging.
+
 ## M10.34 deel: een afloop leeft door bij wie het weet (G), 1 oktober 2026
 
 - **Een afloop is een feit met getuigen (G).** Oorzaak: na het einde van een verhaal stopte de kennis per stadium, dus niemand wist nog wat er gebeurd was. Het feit van de afloop lag bovendien waar de gever toevallig stond. Nu ligt het feit waar jij de afloop bereikte. Wie daar stond, zag het; de rest hoort het pas via het nieuws, in de versie die bij hen aankomt. Een afloop die vanzelf kwam, gebeurt waar de gever is.

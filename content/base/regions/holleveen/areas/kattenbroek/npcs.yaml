@@ -51,6 +51,14 @@ npcs:
         admission: "The girl lied to me for a charm. A lie is a debt. She is paying it in fur."
         dc: 18
         about: [fenna, grey_cat]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "The widow's husband was an eel-fisher who went into the black water one spring, and she has kept his trap hanging under the hut ever since."
+        about: [loc_kattenbroek_hut]
+      - text: "She says Aaltje was the best apprentice she ever had, and the only one who left before she was told to."
+        about: [npc_aaltje]
+      - text: "She says the cats of the Kattenbroek come and go as they like, and that most of them have better manners than people."
+        about: [loc_kattenbroek_pools]
 
   - id: npc_jacob
     name: Jacob van Dam
@@ -81,3 +89,11 @@ npcs:
         role: spouse
         bond: 3
         status: away
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Jacob says he measured the Kattenbroek once, and that it came out a different size every time he did it."
+        about: [loc_kattenbroek_pools]
+      - text: "He says the Count's maps of the Holleveen are good enough for a Count, and no good at all for a man on foot."
+        about: [npc_cornelis]
+      - text: "He kept his measuring chest locked with a key he wore round his neck, and says it was the only thing in the fen that never moved."
+        about: [npc_kaatje]

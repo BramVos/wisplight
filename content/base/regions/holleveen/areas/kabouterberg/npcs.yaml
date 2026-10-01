@@ -29,3 +29,11 @@ npcs:
         dc: 20
         teaches: the_dry_ridge
         about: [kattenbroek, the_dry_ridge]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Ouwe Knoert says the kabouters were under the hill before the first farmer, and that the farmers have been borrowing ever since."
+        about: [loc_kabouterberg_hollow]
+      - text: "He says a bowl of milk left kindly is worth more than a jug left in fear."
+        about: [loc_kabouterberg_hollow]
+      - text: "He says the boy who spied on them had quick eyes and no manners, and that only one of those can be taught."
+        about: [npc_pim]

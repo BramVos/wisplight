@@ -35,7 +35,10 @@ function ownHooks(world: World, npcId: string, proposals: string[]): string[] {
 function knownHooks(world: World, npcId: string, packet: Packet): string[] {
   const topics = new Set(packet.known.map((k) => k.topic))
   const news = newsAbout(world, npcId, [], 8).filter(({ fact }) => !strangersOwn(fact) && !topics.has(fact.id))
-  return [...news.slice(0, 1).map(({ fact }) => `news you heard: ${fact.title}`), ...packet.known.filter((k) => k.level >= 2 && k.topic !== npcId).map((k) => `${k.name} (KNOWLEDGE)`)]
+  // A tale of their own (M10.35 A), about someone or somewhere of this place: the first words, to bring it up by.
+  const here = world.state.player.location
+  const tale = world.content.npcs.get(npcId)?.tales.find((t) => t.about.includes(here) || t.about.some((id) => world.state.npcs[id]?.location === here))
+  return [...news.slice(0, 1).map(({ fact }) => `news you heard: ${fact.title}`), ...(tale ? [`a tale of your own: ${tale.text.split(/(?<=[.!?])\s/)[0]}`] : []), ...packet.known.filter((k) => k.level >= 2 && k.topic !== npcId).map((k) => `${k.name} (KNOWLEDGE)`)]
 }
 
 /** The hooks a question back may take now: one of the speaker's own and one of what they know, turn by turn another. */

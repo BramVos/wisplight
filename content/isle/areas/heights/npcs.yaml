@@ -41,6 +41,14 @@ npcs:
         role: acquaintance
         bond: 0
         note: The elf in the tower. Too clever by half, and knows it.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Tamsin says the silver grove was planted by nobody, and that she has watched it for sixty years without once seeing a sapling come up."
+        about: [loc_skerrow_silver_grove]
+      - text: "Pip comes up to her hut most evenings for a story, and Tamsin swears he remembers them better than she does now."
+        about: [npc_pip, loc_skerrow_tamsin_hut]
+      - text: "She calls the elf in the tower clever by half, and says Elowen has asked her the same question about the old tower three winters running."
+        about: [npc_elowen, loc_skerrow_mage_tower]
 
   - id: npc_elowen
     name: Elowen
@@ -76,6 +84,14 @@ npcs:
         role: acquaintance
         bond: 0
         note: The hedge-witch. She knows more than she lets on.
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Elowen came to Skerrow forty years ago meaning to stay a season, and says the tower has kept her by asking a new question every time she answers one."
+        about: [loc_skerrow_mage_tower]
+      - text: "She says Tamsin knows more of the old island than any book in the tower, and that the hedge-witch will never tell it straight."
+        about: [npc_tamsin]
+      - text: "From the top of the tower, she says, on a clear night you can see the light of the headland and the dark where the sea took the old land."
+        about: [loc_skerrow_headland, loc_skerrow_mage_tower]
 
   - id: npc_garrick
     name: Garrick Stone
@@ -103,3 +119,11 @@ npcs:
       - to: npc_maren
         role: friend
         bond: 2
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Garrick has kept the Lamp for thirty years, and he can tell you the night of every wreck it did not prevent, and the name of the ship."
+        about: [loc_skerrow_headland, the_beacon]
+      - text: "He says Maren is the only one who still pours him a drink and tells him to go home in the same breath."
+        about: [npc_maren, loc_skerrow_salt_kettle]
+      - text: "He trims the great wick by feel, he says, and he could do it blind, which on some nights of fog came near enough to true."
+        about: [the_beacon]

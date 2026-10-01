@@ -21,3 +21,11 @@ npcs:
       - "Rest is owed. Rest is paid. What do you pay?"
     money: 0
     knows_areas: [reuzenrust]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "The White Women say they were many, and counted, and that nobody under the mist remembers the count now."
+        about: [loc_reuzenrust_barrows]
+      - text: "They say the barrows of Reuzenrust are the only roofs in the Holleveen that never leak."
+        about: [loc_reuzenrust_barrows]
+      - text: "They say a stranger who answers them is rare, and one who listens rarer still."
+        about: [loc_reuzenrust_barrows]

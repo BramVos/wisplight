@@ -22,3 +22,11 @@ npcs:
       - "Bread on the stone. Beer on the stone. And no wheel at the new moon."
     money: 0
     knows_areas: [blackmere]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "The Haakman says the Blackmere was his before the first dyke, and will be his after the last."
+        about: [loc_blackmere_open_water]
+      - text: "He says he remembers every boat that crossed his water, and every one that did not."
+        about: [loc_blackmere_open_water]
+      - text: "He says bread and beer on the stone are a better greeting than a prayer."
+        about: [loc_blackmere_open_water]

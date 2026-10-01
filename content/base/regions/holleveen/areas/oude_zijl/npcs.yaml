@@ -30,3 +30,11 @@ npcs:
         admission: "If they drain the fen, the peat sinks, and the Vaart stands higher than the land. The sluice was never built for that. One storm."
         dc: 18
         about: [drainage, water_wolf]
+    # Small true stories they may tell when the talk comes to it (M10.35 A).
+    tales:
+      - text: "Sijbrand has walked the dyke at the Oude Zijl every morning for twenty years, and says he can hear a leak before he can see it."
+        about: [loc_oude_zijl_sluice]
+      - text: "He says the old sluice was mended last in his father's time, and that his father said it would hold for one more lifetime, and meant his own."
+        about: [loc_oude_zijl_sluice]
+      - text: "He says the Dyke Board argues about everything except the water, and the water does not care."
+        about: [loc_oude_zijl_dykehouse]

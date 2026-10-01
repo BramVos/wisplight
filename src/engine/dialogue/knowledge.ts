@@ -26,6 +26,8 @@ export interface KnownTopic {
   story?: string
   /** Set when the story is someone else's first-person telling: their name, e.g. "Wouter the eel-fisher". */
   toldBy?: string
+  /** The story is a tale of the speaker's own (M10.35 A), written of them: for a voice to tell, never said as it stands. */
+  tale?: boolean
   /** News the NPC heard about this topic, with where it came from. */
   news?: string[]
   /** A person: where the NPC thinks they are now, for "where is ...?" without a model (M10.6). */
@@ -258,7 +260,7 @@ export class Knowledge {
     return packet
   }
 
-  private facts(npcId: string, topicId: string, level: Level, wantsStory: boolean): { facts: string[]; story?: string; toldBy?: string; where?: string } {
+  private facts(npcId: string, topicId: string, level: Level, wantsStory: boolean): { facts: string[]; story?: string; toldBy?: string; tale?: boolean; where?: string } {
     const entry = this.topics.entries.get(topicId)!
     const { content } = this.world
     const facts: string[] = []
@@ -326,6 +328,13 @@ export class Knowledge {
     const story = wantsStory && level >= 2 ? (topic?.story ?? (level >= 3 ? lore?.story : undefined))?.trim() || undefined : undefined
     const teller = topic?.teller ?? lore?.teller
     const toldBy = story && teller && teller !== npcId ? content.npcs.get(teller)?.short : undefined
+    // A tale of their own about it (M10.35 A), when the talk asks for one and no story of the topic's comes first: one,
+    // turn by turn another, told by the rule for lore (never read out, shorter, something of their own). Never about
+    // someone who has died since.
+    const gone = entry.kind === 'person' && entry.ref !== undefined && this.world.state.npcs[entry.ref]?.dead
+    const tales = gone ? [] : (content.npcs.get(npcId)?.tales ?? []).filter((t) => t.about.some((id) => id === topicId || id === entry.ref || `area_${id}` === topicId))
+    const tale = wantsStory && !story && tales.length ? tales[(this.world.state.talk?.turns ?? 0) % tales.length] : undefined
+    if (tale) return { facts: facts.filter(Boolean), story: tale.text, tale: true, ...(where ? { where } : {}) }
     return { facts: facts.filter(Boolean), story, toldBy, ...(where ? { where } : {}) }
   }
 
