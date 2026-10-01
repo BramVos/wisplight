@@ -60,6 +60,8 @@ quests:
           - { text: "The widow looks at you a long time. \"The girl lied to me. A lie is a debt, and debts are paid. Here is mine: that surveyor's chains lie still for seven days. Or bring me the chest of the one who came before him, Jacob van Dam. Then she can go home.\"" }
       - id: flooded_out
         text: Water stands in the Vissers' house. Wherever Grietje goes now, the grey cat goes with her.
+        goal: "Take the Vissers somewhere dry, and keep looking for Fenna."
+        asks: "The water is in the house. Will you help us somewhere dry? And don't stop looking for Fenna, not now."
         on_enter:
           - { start: the_vissers_to_safety }
     # What the story keeps hidden (M10.30): nobody says the cat is Fenna before the stranger has found it out.
@@ -292,6 +294,8 @@ quests:
     stages:
       - id: flooded
         text: Veenhoek is under water. Grietje, Pim and Jan need a dry place to go, and Grietje won't go anywhere without the grey cat.
+        goal: "Take the Vissers to Waagdam, the Drowned Goose or the priory at Kloosterveen."
+        asks: "We can't stay here with the water rising. Will you take us somewhere dry? The grey cat comes too, I won't leave it on the step."
     actions:
       - id: to_waagdam
         say: ['(?:lead|take|bring|escort) (?:the )?vissers? to waagdam(?: .*)?', '(?:lead|take|bring|escort) grietje to waagdam(?: .*)?']
@@ -367,6 +371,8 @@ quests:
     stages:
       - id: no_flour
         text: Mirte needs flour for Veenhoek's bread before market day on Zaterdag. The mill stands still for want of sailcloth, and Lubbert in Waagdam asks double.
+        goal: "Bring Mirte flour or rye before market day, or find out why there is no rye."
+        asks: "Market day's on Zaterdag and I've no flour, lamb. Bring me flour or rye, or find out why Lubbert asks double, and Saint Brand bless you for it."
     actions:
       - id: give_flour
         say: ['(?:give|bring|sell|hand) (?:the |some |two |2 )?(?:sacks? of )?(?:flour|meel) to mirte', 'give mirte (?:the |some |two |2 )?(?:sacks? of )?(?:flour|meel)']
@@ -444,6 +450,8 @@ quests:
             to: the_stone
       - id: the_stone
         text: Harmen moved the boundary stone into his neighbour's land after the storm. The lights are the dead who once did the same, asking where to put it.
+        goal: "Report Harmen to the schout, or get the boundary stone put back."
+        asks: "So it's the stone, is it? And what will you do about it: go to the schout, or get Harmen to put it back where it belongs?"
         on_enter: [{ learn: lights_over_harmens_field }]
     actions:
       - id: watch_lights
@@ -547,6 +555,8 @@ quests:
     stages:
       - id: pumping
         text: De Zwaan pumps the polder dry, and the water in the Blackmere drops. Wouter says the Haakman won't stand for it.
+        goal: "Strike a bargain with the Haakman at the Blackmere, stand up to him, or find a way to bind him."
+        asks: "The mill drinks the Blackmere, and the Haakman won't have it. Go down to the water and settle it with him, before he settles it himself."
     actions:
       - id: offer_bargain
         say: ['(?:offer|leave|give|put) (?:the )?(?:bread and beer|beer and bread)(?: .*)?', '(?:bargain|make a bargain|strike a bargain|deal|parley|talk) with (?:the )?haakman(?: .*)?', 'call (?:the |on the )?haakman']
@@ -622,6 +632,8 @@ quests:
     stages:
       - id: mischief
         text: Things go missing in Veenhoek and the milk turns sour overnight. Pim has been spying on the kabouters at the Kabouterberg.
+        goal: "Ask Pim what he did at the Kabouterberg, and make it right with the kabouters."
+        asks: "Scissors gone, milk sour every morning, and Pim has been up at the Kabouterberg. Ask him what he did, and make it right with the little people before it gets worse."
         on_enter: [{ learn: kabouter_milk }]
     actions:
       - id: pim_confesses
@@ -699,6 +711,8 @@ quests:
     stages:
       - id: toll
         text: The Goat-Riders levy a toll on the Vaart and the tow path. Trijntje says the skippers stay away, and that the surveyor pays Black Mathijs.
+        goal: "End the Goat-Riders' toll on the Vaart, by force, by cunning or by law."
+        asks: "No skipper ties up at my quay while Black Mathijs takes his toll, and that surveyor pays him for it. Do something about those Goat-Riders. I don't care how, as long as the boats come back."
     actions:
       - id: attack_camp
         say: ['(?:attack|raid|storm|fight) (?:the )?(?:camp|goat-?riders|riders|mathijs|black mathijs)(?: .*)?']
@@ -794,6 +808,8 @@ quests:
     stages:
       - id: the_riddle
         text: "In the mist at Reuzenrust pale shapes ask you a riddle: \"We were many and we were counted. Nobody buried us. We lie under the Zuyder Mere and under your feet. Who are we?\""
+        goal: "Answer the White Women's riddle at Reuzenrust, show them respect, or walk away."
+        asks: "There are pale women in the mist at Reuzenrust, and they ask everyone the same riddle. Why not go and hear it? Answer if you can, and if you can't, mind your manners."
     actions:
       - id: answer_riddle
         say: ['answer (?:the )?riddle(?: .*)?', '(?:answer|reply|say|you are)(?: .*)?(?:water ?wolf|drowned|flood|the dead)(?: .*)?']
@@ -845,6 +861,8 @@ quests:
     stages:
       - id: the_survey
         text: Master Cornelis measures a sector of the fen every working day. When his survey is done he sends his report to Graafhaven, and in spring the digging begins.
+        goal: "Decide the fen before Cornelis finishes his survey: help him, stop him, or find a settlement."
+        asks: "Master Cornelis measures the fen a sector a day, and when he's done the digging starts in spring. Make up your mind which side you're on before then."
         on_enter: [{ learn: drainage }]
     actions:
       # The polder comes: helping Cornelis.
@@ -1050,6 +1068,8 @@ quests:
     stages:
       - id: the_guild
         text: Mirte wants a stall at the Waagdam market, but the bakers' guild keeps outsiders out, and the autumn fair is three weeks off.
+        goal: "Get Mirte a stall at the Waagdam market before the autumn fair."
+        asks: "The guild won't let an outsider sell in Waagdam, lamb, and the autumn fair's three weeks off. Find me a way in: a licence, a master, whatever it takes."
     actions:
       - id: convince_council
         say: ['(?:ask|persuade|convince) (?:aleid|the burgomaster|the mayor|the council)(?: .*)?', 'speak (?:up )?for mirte(?: .*)?']
@@ -1107,6 +1127,8 @@ quests:
     stages:
       - id: accused
         text: Sister Wendela has accused Aaltje of witchcraft, and an envoy of the Lantern wants the weighing at the Waag for the Church. Dirck asks for help before the hearing in five days.
+        goal: "Clear Aaltje before the hearing at the Waag in five days."
+        asks: "Sister Wendela calls Aaltje a witch, and the Lantern's envoy wants my scale for the Church. The hearing is in five days. Help me keep the weighing honest, and Aaltje free."
         on_enter: [{ learn: witches_scale }]
     actions:
       - id: ask_aaltje_weighed
@@ -1212,6 +1234,8 @@ quests:
     stages:
       - id: find_it
         text: Gerrit wants the Fen Charter found and recognised, without bloodshed if possible. The priory at Kloosterveen had a copy.
+        goal: "Find the Fen Charter at the priory and give it to Gerrit."
+        asks: "The priory at Kloosterveen had a copy of the Fen Charter. Find it and bring it to me. No blood if it can be helped."
         on_enter: [{ learn: fen_charter }]
     actions:
       - id: give_charter_gerrit
@@ -1249,6 +1273,8 @@ quests:
     stages:
       - id: to_the_widow
         text: Aaltje wants to see the widow Kaatje once more, her old teacher. She won't go into the Kattenbroek alone.
+        goal: "Bring Aaltje to the widow in the Kattenbroek, or carry her letter there."
+        asks: "I'd like to see the widow once more, before one of us is gone. Would you walk with me into the Kattenbroek? I won't go alone, not at my age."
     actions:
       - id: speak_for_aaltje
         say: ['(?:speak|put in a (?:good )?word) (?:to the widow |to kaatje )?for aaltje(?: .*)?', 'ask (?:the )?(?:widow|kaatje) to (?:see|forgive|talk to) aaltje(?: .*)?']
@@ -1315,6 +1341,8 @@ quests:
     stages:
       - id: a_boat
         text: Wouter needs thirty stuivers for a boat of his own, and Trijntje's blessing to marry Geesje.
+        goal: "Help Wouter to a boat, and win Trijntje over to the wedding."
+        asks: "Thirty stuivers for a boat at Oude Zijl, and Trijntje's blessing for Geesje. The fen won't give me either. Can you?"
     actions:
       - id: pay_boat
         say: ['(?:give|lend) wouter (?:the )?(?:money|thirty stuivers|30 stuivers)(?: .*)?', 'pay for (?:the |wouter.?s )?boat(?: .*)?', 'buy (?:wouter )?(?:the |a )?boat(?: for wouter)?']
@@ -1392,6 +1420,8 @@ quests:
     stages:
       - id: the_bell
         text: A bell rings under the Blackmere at night. Wendela says it's the bell of the old Kloosterveen chapel, sunk in the flood, and that her brother drowned there.
+        goal: "Quiet the bell under the Blackmere: raise it, stay with Wendela by the water, or have a mass said."
+        asks: "A bell rings under the Blackmere at night, child: the old chapel's, where my brother drowned. Help me bring it to rest, and me with it."
     actions:
       - id: dive_bell
         say: ['(?:dive|swim|search|look) (?:down )?(?:for )?(?:the )?bell(?: .*)?']
@@ -1445,6 +1475,8 @@ quests:
     stages:
       - id: the_road
         text: Geesje wants to go to Graafhaven, with or without her mother's blessing.
+        goal: "Help Geesje on her way to Graafhaven: win her mother over, find her a place, or see her onto the barge."
+        asks: "I want to go to Graafhaven, and Mother won't hear of it. Help me get there, with her blessing or without it."
     actions:
       - id: persuade_mother
         say: ['(?:ask|persuade|convince|tell) trijntje (?:to let geesje go|about graafhaven|about geesje)(?: .*)?', 'speak (?:to trijntje )?for geesje(?: .*)?']

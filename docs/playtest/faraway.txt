@@ -302,6 +302,7 @@ Here: Mirte Bakker, the baker.
 > talk mirte the baker
 You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
 Mirte nods. "Evening."
+"Market day's on Zaterdag and I've no flour, lamb. Bring me flour or rye, or find out why Lubbert asks double, and Saint Brand bless you for it."
 1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?   9 What do you need of me?
 
 > 2

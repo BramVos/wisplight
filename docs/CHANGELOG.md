@@ -1,5 +1,17 @@
 # Changelog
 
+## M10.33 deel: de verhalen van de Nethermarch zeggen wat je nu kunt doen (bij E), 1 oktober 2026
+
+- **Een Now-regel en een vraag van de gever bij elk verhaal.** Van de Nethermarch hadden alleen de grijze kat en de dwaallichten een "Now"-regel. De andere zestien stadia hadden er geen, dus het dagboek en QUESTS zeiden niet wat je kon doen, en de gever opende geen gesprek met wat hij wilde. Nu heeft elk stadium er een, met een `asks` in de stem van de gever. Mirte zegt "lamb" en zweert bij Saint Brand. Aaltje antwoordt met een vraag, Wouter zegt weinig. Bij een verhaal met meer afloop noemt de regel de wegen zonder wat eruit komt: "End the Goat-Riders' toll on the Vaart, by force, by cunning or by law." Geen regel verklapt een verborgen waarheid. Na de overstroming zegt de kat "keep looking for Fenna", niet wie de kat is.
+
+Testen: in de Nethermarch `talk mirte` (ze opent met het meel), en `quests` en het dagboek bij elk verhaal. Check en de speeltest als nieuwe speler zijn leeg.
+
+Kosten: geen nieuwe aanroep. Een regel van een gever met een lopend verhaal krijgt de zin mee in het wisselende deel, zo'n 95 tokens (`npc_reply`, in `docs/COVERAGE.md` van 6.482 naar 6.577).
+
+Wat de editor en de kroniekverteller leerden: niets nieuws; de stap Verhalen vroeg al om `goal` en `asks`.
+
+Ontwerp: geen wijziging.
+
 ## M10.33 deel: de prompt van de stem gemeten, en welk model (Q, W), 1 oktober 2026
 
 - **Gemeten op je sleutel (Q, W).** Twaalf situaties uit de vaste set, twee series per variant, gelezen met de leesscore op Sonnet 5. Die telt sinds W ook per antwoord de feiten die niet in wat de spreker gegeven werd staan. Kosten: $0,80 in 122 aanroepen, binnen de grens van $3.
@@ -13,6 +25,7 @@ Lezen: `docs/playtest/voice/2026-10-01-q-and-w.md`, met de antwoorden van elke v
 Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
 
 Ontwerp: geen wijziging; het model voor de stem blijft wat het ontwerp en de instellingen al zeggen.
+
 
 ## M10.33 deel: één station en een drempel (L, en de drempel van M), 1 oktober 2026
 
