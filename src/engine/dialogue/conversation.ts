@@ -15,7 +15,7 @@ import { approve, companionOf, offer, recruit } from '../social/companions'
 import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
-import { actsAsked, deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, recites, setsTask, saysNothing, speaksAsOther, swearRight, talksOfSelf, unknownNames, vocabularyOf } from './guard'
+import { actsAsked, deedKinds, fitLength, givenWords, leakedNames, looksLikeInjection, outOfCharacter, promises, recites, setsTask, saysNothing, speaksAsOther, swearRight, talksOfSelf, unfoundedClaim, unknownNames, vocabularyOf } from './guard'
 import { byRule } from './byrule'
 import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, type Offer } from './offers'
 import { accepted, declined, inviteOffer } from '../social/invite'
@@ -29,7 +29,7 @@ import type { Knowledge, Packet } from './knowledge'
 import { cachedSystem, LlmError, type LlmClient, type LlmRejection } from './llm'
 import { areaBlock } from './block'
 import { crossesLimits } from '../safety'
-import { oathsOf, peopleIds, turnEnd, turnMessage, turnSections, worldFrame, youLines, type TurnSection } from './prompt'
+import { oathsOf, peopleIds, turnEnd, turnMessage, turnSections, withoutRules, worldFrame, youLines, type TurnSection } from './prompt'
 import { attitude, applyEffect, moodOf, relation, type Attitude } from './relations'
 import { askLine, askNow, knownRequests, requestName, visited } from '../requests'
 import { questsOf } from '../life'
@@ -1246,6 +1246,14 @@ export class Dialogue {
       if (act) {
         this.refused('invented', llm, `an act not here: ${act}`)
         prompt += `\nNOTE: your last reply asked the stranger to ${act}, which cannot be done here. Ask only for what DOABLE HERE, THE STORY or a REQUEST gives, or for nothing.`
+        continue
+      }
+      // Guessing is allowed, knowing is not (M10.35 B): a thing, a way or a need said as fact with words nothing given holds.
+      // What was given is the call as first asked, without the rules and without a NOTE that would give the words back.
+      const claim = unfoundedClaim(fitted, givenWords(withoutRules(`${block.shared}\n${block.block}\n${(talk?.thread ?? []).map((t) => t.text).join('\n')}\n${message.text}\n${text}`)))
+      if (claim) {
+        this.refused('invented', llm, `said as fact: ${claim.phrase}`)
+        prompt += `\nNOTE: your last reply said as fact "${claim.phrase}", but nothing you know gives ${claim.missing.map((w) => `"${w}"`).join(', ')}. Leave it out, or say it only as your own guess.`
         continue
       }
       // A time they keep in their own words is no meeting (M10.33 AG): a meeting is an offer of the game they propose.

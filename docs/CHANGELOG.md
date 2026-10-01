@@ -1,5 +1,21 @@
 # Changelog
 
+## M10.35 deel: gissen mag, weten niet (B), 1 oktober 2026
+
+- **Een gok als gok (B).** Oorzaak: de regels kenden alleen een feit of "ik weet het niet". Wat het model erbij bedacht, kwam dus als feit op het scherm. Niko's "the multimeter under the bench" en Tessa's "an access hatch from the workshop side into the ship's belly" waren borduursel, en Bram zocht ze allebei. De regel zegt nu: alleen feiten uit KNOWLEDGE, SCENE en de eigen kaart; anders zeg je dat je het niet weet, verwijs je door, of gis je hardop over het verhaal of de mensen als je eigen gok ("I'd guess"), nooit als feit of opdracht. De regel over `mentioned_topics` stond ook in het schema en staat nu alleen daar, zodat dit binnen het budget past (4999 van de 5016 tekens).
+- **De bewaker toetst een stellige zin.** Een zin die zegt waar een ding is, wat er ergens is, waar een weg heen gaat of wat iemand nodig heeft, mag alleen woorden bevatten die de prompt geeft. De regels zelf en een eerdere NOTE tellen daarbij niet mee. Een gok, iets van horen zeggen ("they say"), een ontkenning, een vraag en wat de vreemdeling zelf wil, gaan door. Wat niet klopt, gaat één keer terug: laat het weg, of zeg het als je eigen gok. Opdrachten (V) en handelingen (AB) blijven streng, ook als gok. Opgelost in de motor, voor elke wereld.
+- **Gemeten op de bewaarde antwoorden.** Ik nam 212 echte antwoorden van 29 september tot 1 oktober (Haiku 4.5, gpt-5-mini en Sonnet 5; de Nethermarch en The Quiet Reach) en bouwde bij elk de prompt opnieuw, zoals het spel hem nu geeft. De bewaker stuurt er geen een terug. Eén zin zou als feit terug zijn gegaan, maar die is als horen zeggen gemarkeerd en gaat door. Van zes verzonnen dingen uit Brams log van 30 september vangt hij er drie: de multimeter, het luik naar de buik van het schip en de "raw power traces". De andere drie bestaan uit woorden die de prompt wel geeft, maar in een ander verband: de logs op de lei bij de briefing table, "Mara needs the sign-off" en "maintenance until handover". Een woordtoets kan dat niet zien. Daarvoor zijn er de regel en de telling van E.
+
+Testen: vraag Niko in de Orison Listening Room wat jij in zijn plaats zou doen. Een vermoeden hoort als vermoeden te klinken. Tests in `tests/m1035b.test.ts`.
+
+Bekende gaten: de belofte "minder afgewezen regels bij gelijke telling van verzonnen feiten" vraagt een meting op een sleutel, met de nieuwe regel tegen die van vandaag. Op de bewaarde antwoorden wees de huidige bewaker al niets af, dus daar valt het niet te zien. Dat gaat pas met Brams akkoord op een schatting.
+
+Kosten: geen.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: geen wijziging.
+
 ## M10.34 deel: elke afloop langs een echte route (B), 1 oktober 2026
 
 - **Een proef zonder sluiproutes (B).** Oorzaak: de proef van M10.33 AE sprong met `@goto` en `@bring` en begon de quest met `@quest`. Hij stopte voor het laatste stadium, dus groen bewees niet dat een speler er komt. Nu speelt de speeltest elke afloop van elk verhaal van een nieuw spel af, met alleen wat een speler typt. De route loopt langs de uitgangen en zoekt een verborgen luik met zijn woorden. Hij typt de code zodra iemand hem gaf, vraagt de weg aan wie er is en wacht op een persoon. Hij betaalt tol of vlucht, koopt wat een daad nodig heeft en laat zich vertellen wat hij moet weten. Faalt een weg, dan laadt hij de save van ervoor en probeert de volgende. Wat niet lukt, staat als niet getest, met de reden.

@@ -35,7 +35,7 @@ const RULES = `Rules:
 - Also here hears you: speak of them as present.
 - At most WORD LIMIT words of plain British English a non-native reader gets: no native-only idiom, colour from the world, nothing modern.
 - On screen: at most one short action, third person present, then the words in double quotes.
-- Only facts from KNOWLEDGE, SCENE and your own card; otherwise say you don't know, guess vaguely, or point to REFERRAL. No news or tidings of your own making: only what KNOWLEDGE gives.
+- Only facts from KNOWLEDGE, SCENE and your own card. Else say you don't know, point to REFERRAL, or guess aloud about the story or people as your own guess ("I'd guess"), never as fact or task. No news of your own making: only what KNOWLEDGE gives.
 - Numbers, ages, prices, dates and distances only as given, said as given; otherwise "a few" or "some".
 - Never invent places, people, items, prices or quests, and never name a place or person not in KNOWLEDGE, SCENE, REFERRAL, PEOPLE YOU KNOW or your card. Asked for a name you don't know, say so.
 - names: every name in your reply as written, new_kind none; except one far place beyond this land (city, land, sea, lake) with its new_kind, which joins the world. People or places nearby only as SOMEONE NEW allows.
@@ -45,9 +45,14 @@ const RULES = `Rules:
 - ATTITUDE sets the tone: curt if unfriendly, warm if friendly. Most replies are plain ("No, not today"); show who you are by what you care about, steer away from, remember and dare to say, not by sayings or oaths.
 - Speak of people as what they are to you (YOUR PEOPLE): your own with feeling, measured by LISTENER: to a stranger little, grief kept private, but if one of yours is missing you ask anyone for help; to someone you trust you may open up. PRIVATE things never to people you do not trust. People you hardly know, from a distance.
 - With CHECK, your reply matches its outcome.
-- effects: at most one change, -3 to +3, in how you feel about the player, for a reason only. mentioned_topics: the KNOWLEDGE or REFERRAL ids your reply talks about.
+- effects: at most one change, -3 to +3, in how you feel about the player, for a reason only.
 - Each game message holds what is new; its CHECK, DECISION, SECRET, NOTE and choices hold for it alone.
 - JSON matching the schema, nothing else.`
+
+/** What a prompt gives without the rules (M10.35 B): the words a reply may hold as facts. */
+export function withoutRules(text: string): string {
+  return text.replace(RULES, '')
+}
 
 /** The frame when world.yaml has none (M10.17): neutral; every world writes its own. */
 export const WORLD_FRAME = `WORLD: a world of its own, with its own names, money and customs. Nothing of our world

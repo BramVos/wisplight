@@ -81,6 +81,86 @@ export function promises(text: string): boolean {
   return PROMISE.test(text) || TELL_NAME.test(text)
 }
 
+// Guessing is allowed, knowing is not (M10.35 B: Niko's "the multimeter under the bench" and Tessa's "an access hatch from
+// the workshop side into the ship's belly" were embroidery said as fact, and Bram looked for both). A sentence the speaker
+// marks as their own guess, or as hearsay, may say what they do not know; a firm one about where a thing is, what there
+// is somewhere, a way, or what someone needs holds only words the prompt gives.
+const GUESS = /\b(?:if you ask me|i'?d (?:guess|say|wager|bet|think|imagine|reckon)|my (?:guess|bet|hunch|feeling)|i (?:guess|suspect|reckon|wonder|imagine|fancy|think|believe|doubt|expect)|i'?ve a feeling|i have a feeling|for all i know|could be|might|may|maybe|perhaps|probably|likely|seems?|looks like|sounds like|not sure|no idea|i don'?t know|they say|so they say|or so)\b/i
+const THE = String.raw`(?:the|a|an|his|her|their|my|our|your|that|this|those|these|some|one|two|three)\s+`
+const PHRASE = String.raw`[^,.;:!?"“”—–()]+`
+const THING = String.raw`([\w'-]+(?:\s+[\w'-]+){0,2})`
+const AT = String.raw`(?:in|inside|under|underneath|beneath|behind|beside|by|on|at|near|next to|in front of|on top of|at the (?:back|bottom|top|end|far end) of)`
+const CLAIMS: RegExp[] = [
+  // Where a thing or someone is: "the multimeter is under the bench".
+  new RegExp(String.raw`(?:\b${THE}${THING}\s+)?(?:is|are|was|were|'s|'re|lies|lie|sits|sit|kept|stored|hidden|locked|left|stashed|hangs|hang|stands|stand)\s+(?:still\s+|right\s+|just\s+|somewhere\s+|up\s+|down\s+|out\s+|back\s+|over\s+|away\s+)?${AT}\s+(${THE}${PHRASE})`, 'gi'),
+  // What there is somewhere: "there's an access hatch from the workshop side".
+  new RegExp(String.raw`\bthere(?:'s| is| are| was| were)\s+${THE}${THING}\s+(?:${AT}|from|into|through|under|behind)\s+(${THE}${PHRASE})`, 'gi'),
+  // Where to find it: "you'll find one under the bench".
+  new RegExp(String.raw`\byou(?:'ll| will| can|'d| could| should)?\s+(?:find|get)\s+(?:${THE})?${THING}\s+${AT}\s+(${THE}${PHRASE})`, 'gi'),
+  // A way: "a hatch into the ship's belly".
+  new RegExp(String.raw`\b(?:way|path|route|hatch|door|passage|tunnel|ladder|shaft|stairs?|stairway|gate|entrance|shortcut|track|road|bridge|crawlway|duct)\s+(?:from|into|through|to|under|behind|via|across|along|past|round|around|over|up|down)\s+(${THE}${PHRASE})`, 'gi'),
+  // What someone needs or waits for, or is to be asked for: "ask Sorell for the raw power traces".
+  new RegExp(String.raw`\b(?:needs?|needed|requires?|required|wants?|wanted|is waiting (?:for|on)|waits for|has to have|must have|ask (?:\p{Lu}[\w'-]*|him|her|them) for)\s+(${THE}${PHRASE})`, 'giu'),
+]
+// Where the thing ends: at a clause, and before a state of it ("the path clear", "their land drained").
+const CLAUSE = /\s(?:and|or|but|so|because|before|after|until|till|when|while|if|that|which|who|where|then|since|than|as|unless|to)\s.*$/i
+const STATE = /\s(?:\w+ed|clear|open|shut|ready|safe|done|fair|dry|wet|empty|full|whole|broken|gone)$/i
+// Words that say no thing: time, the ordinary words of place and amount, and a few that only describe.
+const NO_THING = new Set(
+  ('this that these those there their them they then than with from into onto over under about after before again around because being both down each even ever have here just like more most much must only other ours same should some such theirs very what when where which while whom whose will would your yours ' +
+    'time times today tonight tomorrow yesterday morning evening night nights day days week weeks month months year years hour hours minute minutes moment moments season winter summer spring autumn ' +
+    'place places people person someone something anything nothing everything work home side back front part rest sort kind lot bits bit word words matter way ways end start top bottom middle edge ' +
+    'good well long little great small large big old new first last next own right left whole half few many still somewhere away three four five dark light cold warm biggest best worst').split(/\s+/),
+)
+const bare = (w: string) => w.toLowerCase().replace(/['’]s$/, '')
+const single = (w: string) => w.replace(/ies$/, 'y').replace(/(?:ches|shes|sses|xes)$/, (m) => m.slice(0, -2)).replace(/s$/, '')
+
+/** The words a prompt gives (M10.35 B), with their singulars, a compound as two words, and every pair of words that stand together. */
+export function givenWords(given: string): Set<string> {
+  const words = given.toLowerCase().match(/[a-z][a-z'’-]*[a-z]/g) ?? []
+  return new Set([...words.flatMap((w) => [bare(w), single(bare(w)), ...(w.includes('-') ? [w.replace(/-/g, ' ')] : [])]), ...words.slice(1).map((w, i) => `${words[i]} ${w}`)])
+}
+
+/** Whether a sentence says what it says as the speaker's own guess, or as hearsay (M10.35 B). */
+export function guessed(sentence: string): boolean {
+  return GUESS.test(sentence)
+}
+
+export interface UnfoundedClaim {
+  sentence: string
+  /** The thing and where, as the reply put them. */
+  phrase: string
+  /** The words of it the prompt does not give. */
+  missing: string[]
+}
+
+/**
+ * The first firm sentence of a reply about where a thing is, what there is somewhere, a way, or what someone needs, with
+ * a word of a thing the prompt does not give (M10.35 B). A question, a guess, hearsay, a denial and the stranger's own
+ * wish are no claims. Names are left to unknownNames; a claim made of given words in another order passes, since only
+ * the rule and the read score can tell it.
+ */
+export function unfoundedClaim(text: string, given: Set<string>): UnfoundedClaim | undefined {
+  const said = (text.match(/["“][^"”]*["”]?/g) ?? [text]).join(' ')
+  for (const sentence of said.replace(/["“”]/g, ' ').split(/(?<=[.!?])\s+/)) {
+    if (/\?\s*$/.test(sentence) || guessed(sentence)) continue
+    for (const pattern of CLAIMS) {
+      for (const m of sentence.matchAll(pattern)) {
+        // A claim denied is no hint ("there's no hatch"), and what the stranger wants is theirs to say ("you want the old tale").
+        if (/\b(?:not|never|no|nothing|nobody)\b|n't\b/i.test(sentence.slice(Math.max(0, m.index - 16), m.index + m[0].length))) continue
+        if (/^\s*you\s+(?:want|wanted)\b/i.test(sentence.slice(Math.max(0, m.index - 5), m.index + 12))) continue
+        const parts = m.slice(1).filter((p): p is string => Boolean(p)).map((p) => p.replace(CLAUSE, '').trim().split(/\s+/).slice(0, 7).join(' ').replace(STATE, ''))
+        const missing = parts
+          .flatMap((p) => p.match(/[A-Za-z][A-Za-z'’-]*[A-Za-z]/g) ?? [])
+          .filter((w) => !/^\p{Lu}/u.test(w) && w.length >= 4 && !NO_THING.has(bare(w)) && !NO_THING.has(single(bare(w))))
+          .filter((w) => !given.has(bare(w)) && !given.has(single(bare(w))) && !(w.includes('-') && given.has(w.toLowerCase().replace(/-/g, ' '))))
+        if (missing.length) return { sentence: sentence.trim(), phrase: m[0].replace(CLAUSE, '').trim(), missing: [...new Set(missing.map(bare))] }
+      }
+    }
+  }
+  return undefined
+}
+
 /**
  * Whether a reply says nothing aloud (M10.29, Bram's playtest: "Sana smiles warmly." and the question unanswered): no
  * words between quotes, and only an action of the speaker's own ("Sana smiles", "She nods"). Words without their
