@@ -40,8 +40,6 @@ Kosten: geen aanroep.
 
 Wat de editor en de kroniekverteller leerden: de stap Plekken krijgt de richtingfouten van zijn eigen voorstel terug als probleem. De regel zelf stond al in de stap en het contract.
 
-Bekend: de speeltest van de Orison-lijn typt nog "trace the antenna fault" in de Listening Room, sinds AA het spoor naar de Cable Gallery verplaatste; dat ligt bij de andere bouwer.
-
 Ontwerp: functioneel ontwerp, hoofdstuk 4, alinea "Stand na M10.33: richtingen en gebieden kloppen".
 
 ## M10.33 deel: verzonnen feiten meetbaar (W, zonder de meting), 30 september 2026
