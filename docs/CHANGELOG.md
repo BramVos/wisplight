@@ -1,5 +1,22 @@
 # Changelog
 
+## M10.35 deel: gemeten op Brams sleutel (B en E), 1 oktober 2026
+
+- **De meting.** Op Brams sleutel, na zijn akkoord ("Rond maar af!" op een schatting van $0,70, grens $1,50), kostte het $0,62 in vier runs. Ik deed de proef met Niko en Tessa op Haiku 4.5 en op Sonnet 5, de situatieset in twee reeksen, en een leesronde over alles: verzonnen feiten en verzonnen aanwijzingen geteld, plus de zes valse aanwijzingen uit de review. Het verslag staat in `docs/playtest/voice/2026-10-01-m1035.md`.
+- **B.** Er worden niet minder regels afgewezen. Vanochtend waren het er al 0 van 30 op de situatieset, nu 1 van 30, en dat valt binnen de ruis van zo'n kleine set. De verzonnen feiten daalden van 0,15 naar 0,08 per antwoord (dezelfde lezer, vandaag); verzonnen aanwijzingen blijven 0. In de gesprekken over het verhaal vroegen de bewakers op Haiku drie keer opnieuw: twee keer om iets verzonnens, één keer om een lek. Of het een bewaker van B was, zegt de proef niet; dat staat in het AI-log.
+- **D.** Het gesprek loopt even vaak door (onward 0,96 tegen 1,04), nu langs haken van het spel.
+- **E.** Sonnet 5 wijst in gesprekken over het verhaal niet minder vaak naar iets wat niets gaf (0,53 tegen 0,47 per antwoord). Het leest wel beter (0,763 tegen 0,636) en verzint minder feiten (0,05 tegen 0,11), maar kost per regel drie keer zoveel. De telling vraagt er dus niet om: elke laag blijft op Haiku 4.5. Een regel kost bij een gewoon gesprek ongeveer $0,005 als eerste regel en $0,002 daarna; bij een gesprek over het verhaal op Haiku $0,015 en $0,002, en zou op Sonnet 5 $0,041 en $0,006 kosten. Haiku 4.5 heeft geen inspanningsstand.
+- **Gevonden en opgelost.** Tessa vroeg op Sonnet in acht van negen antwoorden "Will you come to the Commons?". Oorzaak: haar `asks` staat in THE STORY, en D gaf hem nog eens als haak, ook nadat ze hem al gezegd had. Nu geeft de haak de wens van de gever alleen tot die in dit stadium gezegd is, en daarna hoe de vreemdeling ermee opschiet. Opgelost in de motor (`hooks.ts`).
+- **Gezien, niet op te lossen met een bewaker.** Niko verzon op Haiku dat Tessa de stroomtoevoer gesaboteerd vond. Dat is een verband tussen gegeven dingen; de regel en de leesscore zijn daar de maat.
+
+Bekende gaten: de lezer ziet de meeste valse aanwijzingen, niet alle (0,67 per antwoord op de set van zes). Zijn GIVEN is het einde van de aanroep (2.400 tekens), dus in een langer gesprek kan wat THE STORY in de eerste beurt gaf erbuiten vallen. Voor beide modellen geldt dat gelijk, dus de vergelijking houdt stand, maar de absolute getallen van de verhaalgesprekken liggen daardoor te hoog.
+
+Kosten: $0,62 voor de meting; het spel kost niets meer.
+
+Wat de editor en de kroniekverteller leerden: niets.
+
+Ontwerp: geen wijziging.
+
 ## M10.35 deel: een leugen heeft een reden (G), 1 oktober 2026
 
 - **Leugens (G).** Spelers nemen een onwaarheid met een motief, en keren zich af van iemand die zonder reden liegt. Een stadium kan nu per persoon een leugen hebben: wat hij zegt, waarom, wat het ontkracht en hoe hij reageert als je hem ermee confronteert. In The Quiet Reach zegt Sorell tot en met stadium 4 dat de gaten in het archief van het falende station komen. Na het kopiëren van de opnamen weet zijn stem dat jij beter kunt weten. Laat je hem de kopieën zien (`show the copies to ilyan`), dan is hij betrapt. Op Skerrow geeft Brannoc de Kittiwake de schuld, tot ze gerepareerd is.

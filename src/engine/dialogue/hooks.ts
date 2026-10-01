@@ -17,7 +17,11 @@ function ownHooks(world: World, npcId: string, proposals: string[]): string[] {
   const hooks: string[] = []
   if (openRequestsOf(world, npcId).length) hooks.push('your request (YOUR REQUEST)')
   const wants = wantsNow(world, npcId)
-  if (wants?.asks) hooks.push(`what you want of the stranger now in ${wants.quest.name} (THE STORY AS YOU KNOW IT)`)
+  // Until they have said it this stage (M10.35, measured: Tessa on Sonnet 5 asked "Will you come to the Commons?" in eight
+  // answers of nine); after that, how the stranger gets on with it.
+  const said = wants && (wants.state.asked ?? []).includes(wants.stage.id)
+  if (wants?.asks && !said) hooks.push(`what you want of the stranger now in ${wants.quest.name} (THE STORY AS YOU KNOW IT)`)
+  else if (wants?.stage.goal) hooks.push(`how the stranger is getting on with ${wants.quest.name}; their next step: ${wants.stage.goal.trim().replace(/\.$/, '')}`)
   const log = (world.state.questlog ?? {}) as Record<string, QuestState>
   for (const quest of world.content.quests.values()) {
     if (!log[quest.id] || log[quest.id]!.ended || wants?.quest.id === quest.id) continue

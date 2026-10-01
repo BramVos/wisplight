@@ -23,6 +23,13 @@ describe('M10.35 D: the question back comes from the content', () => {
     expect(hooksFor(engine.world, { npcId: 'npc_sana_holt', packet: none })).toEqual(['The Orison Recordings (THE STORY AS YOU KNOW IT)', expect.stringMatching(/^a tale of your own: Sana keeps the chairs at the long table/)])
   })
 
+  it('gives the giver\'s wish as a hook only until they said it this stage, then how the stranger gets on', async () => {
+    const engine = new Engine(quiet, { seed: 3, builder: true })
+    engine.start()
+    for (const c of ['@goto loc_medical_bay', '@bring ilyan', 'talk ilyan']) await engine.handle(c)
+    expect(hooksFor(engine.world, { npcId: 'npc_ilyan_sorell', packet: none })).toEqual(['how the stranger is getting on with The Orison Recordings; their next step: Ask Niko about the station'])
+  })
+
   it('adds a request, an offer said yes to, news heard and a topic known well; Skerrow plays it in its own words', async () => {
     const base = await loadContentFromDir(root, 'base')
     const engine = new Engine(base, { seed: 3, builder: true })

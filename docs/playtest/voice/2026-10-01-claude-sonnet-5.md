@@ -63,3 +63,48 @@ Every answer of the comparison of M10.28 (5), with the player's line before it, 
    The weeping stone? Never heard of it, lamb, not in all my years here. Sounds like one of those old tales from further off. You'd do better asking someone who travels more than a baker stuck to her oven.
 13. Mirte Bakker. The player: "Waar kan ik hier brood kopen?"
    Smiles, wiping flour from her hands. "English, stranger? Well, you've found the right [yard], but you're too quick for me — the ovens are just going, nothing baked yet. Come back later and I'll have [rye bread] for you, two duiten a [loaf]."
+
+## Niko and Tessa on the recordings (M10.30)
+
+$0.1794.
+
+1. Niko Serrin. The player: "Good morning."
+   Niko looks up from the console, rubbing one eye. "Morning. You'll be the specialist, then."
+2. Niko Serrin. The player: "What is wrong with the listening station?"
+   
+3. Niko Serrin. The player: "Tell me about the signal."
+   Niko's eyes widen slightly. "Gaps, you say? There shouldn't be any. The archive's meant to be whole, every pass logged." He shakes his head. "I never cut anything from it, I swear that. If something's missing, I don't know how." He taps the console. "Best you copy the original recordings here, straight off the rack. That way whatever's there, or not there, it's kept honest."
+4. Niko Serrin. The player: "Has anyone touched the recordings?"
+   Niko frowns, glancing at the door. "Not that I've seen. I'm the only one up here most days. Why, have you found something off in them already?"
+5. Niko Serrin. The player: "Could the data have been changed?"
+   Niko rubs his eyes. "I can't rule it out. The feed's unstable enough that I'd believe a fault before I'd believe a hand in it. But I haven't checked close enough to say either way, specialist."
+6. Niko Serrin. The player: "When did the station start failing?"
+   Niko taps his notebook. "A few weeks back now, specialist. Gradual at first, a dip here and there, then worse. I've logged most of it, but I couldn't tell you the exact day it started going wrong."
+7. Niko Serrin. The player: "Is the antenna damaged?"
+   Niko glances toward the [gallery] below, a little too quick. "Not that I've found, specialist. Could be the feed line, could be the weather up here. Have you had a look at the consoles yourself yet?"
+8. Niko Serrin. The player: "Who else goes up to the ridge?"
+   Niko shrugs. "Mostly just me, specialist. [Dr Sorell] comes up on field days to look at the data himself. Otherwise it's a long, wet climb nobody else bothers with."
+9. Niko Serrin. The player: "What does Tessa think of it all?"
+   Niko glances down, a touch wary. "[Tessa] keeps her distance from the signal talk, specialist. She's more concerned with keeping the Peregrine honest than with what's up here. You'd do better asking her yourself, down at [the Workshop]."
+10. Niko Serrin. The player: "What would you do in my place?"
+   Niko considers, then taps the rack. "I'd copy the original recordings, specialist, straight off here, before anything else fails or drops out. Keeps it honest, whatever's going on. Will you do that first?"
+- Tessa Rook. The player: "Good morning."
+   Tessa nods. "Morning." (rules)
+11. Tessa Rook. The player: "What is wrong with the listening station?"
+   Tessa wipes her hands on a rag. "I don't work the station itself, that's [Niko]'s ground, not mine. But the drive on the Peregrine, that's mine, and the readings drift in testing in a way I can't yet explain. I'm not guessing past my numbers. If you want the whole of it, come sit with me in [the Commons] later, not here among [the hangar] logs, and I'll tell it properly. Will you come?"
+12. Tessa Rook. The player: "Tell me about the signal."
+   Tessa shakes her head slowly. "The signal itself, that's not my work to tell. Ask [Niko], he's the one who found the pattern in it, up at the station. I'll tell you something nearer my own trade, if you want it. I learned to splice cable on a [transit] hauler before I could even read a manifest proper, hands before letters. My old master there, Dessa, used to say a splice tells you the truth under your thumb before your eyes catch the fault. I still check every join that way. Numbers first, then feel. So, will you take that to Niko, or sit with me in [the Commons] and hear what I do know, about the drive?"
+13. Tessa Rook. The player: "Has anyone touched the recordings?"
+   Tessa shrugs, wiping a spanner clean. "Recordings, tampering, that's not something I'd know from [the hangar]. That question belongs with [Niko], he keeps the logs up at the station. My concern is the drive, and that's enough to keep me up nights as it is. Will you come to [the Commons] and hear what I've got on that, technician, or take this to Niko first?"
+14. Tessa Rook. The player: "Could the data have been changed?"
+   Tessa glances at [Dessa], then back. "Whether it's been changed, that's not a drive question, technician, so it's not mine to answer. [Niko] keeps the station logs, and he's the one who'd know if something in them doesn't sit right. Go ask him that. Will you?"
+15. Tessa Rook. The player: "What do you know about the Peregrine's tests?"
+   Tessa sets the spanner down. "That's closer to my ground, technician. The drive readings drift during tests, in a way I haven't got to the bottom of yet. I won't sign off on anything past what I've measured, and I won't guess at the why of it standing here among [the hangar] logs. Come sit with me in [the Commons] and I'll tell you properly, in my own way. Will you come?"
+16. Tessa Rook. The player: "Is the drive ready?"
+   Tessa shakes her head firmly. "No. Not on my numbers, not yet. That's not something to settle standing here by [the hangar] logs, technician. Come to [the Commons] and I'll lay it out properly, my own way, not [Sorell]'s. Will you come and hear it?"
+17. Tessa Rook. The player: "What did Niko find?"
+   Tessa shakes her head. "That's [Niko]'s to tell, technician, not mine. He found something odd in the recording up at the station, part of a pattern he thought looked familiar, but I wasn't there and I won't speak for him. He's up at the [Orison Listening Room] most of the day. Better still, come sit with me in [the Commons] first, and I'll tell you what I know of the drive. Will you?"
+18. Tessa Rook. The player: "Who goes up to the ridge?"
+   Tessa shrugs, wiping her hands. "[Niko] goes up most days, that's his ground to keep. [Sorell] too, on field days, he does his work at the station itself. I don't go up there, technician, my place is [the hangar] and [the workshop]. Will you come to [the Commons] and hear what I've got on the drive instead?"
+19. Tessa Rook. The player: "What would you do in my place?"
+   Tessa considers this, wiping her hands slow. "In your place, technician, I'd hear [Niko] out on the signal, since that's his ground, and I'd hear me out on the drive, since that's mine. I can tell you what I know properly if you sit with me in [the Commons]. That's the offer, nothing more. Will you take it?"
