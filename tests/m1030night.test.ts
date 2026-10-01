@@ -69,7 +69,9 @@ describe('M10.30 (7): the night round sees what was said', () => {
     for (let i = 0; i < 12; i++) remember('npc_harmen', 20 + i, `Talk ${i}.`, [])
     const talks = talksOf(world, line, [])
     expect(talks).toHaveLength(10)
-    expect(talks.at(-1)).toMatch(/^Harmen \([^)]+\): Talk 11\.$/)
+    // The oldest open first since M10.34 D: what does not go now goes with the next round.
+    expect(talks[0]).toMatch(/^Harmen \([^)]+\): The stranger asked about my sails\.$/)
+    expect(talks.at(-1)).toMatch(/^Harmen \([^)]+\): Talk 7\.$/)
     const early = talksOf(world, { ...line }, []).join('\n')
     expect(early).not.toMatch(/Before the last round|about bread|at my chest/)
     world.state.npcs['npc_harmen']!.memory = world.state.npcs['npc_harmen']!.memory!.filter((m) => !/^Talk/.test(m.note))
@@ -96,7 +98,8 @@ describe('M10.30 (7): the night round sees what was said', () => {
     for (const id of [asked.id, told.id]) {
       const line = world.state.chronicle!.lines.find((l) => l.facts.includes(id))!
       expect(line.reported).toContain(id)
-      expect(line.told).toBeGreaterThan(asked.t)
+      // The rules read no talks (M10.34 D): nothing is marked as read, and no time boundary moves.
+      expect(line.told).toBeUndefined()
     }
   })
 })

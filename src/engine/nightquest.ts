@@ -127,7 +127,7 @@ export function nightQuestRequest(world: World, want: NightQuestWant): LlmReques
   const people = Object.entries(want.keys).filter(([k]) => k.startsWith('p')).map(([k, id]) => [k, content.npcs.get(id)] as const).filter((e): e is readonly [string, Npc] => Boolean(e[1]))
   const places = Object.entries(want.keys).filter(([k]) => k.startsWith('l')).map(([k, id]) => [k, content.locations.get(id)] as const).filter((e): e is readonly [string, Location] => Boolean(e[1]))
   const facts = (line?.facts ?? []).map((id) => factById(world, id)).filter((f) => f !== undefined)
-  const talks = line ? talksOf(world, { ...line, told: world.now - TALK_DAYS * DAY }, facts) : []
+  const talks = line ? talksOf(world, line, facts, { since: world.now - TALK_DAYS * DAY }) : []
   const skills = (content.rules?.skills ?? []).map((s) => s.id)
   const running = activeIn(world, regionOfNpc(world, fact?.about[0] ?? '')).map((id) => content.quests.get(id)?.name ?? id)
   // The world's own part of the chronicler's notes (M10.30): its truth, without the working instruction every world shares.

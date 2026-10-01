@@ -15,7 +15,7 @@ import { questsOf } from './life'
 import { factById, factOrArchived } from './news'
 import { isNear, noun, ties } from './people'
 import { askLine, openRequest, openRequestsOf, requestName } from './requests'
-import type { ChronicleRun, ChronicleState, Claim, Fact, LoreEntry, Offered, Storyline } from './state'
+import type { ChronicleRun, ChronicleState, Claim, Fact, LoreEntry, MemoryRecord, Offered, Storyline } from './state'
 import { judged, judgeRequest, loreProblem } from './truth'
 import { answerLookup, lookupFromId } from './lookups'
 import { chronicleState, setLineStatus, unreported } from './storylines'
@@ -97,22 +97,37 @@ const TALKS_PER_LINE = 10
  * the making such as Ilyan's shows): the notes in their own words of a talk
  * with one of its people, or about one of its people, places or subjects.
  */
-export function talksOf(world: World, line: Storyline, facts: Fact[]): string[] {
-  const since = line.told ?? Math.min(...facts.map((f) => f.t), world.now)
+export function talksOf(world: World, line: Storyline, facts: Fact[], how: TalkSelection = {}): string[] {
+  return talkMemories(world, line, facts, how).map(({ npc, m }) => `${callName(world.npc(npc))} (${when(world, m.t)}): ${m.note}`)
+}
+
+/**
+ * Which talks a storyline takes (M10.34 D: the newest ten went, and everything older behind them fell out for
+ * good): for the night round the oldest the line has not read yet, up to the time the round was asked for, at most
+ * ten, so what does not go now goes next time; with `since`, the newest of that time on, as the night quest reads.
+ * A line from an older save reads nothing from before its last round, as it did then.
+ */
+export function talkMemories(world: World, line: Storyline, facts: Fact[], how: TalkSelection = {}): { npc: string; m: MemoryRecord }[] {
+  const since = how.since ?? line.told ?? Math.min(...facts.map((f) => f.t), world.now)
   const people = new Set([...line.people, ...line.roles.map((r) => r.who)])
   const touched = new Set([...people, ...line.places, ...facts.flatMap((f) => f.about)])
-  const notes: { t: number; text: string }[] = []
+  const found: { npc: string; m: MemoryRecord }[] = []
   for (const [id, npc] of Object.entries(world.state.npcs)) {
     if (!world.content.npcs.has(id)) continue
     for (const m of npc.memory ?? []) {
-      if (!m.talk || m.t <= since || !(people.has(id) || m.topics.some((t) => touched.has(t)))) continue
-      notes.push({ t: m.t, text: `${callName(world.npc(id))} (${when(world, m.t)}): ${m.note}` })
+      if (!m.talk || m.t <= since || (how.upTo !== undefined && m.t > how.upTo) || !(people.has(id) || m.topics.some((t) => touched.has(t)))) continue
+      if (how.since === undefined && m.toldTo?.includes(line.id)) continue
+      found.push({ npc: id, m })
     }
   }
-  return notes
-    .sort((a, b) => a.t - b.t)
-    .slice(-TALKS_PER_LINE)
-    .map((n) => n.text)
+  const sorted = found.sort((a, b) => a.m.t - b.m.t)
+  return how.since !== undefined ? sorted.slice(-TALKS_PER_LINE) : sorted.slice(0, TALKS_PER_LINE)
+}
+
+/** How talks are picked: up to a time (the night round's), or the newest since a time (the night quest's). */
+export interface TalkSelection {
+  upTo?: number
+  since?: number
 }
 
 export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
@@ -135,7 +150,7 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
       .slice(-3)
       .map((f) => eventOf(world, f)),
     ...(arcOf(state, line).length ? { arc: arcOf(state, line) } : {}),
-    ...(talksOf(world, line, facts(line)).length ? { talks: talksOf(world, line, facts(line)) } : {}),
+    ...(talksOf(world, line, facts(line), { upTo: run.t }).length ? { talks: talksOf(world, line, facts(line), { upTo: run.t }) } : {}),
   }))
 
   const cast = new Set<string>()
@@ -626,8 +641,9 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
       if (!out.news.some((n) => n.area === area) && (!old || world.now - old.t > 12 * 60)) state.news[area] = { text: fresh.at(-1)!.text.village, t: world.now }
     }
     line.reported = [...new Set([...line.reported, ...line.facts.filter((id) => seen.has(id))])]
-    // Told now (M10.30): the talks from here on go with the next round.
-    line.told = world.now
+    // The talks it read, each marked for this line (M10.34 D): the same ones the input showed, up to the round's time;
+    // the rules alone read none, so those wait for a round with a model.
+    if (output && by === 'chronicler') for (const { m } of talkMemories(world, line, line.facts.map((id) => factOrArchived(world, id)).filter((f): f is Fact => Boolean(f)), { upTo: run.t })) (m.toldTo ??= []).push(line.id)
     // Without a model, the rules may place a thing for a storyline where no chance is left (M10.5).
     if (by === 'template') motorProp(world, line)
   }

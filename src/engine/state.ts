@@ -396,6 +396,8 @@ export interface MemoryRecord {
   valence: number
   /** Written after a talk with the stranger, in the speaker's words (M10.30): the night round sees it. */
   talk?: true
+  /** The storylines whose night round has read it (M10.34 D): each takes it once, the oldest open first. */
+  toldTo?: string[]
 }
 
 export interface TalkState {

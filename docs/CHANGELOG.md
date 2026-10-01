@@ -1,5 +1,17 @@
 # Changelog
 
+## M10.34 deel: niets valt uit de nachtronde (D), 1 oktober 2026
+
+- **De oudste open gesprekken eerst (D).** Oorzaak, in `talksOf`: per verhaallijn gingen de nieuwste tien herinneringen aan gesprekken mee, en daarna schoof de tijdgrens van de lijn naar nu. Zo viel alles wat ouder was en niet meeging voorgoed weg. De nachtronde leest nu per lijn de oudste herinneringen die die lijn nog niet las, hooguit tien. Elke gelezen herinnering krijgt een merk voor die lijn. Wat niet meeging, gaat de volgende ronde. Er is geen tijdgrens per lijn meer: de selectie kijkt naar herinneringen tot het moment dat de ronde gevraagd werd, zodat opbouwen en afronden dezelfde zien en een replay gelijk blijft. Een ronde die de regels zonder model schrijven, leest geen gesprekken en merkt dus niets. Een lijn uit een oudere save begint bij haar laatste ronde, zoals toen. Opgelost in de motor, voor elke wereld.
+
+Testen: `tests/m1034d.test.ts` (twaalf gesprekken: tien in de eerste ronde, de laatste twee in de volgende); de test van M10.30 volgt de nieuwe volgorde.
+
+Kosten: geen; evenveel gesprekken per ronde als voorheen.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: geen wijziging.
+
 ## M10.34 deel: vertelling en effect zijn één uitkomst (A), 1 oktober 2026
 
 - **Geen daad die niet gebeurde (A).** Oorzaak, in `readImprovisation`: werd een effect van een improvisatie geweigerd (een ding dat hier niet kan opduiken, een toestand die niet mag), dan werd het effect `nothing`. Maar de vertelling bleef op het scherm, de melk was op, en de vertelling leefde door als herinnering voor de volgende daad en voor de kroniekverteller. Nu vraagt het spel de vertelling één keer opnieuw: alleen wat de vreemdeling ziet, en er verandert niets. Wordt het effect weer geweigerd, dan komt de eigen regel van het ding. `spent` geldt alleen bij een effect dat blijft staan, en alleen een aanvaarde vertelling wordt herinnering. Opgelost in de motor, voor elke wereld.
