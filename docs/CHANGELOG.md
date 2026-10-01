@@ -1,5 +1,17 @@
 # Changelog
 
+## M10.34 deel: een antwoord alleen opnieuw zolang het waar is (E), 1 oktober 2026
+
+- **Hergebruik met een geheugen (E).** Oorzaak, in `byrule.ts`: dezelfde vraag in dezelfde woorden kreeg binnen een gesprek hetzelfde antwoord terug ("As I said: ..."), ook als intussen een daad, een geheim of een recht iets veranderd had. Een antwoord onthoudt nu waarin het waar was: het stadium van elke quest, de geheimen die deze persoon gaf, en de afspraken met hem. Is dat nog hetzelfde, dan zegt de persoon het opnieuw zonder model; is het veranderd, dan wordt de vraag opnieuw gesteld. Antwoorden uit een oudere save worden niet hergebruikt. Opgelost in de motor, voor elke wereld.
+
+Testen: `tests/m1034e.test.ts` (dezelfde vraag aan Tessa, voor en nadat de antennefout gevonden is).
+
+Kosten: hooguit één aanroep meer, alleen als de wereld tussen twee gelijke vragen veranderde.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: geen wijziging.
+
 ## M10.34 deel: niets valt uit de nachtronde (D), 1 oktober 2026
 
 - **De oudste open gesprekken eerst (D).** Oorzaak, in `talksOf`: per verhaallijn gingen de nieuwste tien herinneringen aan gesprekken mee, en daarna schoof de tijdgrens van de lijn naar nu. Zo viel alles wat ouder was en niet meeging voorgoed weg. De nachtronde leest nu per lijn de oudste herinneringen die die lijn nog niet las, hooguit tien. Elke gelezen herinnering krijgt een merk voor die lijn. Wat niet meeging, gaat de volgende ronde. Er is geen tijdgrens per lijn meer: de selectie kijkt naar herinneringen tot het moment dat de ronde gevraagd werd, zodat opbouwen en afronden dezelfde zien en een replay gelijk blijft. Een ronde die de regels zonder model schrijven, leest geen gesprekken en merkt dus niets. Een lijn uit een oudere save begint bij haar laatste ronde, zoals toen. Opgelost in de motor, voor elke wereld.

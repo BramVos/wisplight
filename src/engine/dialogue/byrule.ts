@@ -40,16 +40,19 @@ function spoken(reply: string): string | undefined {
  * the turn carries a decision the voice must word (a check, a secret, a claim,
  * a reaction, a quest to offer): those keep their call.
  */
-export function byRule(world: World, npcId: string, turn: { act: Act; text: string; topics: string[]; history: { speaker: 'player' | 'npc'; text: string }[]; offers: Offer[]; busy: boolean }): ByRule | undefined {
+export function byRule(world: World, npcId: string, turn: { act: Act; text: string; topics: string[]; history: { speaker: 'player' | 'npc'; text: string; state?: string }[]; offers: Offer[]; busy: boolean; state?: string }): ByRule | undefined {
   if (turn.busy) return undefined
   const text = turn.text.trim()
   const words = plain(text).split(' ').filter(Boolean).length
-  // The same question in the same words, answered already in this talk: the same answer, said again.
+  // The same question in the same words, answered already in this talk: the same answer, said again, but only while
+  // it still holds (M10.34 E: a quest's stage, a secret given or an agreement may have changed since).
   if (words >= 3) {
     const history = turn.history
     for (let i = history.length - 2; i >= 0; i--) {
       if (history[i]!.speaker !== 'player' || plain(history[i]!.text) !== plain(text)) continue
-      const said = history[i + 1]?.speaker === 'npc' ? spoken(history[i + 1]!.text) : undefined
+      const answer = history[i + 1]
+      const holds = answer?.state !== undefined && answer.state === turn.state
+      const said = answer?.speaker === 'npc' && holds ? spoken(answer.text) : undefined
       if (said) return { why: 'asked again', line: world.say(`{name} gives you a look. "As I said: ${said}"`, npcId) }
       break
     }

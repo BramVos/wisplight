@@ -405,7 +405,8 @@ export interface TalkState {
   /** They came to the stranger (M10.3): a talk the stranger never answers ends by itself (M10.24). */
   opened?: boolean
   turnsLeft: number
-  history: { speaker: 'player' | 'npc'; text: string }[]
+  /** Each line of the talk; an answer with the state it was true in (M10.34 E), so it is said again only while it holds. */
+  history: { speaker: 'player' | 'npc'; text: string; state?: string }[]
   effects: number
   revealed: string[]
   /** What the NPC proposed and the player has yet to answer (M10.3): YES carries it out. */

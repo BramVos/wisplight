@@ -66,6 +66,17 @@ export const QUICK_OPTIONS = [
 ]
 
 
+/**
+ * What an answer was true in (M10.34 E): the stage of every quest, the secrets this person has given and the
+ * agreements with them. An answer is said again to the same words only while this is the same.
+ */
+function answerState(world: World, npcId: string): string {
+  const quests = Object.entries(world.state.questlog ?? {}).map(([id, q]) => `${id}:${q.ended ? `end:${q.outcome ?? ''}` : q.stage}`).sort()
+  const secrets = Object.keys(world.state.flags ?? {}).filter((f) => f.startsWith(`secret:${npcId}:`)).sort()
+  const agreed = (world.state.agreements?.list ?? []).filter((a) => a.by === npcId || a.to === npcId).map((a) => `${a.id}:${a.status}`).sort()
+  return JSON.stringify([quests, secrets, agreed])
+}
+
 /** Asked what they want of the stranger (M10.33 E): without a model, the answer is what they ask and what to do now. */
 const WANTS = /\b(what (?:do|should|can|must) i do|what (?:do|did) you (?:need|want)|what now|how can i help|what can i do for you|tell me more|what(?:'s| is) (?:the|my) (?:job|task))\b/i
 
@@ -720,7 +731,7 @@ export class Dialogue {
     if (made) (talk.facts ??= []).push(made.id)
     // No model for what the rules can do (M10.28): a greeting, a yes or no, a trade, the same question again, the card.
     const busy = Boolean(options.check || secret || said || decision || reaction || flirted || amended || offered.length || claimable.length)
-    const rule = this.llm() ? byRule(world, npcId, { act, text, topics, history: talk.history, offers, busy }) : undefined
+    const rule = this.llm() ? byRule(world, npcId, { act, text, topics, history: talk.history, offers, busy, state: answerState(world, npcId) }) : undefined
     if (rule) this.llm()?.byRule?.({ role: 'voice', why: rule.why, said: text })
     const reply = rule ? undefined : await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret, decision, allows: Boolean(recruiting || reaction || flirted || amended || believed), spokenTopics: this.topics.recognise(text), offered, offers, claimable })
     // A claim the voice read: the engine judges it and books it as heard from the stranger; the stance sounds next turn.
@@ -841,7 +852,7 @@ export class Dialogue {
       this.learn(...named)
     }
 
-    talk.history.push({ speaker: 'player', text }, { speaker: 'npc', text: replyText })
+    talk.history.push({ speaker: 'player', text }, { speaker: 'npc', text: replyText, state: answerState(world, npcId) })
     if (talk.history.length > 12) talk.history.splice(0, talk.history.length - 12)
     this.heard(talk, text, replyText)
     // How the speaker calls the stranger: what their first answer in this band used stays (M10.28).
