@@ -42,6 +42,15 @@ export function storyLines(world: World, npcId: string): string[] {
     const stage = stageNow(world, quest)
     const line = stage?.knows?.[npcId]
     if (line) lines.push(`  ${quest.name}: ${line.trim()}`)
+    // A lie with a reason (M10.35 G): said as their own choice, until the stranger shows them otherwise.
+    const lie = stage?.lies?.[npcId]
+    if (lie) {
+      const q = (world.state.questlog ?? {})[quest.id] as QuestState | undefined
+      // Shown it (evidence of the story put before them): caught; the stranger knows better (a deed that shows it done): they may be.
+      const shown = Object.values(world.state.player.dossier ?? {}).some((e) => e.quest === quest.id && e.seen.includes(npcId) && e.from !== npcId)
+      const knows = lie.shown_by.some((id) => q?.done.includes(id))
+      lines.push(`  ${quest.name}: ${shown ? `the stranger has shown you it is not so. ${lie.caught.trim()}` : `what you tell the stranger, though it is not true, by your own choice (${lie.why.trim().replace(/[.!]$/, '')}): ${lie.says.trim()} Say it as your own.${knows ? ` The stranger may know better now: if they confront you with it, ${lie.caught.trim()}` : ''}`}`)
+    }
     // Where they may point the stranger (M10.35 C): the one thing they may recommend; without it, they do not know.
     if (stage && (line || stage.points?.[npcId])) lines.push(`  ${quest.name}, if the stranger asks what to do: ${pointing(world, stage, npcId)}`)
   }

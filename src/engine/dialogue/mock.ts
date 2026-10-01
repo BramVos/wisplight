@@ -233,7 +233,7 @@ export class MockLlm implements LlmClient {
       ...(main ? [{ name: 'Paid off', text: 'A payment closes the matter, if not the questions.', solution: true, way: 'give', say: 'pay the debt', at: at(0), with: giver.key, skill: '' }] : []),
       { name: 'Let slide', text: 'Nobody sees to it, and it goes wrong.', solution: false, way: 'fail', say: 'give up the matter', at: at(0), with: '', skill: '' },
     ]
-    const line = (kind: string, giver: { key: string; name: string }, title: string, stages: (ReturnType<typeof stage> & { lived?: unknown; word?: string; gives?: string })[], extra: Record<string, unknown> = {}) => ({
+    const line = (kind: string, giver: { key: string; name: string }, title: string, stages: (Omit<ReturnType<typeof stage>, 'knows'> & { knows: { who: string; line: string; points: string; lies?: string; why?: string; caught?: string }[]; lived?: unknown; word?: string; gives?: string })[], extra: Record<string, unknown> = {}) => ({
       name: title,
       kind,
       summary: `${first(giver)} has a matter in ${name}.`,
@@ -259,7 +259,7 @@ export class MockLlm implements LlmClient {
         : [
             line('request', a, `${first(a)}'s Errand`, [stage(`${first(a)} needs something fetched.`, 'fetch the parcel', at(1), undefined, 'The parcel is in your hands.', 'Fetch the parcel.', [a])]),
             ...(fullness !== 'outline'
-              ? [line('mystery', b!, 'The Moved Crate', [stage('A crate was moved in the night.', 'search the place', at(0), undefined, 'Marks lead to the door.', 'Search the place.', [b!]), stage('The marks lead out.', `ask ${first(a).toLowerCase()} about the crate`, at(0), a, 'It was only moved for the damp.', `Ask ${first(a)} about the crate.`, [a, b!])])]
+              ? [line('mystery', b!, 'The Moved Crate', [stage('A crate was moved in the night.', 'search the place', at(0), undefined, 'Marks lead to the door.', 'Search the place.', [b!]), { ...stage('The marks lead out.', `ask ${first(a).toLowerCase()} about the crate`, at(0), a, 'It was only moved for the damp.', `Ask ${first(a)} about the crate.`, [a, b!]), knows: [{ who: a.key, line: `${first(a)} knows the crate was moved for the damp.`, points: 'now', lies: 'The crate was never moved; it has always stood there.', why: 'to keep out of trouble over the damp', caught: 'Fine. I moved it, for the damp, and said nothing.' }] }])]
               : []),
             ...(fullness === 'full' ? [line('personal', c!, `What ${first(c)} Keeps`, [stage(`${first(c)} keeps something to themselves.`, `talk to ${first(c).toLowerCase()} about home`, at(0), c, `${first(c)} tells you, a little.`, `Talk to ${first(c)} about home.`, [c!])])] : []),
           ]

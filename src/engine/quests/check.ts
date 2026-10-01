@@ -137,6 +137,11 @@ export function checkQuests(c: Refs): string[] {
         npc(who, `${w}.${s.id}.points`)
         if (!['now', 'nothing'].includes(to) && !c.npcs.has(to) && !c.locations.has(to)) problems.push(`${w}.${s.id}.points: ${who} points to ${to}, which is not now, nothing, a person or a place`)
       }
+      // A lie is shown up by a deed of this quest or by someone who knows better (M10.35 G).
+      for (const [who, lie] of Object.entries(s.lies ?? {})) {
+        npc(who, `${w}.${s.id}.lies`)
+        for (const by of lie.shown_by) if (!c.npcs.has(by) && !(q.actions ?? []).some((a) => a.id === by)) problems.push(`${w}.${s.id}.lies: ${who}'s lie is shown up by ${by}, which is no deed of this quest and nobody`)
+      }
       for (const n of s.next) {
         target(n.to, `${w}.${s.id}.next`)
         for (const x of n.when) condition(x, `${w}.${s.id}.next`)
@@ -285,6 +290,14 @@ export function questWarnings(c: Refs): string[] {
     for (const a of q.actions ?? []) {
       const gives = GIVES_YOU.exec(a.text)
       if (gives && !a.effects.some((e) => 'give' in e || 'seize' in e || 'evidence' in e || 'learn' in e)) warnings.push(`quest ${q.id}, action ${a.id}: its text says "${gives[0]}", and nothing is given: add the thing (give) or evidence (evidence: id, name, text)`)
+    }
+    // A lie is a game, not a trap (M10.35 G): what shows it up is a deed the stranger can come to, or someone who knows
+    // better and says so at this stage; and it says no truth of the story before its time (its words are its own).
+    for (const s of q.stages ?? []) {
+      for (const [who, lie] of Object.entries(s.lies ?? {})) {
+        const reachable = lie.shown_by.some((by) => (q.actions ?? []).some((a) => a.id === by) || Boolean(s.knows?.[by]) || Boolean(q.stages?.some((x) => x.knows?.[by])))
+        if (!reachable) warnings.push(`quest ${q.id}, stage ${s.id}: ${who}'s lie has no way to be shown up (a deed of this quest, or someone who knows better at a stage): it is a trap, not a game`)
+      }
     }
     // Somebody points the way (M10.35 C): a stage people know of where nobody may point anywhere leaves the stranger with
     // "I don't know" from all.

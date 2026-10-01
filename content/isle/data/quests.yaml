@@ -31,6 +31,9 @@ quests:
           npc_garrick: loc_skerrow_headland
           npc_tamsin: npc_elowen
           npc_elowen: nothing
+        # Brannoc's lie (M10.35 G): mending the Kittiwake shows it up.
+        lies:
+          npc_brannoc: { says: "The Kittiwake is past mending; her seams are rotten through, and no sail would save her.", why: "he has been afraid of the crossing since Ysolde died, and the boat is easier to blame", caught: "Brannoc looks at the new seams a long while, and says it was never the boat.", shown_by: [mend_kittiwake] }
         on_enter: [{ learn: grey_gull }]
     actions:
       # Brannoc's boat: a sail from the wreck, pitch from the Kettle, and a man who has to be brave.

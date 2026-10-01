@@ -339,7 +339,7 @@ A list; each has:
 | opponents | People who stand against the stranger in it; their death changes the quest. | list of text | no | [] |
 | starts | How it begins: talking to one of these, a place, or conditions. | a map: talk, at, when, at_start | no | {"talk":[],"at":[],"when":[],"at_star... |
 | ask | What the giver says when it begins. | text | no |  |
-| stages | The stages in order: what the journal says at each, and when it is reached. | list of a map: id, text, goal, asks, knows, points, on_enter, next | no | [] |
+| stages | The stages in order: what the journal says at each, and when it is reached. | list of a map: id, text, goal, asks, knows, lies, points, on_enter, next | no | [] |
 | actions | What the stranger can do in it besides talking (give, show, use), and what that does. | list of a map: id, say, intent, at, with, when, not_yet, check, effects, fail, ... | no | [] |
 | outcomes | The ways it can end: when, what the journal says, and what follows. | list of a map: id, name, text, solution, when, effects, news | no | [] |
 | truths | What the story keeps hidden (M10.30): the guard refuses a reply or an improvisation that names one before its stage, so people do not each tell their own plot. | list of a map: text, words, from, when | no | [] |
@@ -351,6 +351,8 @@ A list; each has:
 A stage may have `goal`, what the stranger can do now in one line for the journal and QUESTS ("Recover the recordings from the Listening Room"), and `knows`, per person with a part (npc id) what they know of the story at this stage and may say, a sentence with their name ("Tessa knows the coupling was never synced; she does not know who took the pages."). That goes to their voice as all they know of it, and to an improvisation at a place of the story; a person without a line talks as before.
 
 A stage may have `points`, per person with a part (npc id): where they may point the stranger at this stage, the only thing they may recommend: `now` (the Now line), a person (npc id), a place (location id) or `nothing`. Without it, asked what to do, they say they do not know. Check names a stage people know of where nobody points anywhere.
+
+A stage may have `lies`, per person with a part (npc id): what they say that is not true (`says`), why (`why`, for their voice only), how they take being shown otherwise (`caught`), and what shows it up (`shown_by`: a deed of the quest or someone who knows better). The voice says it as its own choice until the stranger shows them evidence of the story; the quest page never shows a lie as a fact. Check names a lie with no way to be shown up.
 
 A quest action without `with` is typed with the verb of a thing at its place: a detail's `verbs`, the details of an object there, a thing carried, or a verb of the game (look, search, read, use, open, take, give); Check names one that is only a sentence, and its goal names the verb. Only an action with `with` can happen in a talk with that person. Each action done shows as "You <intent>. (<quest>, <stage> of <stages>)".
 

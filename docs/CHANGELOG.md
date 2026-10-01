@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.35 deel: een leugen heeft een reden (G), 1 oktober 2026
+
+- **Leugens (G).** Spelers nemen een onwaarheid met een motief, en keren zich af van iemand die zonder reden liegt. Een stadium kan nu per persoon een leugen hebben: wat hij zegt, waarom, wat het ontkracht en hoe hij reageert als je hem ermee confronteert. In The Quiet Reach zegt Sorell tot en met stadium 4 dat de gaten in het archief van het falende station komen. Na het kopiëren van de opnamen weet zijn stem dat jij beter kunt weten. Laat je hem de kopieën zien (`show the copies to ilyan`), dan is hij betrapt. Op Skerrow geeft Brannoc de Kittiwake de schuld, tot ze gerepareerd is.
+- **Geen val.** Een leugen zonder weg om haar te ontkrachten is een val, en Check zegt het. De questpagina toont nooit een leugen. Drie mensen die hetzelfde gerucht doorvertellen, zijn geen drie bevestigingen; een test bewijst dat.
+- **Bij de bron.** De stap Verhalen en de nachtronde vragen bij een verdachte of hij liegt en waarom, en de daad van het stadium ontkracht het.
+
+Testen: in The Quiet Reach Sorell vragen naar de gaten, de opnamen kopiëren, en hem de kopieën laten zien. Dat leest pas goed met een model. Tests in `tests/m1035lies.test.ts`.
+
+Kosten: geen nieuwe aanroep. Wie liegt, krijgt één regel meer (zo'n 40 tokens). De stap Verhalen krijgt 110 tokens meer, de nachtronde 60, de wereldstappen 110.
+
+Wat de editor en de kroniekverteller leerden: het veld `lies` met zijn beschrijving in `docs/CONTENT.md`, een regel onder Check en een controle bij het laden. Verder de stap Verhalen in de wereldgids en `docs/NEW-WORLD.md`, en lies, why en caught in het schema van een schets. Skerrow heeft Brannoc; Deepwell heeft geen verhalen.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 14, alinea "Stand na M10.35: een leugen heeft een reden".
+
 ## M10.35 deel: waar iemand heen mag wijzen (C), 1 oktober 2026
 
 - **Points (C).** Oorzaak: de kennis per stadium zei wat iemand weet, niet waar hij je heen mag sturen. Daardoor kreeg "wat moet ik doen?" een verzonnen aanwijzing. Nu zegt elk stadium per persoon waar die je heen mag wijzen: de Now-regel, een persoon, een plek of niets. Dat is het enige wat de stem mag aanraden. Zonder `points` zegt ze eerlijk dat ze het niet weet. In The Quiet Reach stuurt Mara je bij het begin naar Niko, Edda weet het niet, en Sorell wijst niets aan zodra het om de onderdelen gaat. Op Skerrow stuurt Maren je naar Brannoc.

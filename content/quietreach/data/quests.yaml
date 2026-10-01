@@ -279,6 +279,9 @@ quests:
           npc_tessa_rook: npc_niko_serrin
           npc_edda_vale: nothing
           npc_sana_holt: npc_niko_serrin
+        # Sorell's lie about the gaps (M10.35 G): copying the recordings shows the rewritten timestamps.
+        lies:
+          npc_ilyan_sorell: { says: "The gaps in the archive are where the failing station dropped whole minutes; the receiver has been losing data for months.", why: "to keep the drive test and the Peregrine out of it", caught: "Shown the copies, Ilyan goes quiet for a long moment, then says he will explain it aboard the Peregrine, and not in front of anyone else.", shown_by: [a2] }
         next:
           - when:
               - { flag: story_the_orison_recordings_1 }
@@ -304,6 +307,9 @@ quests:
           npc_niko_serrin: now
           npc_mara_venn: nothing
           npc_tessa_rook: nothing
+        # Sorell's lie about the gaps (M10.35 G): copying the recordings shows the rewritten timestamps.
+        lies:
+          npc_ilyan_sorell: { says: "The gaps in the archive are where the failing station dropped whole minutes; the receiver has been losing data for months.", why: "to keep the drive test and the Peregrine out of it", caught: "Shown the copies, Ilyan goes quiet for a long moment, then says he will explain it aboard the Peregrine, and not in front of anyone else.", shown_by: [a2] }
         next:
           - when:
               - { flag: story_the_orison_recordings_2 }
@@ -323,6 +329,9 @@ quests:
           npc_ilyan_sorell: now
           npc_mara_venn: nothing
           npc_tessa_rook: nothing
+        # Sorell's lie about the gaps (M10.35 G): copying the recordings shows the rewritten timestamps.
+        lies:
+          npc_ilyan_sorell: { says: "The gaps in the archive are where the failing station dropped whole minutes; the receiver has been losing data for months.", why: "to keep the drive test and the Peregrine out of it", caught: "Shown the copies, Ilyan goes quiet for a long moment, then says he will explain it aboard the Peregrine, and not in front of anyone else.", shown_by: [a2] }
         next:
           - when:
               - { flag: story_the_orison_recordings_3 }
@@ -343,6 +352,9 @@ quests:
           npc_mara_venn: npc_tessa_rook
           npc_niko_serrin: npc_tessa_rook
           npc_ilyan_sorell: nothing
+        # Sorell's lie about the gaps (M10.35 G): copying the recordings shows the rewritten timestamps.
+        lies:
+          npc_ilyan_sorell: { says: "The gaps in the archive are where the failing station dropped whole minutes; the receiver has been losing data for months.", why: "to keep the drive test and the Peregrine out of it", caught: "Shown the copies, Ilyan goes quiet for a long moment, then says he will explain it aboard the Peregrine, and not in front of anyone else.", shown_by: [a2] }
         next:
           - when:
               - { flag: story_the_orison_recordings_4 }

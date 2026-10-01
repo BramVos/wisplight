@@ -55,7 +55,7 @@ export interface SketchStage {
   asks?: string
   /** What each person knows at this stage and may say, by key. */
   /** And where each may point the stranger then (M10.35 C): now, nothing, or the key of a person or a place. */
-  knows?: { who: string; line: string; points?: string }[]
+  knows?: { who: string; line: string; points?: string; lies?: string; why?: string; caught?: string }[]
   /**
    * A stage the stranger has already lived in the game the step was shown
    * (M10.30, retroactive stories): the key of the person it was talked through
@@ -140,7 +140,7 @@ export function sketchSchema(): Record<string, unknown> {
       stages: {
         type: 'array',
         items: object(
-          { text, say: text, at: text, with: text, skill: text, done: text, goal: text, asks: text, knows: { type: 'array', items: object({ who: text, line: text, points: text }, ['points']) }, lived: object({ who: text, words: { type: 'array', items: text } }), word: text, gives: text },
+          { text, say: text, at: text, with: text, skill: text, done: text, goal: text, asks: text, knows: { type: 'array', items: object({ who: text, line: text, points: text, lies: text, why: text, caught: text }, ['points', 'lies', 'why', 'caught']) }, lived: object({ who: text, words: { type: 'array', items: text } }), word: text, gives: text },
           ['goal', 'asks', 'knows', 'lived', 'word', 'gives'],
         ),
       },
@@ -279,7 +279,19 @@ export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSket
     )
     const goal = fit(s.goal, 160)
     const asks = fit(s.asks?.replace(/^["“]|["”]$/g, ''), 240)
-    stages.push({ id: `s${i + 1}`, text: fit(s.text, 240)!, ...(goal ? { goal } : {}), ...(asks ? { asks } : {}), ...(Object.keys(knows).length ? { knows } : {}), ...(Object.keys(points).length ? { points } : {}), next })
+    // A lie with a reason (M10.35 G): shown up by this stage's deed, or by the first ending's at the last.
+    const deedEnd = endings.findIndex((e) => !spoken(e))
+    const shownBy = word ? undefined : !last || !endings.length ? `a${i + 1}` : deedEnd >= 0 ? `e${deedEnd + 1}` : undefined
+    const lies = Object.fromEntries(
+      (s.knows ?? []).flatMap((k) => {
+        const who = shownBy ? scope.person(k.who) : undefined
+        const says = fit(k.lies, 240)
+        const why = fit(k.why, 200)
+        const caught = fit(k.caught, 240)
+        return who && says && why && caught && shownBy ? [[who, { says, why, caught, shown_by: [shownBy] }]] : []
+      }),
+    )
+    stages.push({ id: `s${i + 1}`, text: fit(s.text, 240)!, ...(goal ? { goal } : {}), ...(asks ? { asks } : {}), ...(Object.keys(knows).length ? { knows } : {}), ...(Object.keys(points).length ? { points } : {}), ...(Object.keys(lies).length ? { lies } : {}), next })
     if ((last && endings.length) || word) return
     actions.push(deed(`a${i + 1}`, s, fit(s.done, 400)!, [...(i > 0 ? [{ flag: `${id}_${i}` }] : []), { not_flag: flag }], [{ set: flag }, ...held(s, fit(s.done, 400))]))
   })

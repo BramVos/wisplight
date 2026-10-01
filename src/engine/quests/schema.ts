@@ -278,6 +278,20 @@ export const StageSchema = z
       .record(z.string(), z.string())
       .optional()
       .describe('Per person with a part (npc id): what they know of the story at this stage and may say, one or two sentences with their name ("Tessa knows the coupling was never synced; she does not know who took the pages."). It goes to their voice, and to an improvisation at a place of the story, as all that is known of it. Without it a person talks as before.'),
+    lies: z
+      .record(
+        z.string(),
+        z
+          .object({
+            says: z.string().describe('What they tell the stranger at this stage that is not true, in a sentence ("The gaps are where the failing station dropped whole minutes").'),
+            why: z.string().describe('Why they say it, for their voice only and never shown: to protect the Peregrine and the programme.'),
+            caught: z.string().describe('How they take it when the stranger shows them it is not so: what they say then, a sentence or two.'),
+            shown_by: z.array(z.string()).min(1).describe('What shows it is not so: a deed of this quest (its id) whose doing shows it, or a person (npc id) who knows better and may say so.'),
+          })
+          .strict(),
+      )
+      .optional()
+      .describe('Per person with a part (npc id): a lie with a reason at this stage (M10.35 G): what they say, why, what shows otherwise, and how they take being shown. The voice says it as its own choice, the guard lets this untruth through and only this one, and the quest page never shows it as a fact.'),
     points: z
       .record(z.string(), z.string())
       .optional()
