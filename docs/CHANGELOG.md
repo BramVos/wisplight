@@ -1,5 +1,17 @@
 # Changelog
 
+## M10.34 deel: vertelling en effect zijn één uitkomst (A), 1 oktober 2026
+
+- **Geen daad die niet gebeurde (A).** Oorzaak, in `readImprovisation`: werd een effect van een improvisatie geweigerd (een ding dat hier niet kan opduiken, een toestand die niet mag), dan werd het effect `nothing`. Maar de vertelling bleef op het scherm, de melk was op, en de vertelling leefde door als herinnering voor de volgende daad en voor de kroniekverteller. Nu vraagt het spel de vertelling één keer opnieuw: alleen wat de vreemdeling ziet, en er verandert niets. Wordt het effect weer geweigerd, dan komt de eigen regel van het ding. `spent` geldt alleen bij een effect dat blijft staan, en alleen een aanvaarde vertelling wordt herinnering. Opgelost in de motor, voor elke wereld.
+
+Testen: met een model, giet melk over de eik op de Kabouterberg. Tests in `tests/m1034a.test.ts`; de test van M10.16 volgt de nieuwe weg.
+
+Kosten: geen nieuwe soort aanroep. Een geweigerd effect kost één tweede improvisatie (zo'n 400 tokens uitvoer op het stemmodel). In de opgenomen improvisaties kwam dat niet voor.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: geen wijziging.
+
 ## M10.33 deel: de verhalen van de Nethermarch zeggen wat je nu kunt doen (bij E), 1 oktober 2026
 
 - **Een Now-regel en een vraag van de gever bij elk verhaal.** Van de Nethermarch hadden alleen de grijze kat en de dwaallichten een "Now"-regel. De andere zestien stadia hadden er geen, dus het dagboek en QUESTS zeiden niet wat je kon doen, en de gever opende geen gesprek met wat hij wilde. Nu heeft elk stadium er een, met een `asks` in de stem van de gever. Mirte zegt "lamb" en zweert bij Saint Brand. Aaltje antwoordt met een vraag, Wouter zegt weinig. Bij een verhaal met meer afloop noemt de regel de wegen zonder wat eruit komt: "End the Goat-Riders' toll on the Vaart, by force, by cunning or by law." Geen regel verklapt een verborgen waarheid. Na de overstroming zegt de kat "keep looking for Fenna", niet wie de kat is.

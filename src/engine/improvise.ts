@@ -252,9 +252,10 @@ export function readImprovisation(world: World, imp: Improvisable, text: string)
     ...(raw.title ? { title: String(raw.title).slice(0, 80) } : {}),
   }
   const refused = allowed(world, imp.def, effect, imp.target)
-  // What was offered goes only when the answer says so and the content lets it.
-  const spent = parsed.spent === true && imp.def.takes && Boolean(imp.item)
-  return refused ? { narration, effect: { kind: 'nothing' }, spent, refused } : { narration, effect, spent }
+  // What was offered goes only when the answer says so, the content lets it, and the effect stands (M10.34 A: a
+  // refused effect spent the milk all the same).
+  const spent = !refused && parsed.spent === true && imp.def.takes && Boolean(imp.item)
+  return refused ? { narration, effect: { kind: 'nothing' }, spent: false, refused } : { narration, effect, spent }
 }
 
 /**

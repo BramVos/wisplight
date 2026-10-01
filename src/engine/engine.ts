@@ -1196,17 +1196,21 @@ export class Engine {
     const recorder = this.recorder
     if (!recorder || !this.world.aiLive) return improviseFallback(this.world, imp)
     try {
-      const reply = await recorder.complete({ ...improviseRequest(this.world, imp), timeoutMs: 10000 })
-      const read = readImprovisation(this.world, imp, reply.text)
+      const request = improviseRequest(this.world, imp)
+      let read = readImprovisation(this.world, imp, (await recorder.complete({ ...request, timeoutMs: 10000 })).text)
+      // Narration and effect are one outcome (M10.34 A: a refused effect left a narration of a deed that did not
+      // happen, and it lived on as a memory): asked once more with nothing changing, else the thing's own line.
+      if (!('problem' in read) && read.refused) {
+        this.world.guard['bounds'] = (this.world.guard['bounds'] ?? 0) + 1
+        recorder.report?.({ reason: 'bounds', role: 'voice', fixed: `effect refused: ${read.refused}` })
+        const again = `${request.prompt}\nNOTE: what you proposed cannot happen here (${read.refused}). Tell it again: only what the stranger sees and feels, and nothing changes (effect nothing, spent false).`
+        read = readImprovisation(this.world, imp, (await recorder.complete({ ...request, prompt: again, timeoutMs: 10000 })).text)
+        if (!('problem' in read) && read.refused) return improviseFallback(this.world, imp, { kind: 'checks', message: 'the effect was refused twice' })
+      }
       if ('problem' in read) {
         this.world.guard[read.problem] = (this.world.guard[read.problem] ?? 0) + 1
         recorder.report?.({ reason: read.problem, role: 'voice' })
         return improviseFallback(this.world, imp, { kind: 'checks', message: 'the answer did not pass' })
-      }
-      // An effect outside what the content allows is refused; the narration stays (a noted rejection, not a failure).
-      if (read.refused) {
-        this.world.guard['bounds'] = (this.world.guard['bounds'] ?? 0) + 1
-        recorder.report?.({ reason: 'bounds', role: 'voice', fixed: `effect refused: ${read.refused}` })
       }
       return applyImprovisation(this.world, imp, read.narration, read.effect, read.spent)
     } catch (error) {

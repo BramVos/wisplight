@@ -70,11 +70,14 @@ describe('M10.16: improvisation where the rules know no way', () => {
     expect(mock.calls.filter((c) => c.schemaName === 'improvise')).toEqual([])
   })
 
-  it('an effect outside what the content allows is refused: the narration stays, nothing else happens', async () => {
+  // Since M10.34 A the narration of a refused effect never stands: asked again with nothing changing, and refused
+  // again (this model says the same each time), the thing's own line.
+  it('an effect outside what the content allows is refused: asked again, then the thing\'s own line, nothing else happens', async () => {
     const llm = scripted({ narration: 'You pour it out. A loaf lies there that was not there before.', effect: { kind: 'item', id: 'rye_bread', delta: 0, title: '' } })
     const engine = await atTheHill(llm)
     const out = said(await engine.handle('pour milk on the oak'))
-    expect(out).toBe('You pour it out. A loaf lies there that was not there before.')
+    expect(out).toMatch(/^The hill keeps its silence/)
+    expect(out).not.toMatch(/A loaf lies there/)
     expect(engine.state.player.inventory['rye_bread'] ?? 0).toBe(0)
     expect(llm.reports).toEqual([expect.objectContaining({ reason: 'bounds', fixed: expect.stringMatching(/effect refused: item is not something this may do/) })])
   })
