@@ -39,8 +39,11 @@ export function wantsNow(world: World, npcId: string): { quest: Quest; state: Qu
 export function storyLines(world: World, npcId: string): string[] {
   const lines: string[] = []
   for (const quest of world.content.quests.values()) {
-    const line = stageNow(world, quest)?.knows?.[npcId]
+    const stage = stageNow(world, quest)
+    const line = stage?.knows?.[npcId]
     if (line) lines.push(`  ${quest.name}: ${line.trim()}`)
+    // Where they may point the stranger (M10.35 C): the one thing they may recommend; without it, they do not know.
+    if (stage && (line || stage.points?.[npcId])) lines.push(`  ${quest.name}, if the stranger asks what to do: ${pointing(world, stage, npcId)}`)
   }
   // How a story ended, as they saw or heard it (M10.34 G): only what reached them, and a thank-you once.
   lines.push(...endingLines(world, npcId))
@@ -48,6 +51,25 @@ export function storyLines(world: World, npcId: string): string[] {
   const wants = wantsNow(world, npcId)
   if (wants?.asks) lines.push(`  ${wants.quest.name}, what you want of the stranger now: ${wants.asks}`)
   return lines.length ? ['THE STORY AS YOU KNOW IT: this is all you know of it. Say no more of it than this; never make up what happened, who did it or why, and what you do not know, say you do not know.', ...lines] : []
+}
+
+/** What someone may point the stranger to now, in plain words (M10.35 C): for what the voice may ask the stranger to do. */
+export function pointsOf(world: World, npcId: string): string[] {
+  return [...world.content.quests.values()].flatMap((quest) => {
+    const stage = stageNow(world, quest)
+    const to = stage?.points?.[npcId]
+    if (!stage || !to || to === 'nothing') return []
+    if (to === 'now') return stage.goal ? [stage.goal] : []
+    return world.content.npcs.has(to) ? [world.npc(to).name] : world.content.locations.has(to) ? [world.location(to).name] : []
+  })
+}
+
+/** Where someone may point the stranger at a stage, in words for their voice. */
+function pointing(world: World, stage: Stage, npcId: string): string {
+  const to = stage.points?.[npcId]
+  const goal = stage.goal?.trim().replace(/[.!]+$/, '')
+  const there = to && world.content.npcs.has(to) ? `send them to ${world.npc(to).name}` : to && world.content.locations.has(to) ? `send them to ${world.location(to).name}` : to === 'now' && goal ? `point them to this, in your own words: ${goal}` : undefined
+  return there ? `you may ${there}, and recommend nothing else.` : 'say honestly that you do not know, and recommend nothing.'
 }
 
 /** The endings a person saw or heard of, as they know them; whether they spoke of it with the stranger before. */

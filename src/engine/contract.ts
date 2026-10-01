@@ -27,6 +27,8 @@ export const FIELD_NOTES: Record<string, string[]> = {
   // M10.30: people told their own plot of the recordings in The Quiet Reach; a stage says what each knows.
   quests: [
     'A stage may have `goal`, what the stranger can do now in one line for the journal and QUESTS ("Recover the recordings from the Listening Room"), and `knows`, per person with a part (npc id) what they know of the story at this stage and may say, a sentence with their name ("Tessa knows the coupling was never synced; she does not know who took the pages."). That goes to their voice as all they know of it, and to an improvisation at a place of the story; a person without a line talks as before.',
+    // M10.35 C: what to do came as a made-up hint, for knows said what people know, not where they may send the stranger.
+    'A stage may have `points`, per person with a part (npc id): where they may point the stranger at this stage, the only thing they may recommend: `now` (the Now line), a person (npc id), a place (location id) or `nothing`. Without it, asked what to do, they say they do not know. Check names a stage people know of where nobody points anywhere.',
     // M10.33 AA: the voice chose world deeds for the player in a talk, and "trace the antenna fault" was only a sentence.
     'A quest action without `with` is typed with the verb of a thing at its place: a detail\'s `verbs`, the details of an object there, a thing carried, or a verb of the game (look, search, read, use, open, take, give); Check names one that is only a sentence, and its goal names the verb. Only an action with `with` can happen in a talk with that person. Each action done shows as "You <intent>. (<quest>, <stage> of <stages>)".',
     // M10.33 E: nobody ever opened a talk with what they wanted.

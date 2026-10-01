@@ -278,6 +278,10 @@ export const StageSchema = z
       .record(z.string(), z.string())
       .optional()
       .describe('Per person with a part (npc id): what they know of the story at this stage and may say, one or two sentences with their name ("Tessa knows the coupling was never synced; she does not know who took the pages."). It goes to their voice, and to an improvisation at a place of the story, as all that is known of it. Without it a person talks as before.'),
+    points: z
+      .record(z.string(), z.string())
+      .optional()
+      .describe('Per person with a part (npc id): where they may point the stranger at this stage, the only thing they may recommend (M10.35 C): now (the stage\'s Now line), a person (npc id), a place (location id), or nothing. Without it, asked what to do, they say honestly that they do not know.'),
     on_enter: z.array(QuestEffectSchema).default([]),
     next: z.array(z.object({ when: z.array(ConditionSchema).min(1), to: z.string(), effects: z.array(QuestEffectSchema).default([]) }).strict()).default([]),
   })

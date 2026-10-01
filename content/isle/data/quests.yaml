@@ -24,6 +24,13 @@ quests:
           npc_garrick: Garrick knows the Lamp of Skerrow wants three casks of oil in its bowl and a keeper at the wick, and that ships would stand in to its light.
           npc_tamsin: Old Tamsin knows the old gentleman sleeps in the barrow on the heights, soundest by day, and how a careful body goes in and comes out again.
           npc_elowen: Elowen knows the waystone in her tower could open a way to the mainland, but it sleeps without its key.
+        # Where each may point the stranger, the one thing they may recommend (M10.35 C).
+        points:
+          npc_maren: npc_brannoc
+          npc_brannoc: nothing
+          npc_garrick: loc_skerrow_headland
+          npc_tamsin: npc_elowen
+          npc_elowen: nothing
         on_enter: [{ learn: grey_gull }]
     actions:
       # Brannoc's boat: a sail from the wreck, pitch from the Kettle, and a man who has to be brave.

@@ -1,5 +1,18 @@
 # Changelog
 
+## M10.35 deel: waar iemand heen mag wijzen (C), 1 oktober 2026
+
+- **Points (C).** Oorzaak: de kennis per stadium zei wat iemand weet, niet waar hij je heen mag sturen. Daardoor kreeg "wat moet ik doen?" een verzonnen aanwijzing. Nu zegt elk stadium per persoon waar die je heen mag wijzen: de Now-regel, een persoon, een plek of niets. Dat is het enige wat de stem mag aanraden. Zonder `points` zegt ze eerlijk dat ze het niet weet. In The Quiet Reach stuurt Mara je bij het begin naar Niko, Edda weet het niet, en Sorell wijst niets aan zodra het om de onderdelen gaat. Op Skerrow stuurt Maren je naar Brannoc.
+- **Bij de bron.** Check meldt een stadium waarin niemand ergens heen wijst. De stap Verhalen en de nachtronde schrijven het per persoon.
+
+Testen: in The Quiet Reach vraag je Mara, Edda en Sorell "What should I do?" en kijk je wie waarheen wijst. Dat leest pas goed met een model. Tests in `tests/m1035points.test.ts`.
+
+Kosten: geen nieuwe aanroep. Een gesprek met iemand die een verhaal kent, krijgt één regel meer (zo'n 20 tokens). De stap Verhalen krijgt 90 tokens meer, de nachtronde 55, de wereldstappen 90.
+
+Wat de editor en de kroniekverteller leerden: het veld `points` met zijn beschrijving in `docs/CONTENT.md`, een regel onder Check en een controle bij het laden. Verder de stap Verhalen in de wereldgids en `docs/NEW-WORLD.md`, en `points` in het schema van een schets. Skerrow heeft het; Deepwell heeft geen verhalen.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 14, alinea "Stand na M10.35: waar iemand heen mag wijzen".
+
 ## M10.35 deel: verzonnen aanwijzingen geteld (E, de telling), 1 oktober 2026
 
 - **De leesscore telt verzonnen aanwijzingen (E).** Oorzaak: de telling van M10.33 W telde verzonnen feiten per antwoord, maar geen verzonnen aanwijzingen. Toch kost een valse aanwijzing de speler een uur, en een vals feit een zin. De lezer telt nu per antwoord ook `hints`: de handelingen, vindplaatsen, dingen om te halen en mensen die je zouden binnenlaten waar het antwoord de speler heen wijst, terwijl de GIVEN ze niet bevat. Een gok naar iemands beweegredenen telt niet. De voorbeelden in de opdracht van de lezer komen uit Brams transcripten: "the multimeter under the bench", "bring the last three run logs", "ask Sorell for the raw power traces", "photograph it", "Mara can let you in".
@@ -15,6 +28,7 @@ Kosten: geen; een leesronde krijgt per antwoord een getal meer, een paar tokens.
 Wat de editor en de kroniekverteller leerden: niets.
 
 Ontwerp: geen wijziging.
+
 ## M10.35 deel: een verhalenbank per persoon (A), 1 oktober 2026
 
 - **Verhalen (A).** Oorzaak: wat leuk was, kwam alleen uit het model, want een persoon had feiten, voorbeeldzinnen en kennis, en geen verhalen. Nu heeft elke persoon in de drie werelden drie kleine ware verhalen, over echte mensen en plekken. Sana houdt de stoelen aan de lange tafel zoals ze waren. Garrick kent de nacht van elk wrak. Dirck vergeeft de man nooit die op de grote schaal leunde.

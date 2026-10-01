@@ -54,7 +54,8 @@ export interface SketchStage {
   /** What the giver wants of the stranger at this stage, in their voice (M10.33 E): they open a talk with it. */
   asks?: string
   /** What each person knows at this stage and may say, by key. */
-  knows?: { who: string; line: string }[]
+  /** And where each may point the stranger then (M10.35 C): now, nothing, or the key of a person or a place. */
+  knows?: { who: string; line: string; points?: string }[]
   /**
    * A stage the stranger has already lived in the game the step was shown
    * (M10.30, retroactive stories): the key of the person it was talked through
@@ -139,7 +140,7 @@ export function sketchSchema(): Record<string, unknown> {
       stages: {
         type: 'array',
         items: object(
-          { text, say: text, at: text, with: text, skill: text, done: text, goal: text, asks: text, knows: { type: 'array', items: object({ who: text, line: text }) }, lived: object({ who: text, words: { type: 'array', items: text } }), word: text, gives: text },
+          { text, say: text, at: text, with: text, skill: text, done: text, goal: text, asks: text, knows: { type: 'array', items: object({ who: text, line: text, points: text }, ['points']) }, lived: object({ who: text, words: { type: 'array', items: text } }), word: text, gives: text },
           ['goal', 'asks', 'knows', 'lived', 'word', 'gives'],
         ),
       },
@@ -267,9 +268,18 @@ export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSket
     const next = !last ? [word ? { when: [word], to: `s${i + 2}`, effects: [{ set: flag }, { text: fit(s.done, 400)! }, ...held(s, fit(s.done, 400))] } : { when: [{ flag }], to: `s${i + 2}` }, ...lived] : []
     // What each person knows at this stage and may say (M10.30), by id.
     const knows = Object.fromEntries((s.knows ?? []).flatMap((k) => (scope.person(k.who) && fit(k.line, 300) ? [[scope.person(k.who)!, fit(k.line, 300)!]] : [])))
+    // Where each may point (M10.35 C): now, nothing, a person or a place of the keys given.
+    const points = Object.fromEntries(
+      (s.knows ?? []).flatMap((k) => {
+        const who = scope.person(k.who)
+        const to = (k.points ?? '').trim().toLowerCase()
+        const target = to === 'now' || to === 'nothing' ? to : (scope.person(to) ?? scope.place(to))
+        return who && target ? [[who, target]] : []
+      }),
+    )
     const goal = fit(s.goal, 160)
     const asks = fit(s.asks?.replace(/^["“]|["”]$/g, ''), 240)
-    stages.push({ id: `s${i + 1}`, text: fit(s.text, 240)!, ...(goal ? { goal } : {}), ...(asks ? { asks } : {}), ...(Object.keys(knows).length ? { knows } : {}), next })
+    stages.push({ id: `s${i + 1}`, text: fit(s.text, 240)!, ...(goal ? { goal } : {}), ...(asks ? { asks } : {}), ...(Object.keys(knows).length ? { knows } : {}), ...(Object.keys(points).length ? { points } : {}), next })
     if ((last && endings.length) || word) return
     actions.push(deed(`a${i + 1}`, s, fit(s.done, 400)!, [...(i > 0 ? [{ flag: `${id}_${i}` }] : []), { not_flag: flag }], [{ set: flag }, ...held(s, fit(s.done, 400))]))
   })

@@ -34,6 +34,12 @@ quests:
           npc_jan_visser: Jan knows Fenna went into the Kattenbroek and did not come back. He says the fen took her, and he blames the widow who lives there.
           npc_pim: Pim knows his sister went towards the cat fen, and he knows a secret way there over the hard ground from the cuttings. He does not know what became of her.
           npc_kaatje: Kaatje knows what became of Fenna Visser and keeps it to herself; only her secret, once she tells it, says it.
+        # Where each may point the stranger, the one thing they may recommend (M10.35 C).
+        points:
+          npc_grietje_visser: npc_aaltje
+          npc_jan_visser: nothing
+          npc_pim: npc_aaltje
+          npc_kaatje: nothing
         next:
           - when: [{ any: [{ flag: cat_is_fenna }, { flag: "secret:npc_kaatje:fenna_lied" }] }]
             to: the_cat_is_fenna
@@ -44,6 +50,10 @@ quests:
         knows:
           npc_grietje_visser: Grietje knows the grey cat is her Fenna, turned by the widow of the Kattenbroek, and she will give anything to have her back.
           npc_jan_visser: Jan knows the widow turned his girl into a cat, and he wants her hut burnt.
+        # Where each may point the stranger, the one thing they may recommend (M10.35 C).
+        points:
+          npc_grietje_visser: npc_aaltje
+          npc_jan_visser: nothing
         on_enter:
           - { set: cat_is_fenna }
           - { learn: cat_widow }

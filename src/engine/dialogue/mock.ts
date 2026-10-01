@@ -147,8 +147,8 @@ export class MockLlm implements LlmClient {
         giver: asker.key,
         ask: 'You said you would help. Go and look, and tell me what you find.',
         stages: [
-          { text: `${first} asked you to look into it.`, goal: 'Look round where it happened.', asks: 'Look round where it happened, if you would.', say: 'look round the place', at: places[0]!, with: '', skill: '', done: 'You find signs that someone has been here before you.', knows: [{ who: asker.key, line: `${first} knows what they asked, and no more.` }] },
-          { text: 'There were signs; someone else knows more.', goal: `Tell ${first} what you found.`, asks: 'Come back and tell me what you found.', say: `tell ${first.toLowerCase()} what you found`, at: places[1] ?? places[0]!, with: asker.key, skill: '', done: `${first} listens, and nods slowly.`, knows: other ? [{ who: other.key, line: `${other.name.split(' ')[0]} saw someone there, late.` }] : [] },
+          { text: `${first} asked you to look into it.`, goal: 'Look round where it happened.', asks: 'Look round where it happened, if you would.', say: 'look round the place', at: places[0]!, with: '', skill: '', done: 'You find signs that someone has been here before you.', knows: [{ who: asker.key, line: `${first} knows what they asked, and no more.`, points: 'now' }] },
+          { text: 'There were signs; someone else knows more.', goal: `Tell ${first} what you found.`, asks: 'Come back and tell me what you found.', say: `tell ${first.toLowerCase()} what you found`, at: places[1] ?? places[0]!, with: asker.key, skill: '', done: `${first} listens, and nods slowly.`, knows: other ? [{ who: other.key, line: `${other.name.split(' ')[0]} saw someone there, late.`, points: asker.key }] : [] },
         ],
         outcome: { name: 'Looked into', text: `${first} knows now, and is easier for it.` },
         // Three ways it may end (M10.30): told, set right, or let go.
@@ -223,7 +223,8 @@ export class MockLlm implements LlmClient {
       with: who?.key ?? '',
       skill: '',
       done,
-      knows: knows.map((k) => ({ who: k.key, line: `${first(k)} knows only what ${first(k)} saw, and says no more.` })),
+      // The first may point to the Now line (M10.35 C); the others know nothing to recommend.
+      knows: knows.map((k, i) => ({ who: k.key, line: `${first(k)} knows only what ${first(k)} saw, and says no more.`, points: i === 0 ? 'now' : 'nothing' })),
     })
     // Three ways to end (M10.30): talking it through, doing something with the world, and letting it go wrong; the main line a third solution.
     const endings = (giver: { key: string; name: string }, main: boolean) => [

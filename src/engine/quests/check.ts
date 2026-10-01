@@ -132,6 +132,11 @@ export function checkQuests(c: Refs): string[] {
       for (const e of s.on_enter) effect(e, `${w}.${s.id}`, stages, outcomes)
       // What people know per stage (M10.30): someone of this world.
       for (const who of Object.keys(s.knows ?? {})) npc(who, `${w}.${s.id}.knows`)
+      // Where people may point (M10.35 C): someone, to now, nothing, a person or a place there is.
+      for (const [who, to] of Object.entries(s.points ?? {})) {
+        npc(who, `${w}.${s.id}.points`)
+        if (!['now', 'nothing'].includes(to) && !c.npcs.has(to) && !c.locations.has(to)) problems.push(`${w}.${s.id}.points: ${who} points to ${to}, which is not now, nothing, a person or a place`)
+      }
       for (const n of s.next) {
         target(n.to, `${w}.${s.id}.next`)
         for (const x of n.when) condition(x, `${w}.${s.id}.next`)
@@ -280,6 +285,12 @@ export function questWarnings(c: Refs): string[] {
     for (const a of q.actions ?? []) {
       const gives = GIVES_YOU.exec(a.text)
       if (gives && !a.effects.some((e) => 'give' in e || 'seize' in e || 'evidence' in e || 'learn' in e)) warnings.push(`quest ${q.id}, action ${a.id}: its text says "${gives[0]}", and nothing is given: add the thing (give) or evidence (evidence: id, name, text)`)
+    }
+    // Somebody points the way (M10.35 C): a stage people know of where nobody may point anywhere leaves the stranger with
+    // "I don't know" from all.
+    for (const s of q.stages ?? []) {
+      const pointing = Object.values(s.points ?? {}).filter((to) => to !== 'nothing')
+      if (Object.keys(s.knows ?? {}).length && !pointing.length) warnings.push(`quest ${q.id}, stage ${s.id}: nobody may point the stranger anywhere (points), so whoever is asked what to do says they do not know`)
     }
     // An ending people can tell (M10.34 G): one that speaks to the stranger ("you") is told by witnesses in its news.
     for (const o of q.outcomes ?? []) {

@@ -15,6 +15,11 @@ quests:
           npc_mara_venn: Mara knows three crates of heating and water spares are missing from her count; she does not know where they went or who moved them.
           npc_ilyan_sorell: Dr Sorell knows he relisted the spares as research stock for a Peregrine test; he will not say so unless he is shown the manifest.
           npc_sana_holt: Sana knows Mara has been recounting the stores at night; she knows nothing of where the spares went.
+        # Where each may point the stranger, the one thing they may recommend (M10.35 C).
+        points:
+          npc_mara_venn: now
+          npc_ilyan_sorell: nothing
+          npc_sana_holt: npc_mara_venn
         next:
           - when:
               - { flag: story_short_on_the_count_1 }
@@ -27,6 +32,10 @@ quests:
         knows:
           npc_mara_venn: Mara knows the spares are still missing from her count; she does not yet know the stranger has traced them to Sorell's entry.
           npc_ilyan_sorell: Dr Sorell knows the stranger has seen the manifest; he admits relisting the spares for a Peregrine test and says he meant to return them.
+        # Where each may point the stranger, the one thing they may recommend (M10.35 C).
+        points:
+          npc_mara_venn: npc_ilyan_sorell
+          npc_ilyan_sorell: nothing
         next:
           - when:
               - { flag: story_short_on_the_count_2 }
@@ -38,6 +47,10 @@ quests:
         knows:
           npc_mara_venn: Mara knows Sorell relisted the emergency spares for a Peregrine test and has agreed to return them; she is angry, but she keeps it to the count.
           npc_ilyan_sorell: Dr Sorell knows the stranger has told Mara; he is returning the spares and expects her to hold it against him.
+        # Where each may point the stranger, the one thing they may recommend (M10.35 C).
+        points:
+          npc_mara_venn: now
+          npc_ilyan_sorell: nothing
         next: []
     actions:
       - id: a1
@@ -141,6 +154,10 @@ quests:
         knows:
           npc_tessa_rook: Tessa knows the drive readings drift during tests in a way she cannot explain; she does not know why, and she will not guess past her own numbers.
           npc_ilyan_sorell: Dr Sorell knows Tessa has doubts about the drive; he believes the drift is instrument noise and says so.
+        # Where each may point the stranger, the one thing they may recommend (M10.35 C).
+        points:
+          npc_tessa_rook: now
+          npc_ilyan_sorell: nothing
         next:
           - when:
               - { flag: story_a_second_opinion_1 }
@@ -152,6 +169,10 @@ quests:
         knows:
           npc_tessa_rook: Tessa knows the stranger has read her notes; she wants an honest answer, not comfort, and she means to decide whether to raise her doubt openly.
           npc_ilyan_sorell: Dr Sorell knows only that Tessa has been talking to the stranger; he does not know what she showed them.
+        # Where each may point the stranger, the one thing they may recommend (M10.35 C).
+        points:
+          npc_tessa_rook: now
+          npc_ilyan_sorell: nothing
         next: []
     actions:
       - id: a1
@@ -250,6 +271,14 @@ quests:
           npc_tessa_rook: Tessa Rook knows the Peregrine's drive is not ready for a crewed journey; she will not discuss its tests with a newcomer.
           npc_edda_vale: Edda Vale knows the coastal path is dangerous in bad weather, and she reminds the stranger where the recovery cradle is.
           npc_sana_holt: Sana Holt knows Niko has been sleeping badly and going up the ridge alone more often than his roster says.
+        # Where each may point the stranger, the one thing they may recommend (M10.35 C).
+        points:
+          npc_ilyan_sorell: now
+          npc_niko_serrin: now
+          npc_mara_venn: npc_niko_serrin
+          npc_tessa_rook: npc_niko_serrin
+          npc_edda_vale: nothing
+          npc_sana_holt: npc_niko_serrin
         next:
           - when:
               - { flag: story_the_orison_recordings_1 }
@@ -269,6 +298,12 @@ quests:
           npc_niko_serrin: Niko Serrin knows the archive was never meant to have gaps; he is shaken to hear of them and swears he never cut a recording.
           npc_mara_venn: Mara Venn knows the parts are still missing, and she wonders aloud whether anyone at the port is keeping two sets of books.
           npc_tessa_rook: Tessa Rook knows only that the stranger came back from the ridge; she still keeps the drive to herself.
+        # Where each may point the stranger, the one thing they may recommend (M10.35 C).
+        points:
+          npc_ilyan_sorell: now
+          npc_niko_serrin: now
+          npc_mara_venn: nothing
+          npc_tessa_rook: nothing
         next:
           - when:
               - { flag: story_the_orison_recordings_2 }
@@ -282,6 +317,12 @@ quests:
           npc_ilyan_sorell: Ilyan Sorell knows nothing of the bypass and is relieved the fault has an ordinary cause; he still says nothing about the cut segments.
           npc_mara_venn: Mara Venn knows the missing parts are heating and water stock, entered as research stock under the research programme's code.
           npc_tessa_rook: Tessa Rook knows the Peregrine's last test drew on parts that never came through her own requisitions.
+        # Where each may point the stranger, the one thing they may recommend (M10.35 C).
+        points:
+          npc_niko_serrin: nothing
+          npc_ilyan_sorell: now
+          npc_mara_venn: nothing
+          npc_tessa_rook: nothing
         next:
           - when:
               - { flag: story_the_orison_recordings_3 }
@@ -296,6 +337,12 @@ quests:
           npc_mara_venn: Mara Venn knows the missing parts went into the Peregrine, and she wants the one who diverted them to answer for it in front of the port.
           npc_niko_serrin: Niko Serrin knows the cut segments were the ones that repeated most regularly; he has theories about the match but no proof of any of them.
           npc_ilyan_sorell: Ilyan Sorell knows the stranger has spoken with Tessa; he waits aboard the Peregrine for them to come to him.
+        # Where each may point the stranger, the one thing they may recommend (M10.35 C).
+        points:
+          npc_tessa_rook: nothing
+          npc_mara_venn: npc_tessa_rook
+          npc_niko_serrin: npc_tessa_rook
+          npc_ilyan_sorell: nothing
         next:
           - when:
               - { flag: story_the_orison_recordings_4 }
@@ -311,6 +358,14 @@ quests:
           npc_niko_serrin: Niko Serrin knows his bypass caused the failure, and that the edits were Sorell's; he wants the complete recordings kept safe.
           npc_edda_vale: Edda Vale knows only what the port now says in the Commons, and she asks the stranger what they intend to put in their report.
           npc_sana_holt: Sana Holt knows the Commons is divided over the news, and she keeps the evening meal going regardless.
+        # Where each may point the stranger, the one thing they may recommend (M10.35 C).
+        points:
+          npc_ilyan_sorell: nothing
+          npc_tessa_rook: now
+          npc_mara_venn: now
+          npc_niko_serrin: nothing
+          npc_edda_vale: nothing
+          npc_sana_holt: nothing
         next: []
     actions:
       - id: a1

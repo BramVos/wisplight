@@ -33,7 +33,7 @@ import { oathsOf, peopleIds, turnEnd, turnMessage, turnSections, withoutRules, w
 import { attitude, applyEffect, moodOf, relation, type Attitude } from './relations'
 import { askLine, askNow, knownRequests, requestName, visited } from '../requests'
 import { questsOf } from '../life'
-import { hiddenNamed, wantsNow } from '../quests/knows'
+import { hiddenNamed, wantsNow, pointsOf } from '../quests/knows'
 import { falseHint } from './hints'
 import { rightClaimed, rightLine, verdictFor, wantOf } from './verdict'
 import { doableHere } from '../doable'
@@ -974,7 +974,7 @@ export class Dialogue {
   private doableWords(npcId: string): Set<string> {
     const world = this.world
     const wants = wantsNow(world, npcId)
-    const texts = [...doableHere(world).map((d) => d.command), wants?.stage.goal ?? '', wants?.asks ?? '', ...knownRequests(world).filter((r) => r.npc === npcId && r.status === 'open').map((r) => askLine(world, r))]
+    const texts = [...doableHere(world).map((d) => d.command), wants?.stage.goal ?? '', wants?.asks ?? '', ...knownRequests(world).filter((r) => r.npc === npcId && r.status === 'open').map((r) => askLine(world, r)), ...pointsOf(world, npcId)]
     return new Set(texts.join(' ').toLowerCase().match(/[a-z]+/g) ?? [])
   }
 
