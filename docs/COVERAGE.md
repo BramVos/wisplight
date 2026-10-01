@@ -59,14 +59,14 @@ Every kind puts what stays the same first and what changes after it (M10.26). A 
 | `far_place` | claude-opus-5-5 | 894 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `district` | claude-opus-5-5 | 1,551 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `night_quest` | claude-opus-5-5 | 1,911 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
-| `region_story` | claude-opus-5-5 | 17,339 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
+| `region_story` | claude-opus-5-5 | 17,378 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `weave` | claude-opus-5-5 | 1,010 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `expansion` | claude-opus-5-5 | 3,437 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `land` | claude-opus-5-5 | 2,847 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `tides` | claude-opus-5-5 | 645 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
-| `builder_draft` | claude-opus-5-5 | 15,663 | one, an hour | 9,313 | - | 512 | the next call 59% |
-| `world_step` | claude-opus-5-5 | 8,806 | shared and own, an hour | 6,783 | 6,623 | 512 | the next call 77%; one about someone or something else 75% |
-| `world_enhance` | claude-opus-5-5 | 18,378 | one, an hour | 9,027 | - | 512 | the next call 49% |
+| `builder_draft` | claude-opus-5-5 | 15,702 | one, an hour | 9,313 | - | 512 | the next call 59% |
+| `world_step` | claude-opus-5-5 | 8,846 | shared and own, an hour | 6,822 | 6,662 | 512 | the next call 77%; one about someone or something else 75% |
+| `world_enhance` | claude-opus-5-5 | 18,417 | one, an hour | 9,027 | - | 512 | the next call 49% |
 | `world_polish` | claude-sonnet-5 | 11,493 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `map_paint` | claude-haiku-4-5-20251001 | 1,469 | one, an hour | 1,455 | - | 4,096 | nothing: the fixed part is under the minimum |
 | `palette_draft` | claude-opus-5-5 | 10,145 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |

@@ -1,0 +1,334 @@
+Every ending of every story, each played by a real route from a new game (M10.34 B; protocol: docs/PLAYTEST.md).
+Nothing but what a player types: no build command. "# load the save" marks a way tried again from before.
+
+## The Quiet Reach (quietreach): 10 of 10 endings reached
+
+story_short_on_the_count / end1: REACHED, 0 game hours, 9 lines
+  begin passed, s1 passed, s2 passed, s3 passed
+  typed: talk the port coordinator | bye | Compare the cargo manifests at the Arrival Lock | go east | go east | Ask Sorell about the spares | go northwest | go southwest | tell mara about spares
+
+story_short_on_the_count / end2: REACHED, 1 game hours, 16 lines
+  begin passed, s1 passed, s2 passed, s3 passed
+  typed: talk the port coordinator | bye | Compare the cargo manifests at the Arrival Lock | go east | go east | Ask Sorell about the spares | go northwest | go in | go southeast | talk the chief engineer | Tell me about the Peregrine Hangar. | bye | go northwest | type 7411 | go in | carry crates back
+
+story_short_on_the_count / end3: REACHED, 0 game hours, 7 lines
+  begin passed, s1 passed, s2 passed, s3 passed
+  typed: talk the port coordinator | bye | Compare the cargo manifests at the Arrival Lock | go east | go east | Ask Sorell about the spares | keep quiet about spares
+
+story_a_second_opinion / end1: REACHED, 0 game hours, 7 lines
+  begin passed, s1 passed, s2 passed
+  typed: go east | go east | talk the chief engineer | bye | Hear Tessa out in the Commons | go north | read tessa's test notes
+
+story_a_second_opinion / end2: REACHED, 1 game hours, 10 lines
+  begin passed, s1 passed, s2 passed
+  typed: go east | go east | talk the chief engineer | bye | Hear Tessa out in the Commons | go out | go northeast | go up | wait 60 | ask niko to check readings
+
+story_a_second_opinion / end3: REACHED, 1 game hours, 8 lines
+  begin passed, s1 passed, s2 passed
+  typed: go east | go east | talk the chief engineer | bye | Hear Tessa out in the Commons | go north | wait 60 | tell tessa it is only noise
+
+story_the_orison_recordings / end1: REACHED, 26 game hours, 46 lines
+  begin passed, s1 passed, s2 passed, s3 passed, s4 passed, s5 passed
+  typed: go east | go east | Ask Niko about the station | go out | go northeast | go up | Copy the original recordings in the Orison Listening Room | search | search hatch | go in | Trace the antenna feed where it runs under the floor | go out | go down | go southwest | go in | go northwest | Ask Tessa about the drive test | go in | type 7411 | go in | go up | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | confront sorell about recordings
+
+story_the_orison_recordings / end2: REACHED, 2 game hours, 19 lines
+  begin passed, s1 passed, s2 passed, s3 passed, s4 passed, s5 passed
+  typed: go east | go east | Ask Niko about the station | go out | go northeast | go up | Copy the original recordings in the Orison Listening Room | search | search hatch | go in | Trace the antenna feed where it runs under the floor | go out | go down | go southwest | go in | go northwest | Ask Tessa about the drive test | go southeast | play recordings in commons
+
+story_the_orison_recordings / end3: REACHED, 3 game hours, 22 lines
+  begin passed, s1 passed, s2 passed, s3 passed, s4 passed, s5 passed
+  typed: go east | go east | Ask Niko about the station | go out | go northeast | go up | Copy the original recordings in the Orison Listening Room | search | search hatch | go in | Trace the antenna feed where it runs under the floor | go out | go down | go southwest | go in | go northwest | Ask Tessa about the drive test | go southeast | go out | go northeast | go up | leave recordings with niko
+
+story_the_orison_recordings / end4: REACHED, 26 game hours, 46 lines
+  begin passed, s1 passed, s2 passed, s3 passed, s4 passed, s5 passed
+  typed: go east | go east | Ask Niko about the station | go out | go northeast | go up | Copy the original recordings in the Orison Listening Room | search | search hatch | go in | Trace the antenna feed where it runs under the floor | go out | go down | go southwest | go in | go northwest | Ask Tessa about the drive test | go in | type 7411 | go in | go up | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | keep sorell's secret
+
+## Skerrow (isle): 4 of 4 endings reached
+
+off_skerrow / in_the_kittiwake: REACHED, 5 game hours, 20 lines
+  begin passed, stranded passed
+  typed: take bolt of sailcloth | go north | go east | go east | buy pot of pitch | go west | go south | give sail to brannoc | # load the save from before, to try talk with Brannoc about his dead wife and his fear of the crossing instead | take bolt of sailcloth | go north | go east | go east | buy pot of pitch | go west | go south | give sail to brannoc | ask brannoc to sail me | ask brannoc to sail me | ask brannoc to sail me
+
+off_skerrow / a_ship_for_the_light: REACHED, 39 game hours, 60 lines
+  begin passed, stranded passed
+  typed: go north | go north | go east | take cask of lamp oil | take cask of lamp oil | go south | go west | go south | take cask of lamp oil | take cask of lamp oil | go north | go east | go east | buy cask of lamp oil | go west | go north | fill beacon | ask garrick to tend beacon | ask garrick to tend beacon | ask garrick to tend beacon | light beacon | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60
+
+off_skerrow / through_the_waystone: REACHED, 4 game hours, 18 lines
+  begin passed, stranded passed
+  typed: go north | go north | go in | ask tamsin about barrow | go out | go south | go east | go south | buy salt fish | go north | go north | go west | go north | enter barrow | go south | go east | go north | give key to elowen
+
+off_skerrow / winter_closes_the_sea: REACHED, 960 game hours, 161 lines
+  begin passed, stranded passed
+  typed: wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours
+
+## The Nethermarch (base): 32 of 67 endings reached
+
+grey_cat_on_the_doorstep / paid: REACHED, 21 game hours, 58 lines
+  begin passed, missing passed, the_cat_is_fenna passed, the_widows_price passed
+  typed: go north | go west | talk Grietje Visser | bye | Find out what happened to Fenna Visser | look at cat | look at cat | # load the save from before, to try ask aaltje about cat instead | go east | go north | go west | Find out what happened to Fenna Visser | ask aaltje about cat | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | go east | go south | go north | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | walk to Upstairs at the Goose | travel to Upstairs at the Goose | walk to The Drowned Goose | walk to Upstairs at the Goose | travel to Upstairs at the Goose | walk to The Drowned Goose | walk to Upstairs at the Goose | travel to Upstairs at the Goose | walk to The Drowned Goose | walk to Upstairs at the Goose | travel to Upstairs at the Goose | walk to The Drowned Goose | walk to Upstairs at the Goose | travel to Upstairs at the Goose | walk to The Drowned Goose | go in | go up | take chest | take chest | take chest | walk to The Black Pools | walk to The Black Pools | go east | go south | give chest to widow | bye
+
+grey_cat_on_the_doorstep / broken: NOT TESTED at the_widows_price (it needs 1 flask of moon water, and the stranger found none to take or buy (the deed that gives it did not)), 12 game hours, 55 lines
+  begin passed, missing passed, the_cat_is_fenna passed, the_widows_price not tested
+  typed: go north | go west | talk Grietje Visser | bye | Find out what happened to Fenna Visser | look at cat | look at cat | # load the save from before, to try ask aaltje about cat instead | go east | go north | go west | Find out what happened to Fenna Visser | ask aaltje about cat | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | go east | go south | go north | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | walk to The Shore of the Blackmere | travel to The Shore of the Blackmere | walk to the Blackmere | travel to the Blackmere | where is The Shore of the Blackmere | bye | walk to The Shore of the Blackmere | walk to The Shore of the Blackmere | travel to The Shore of the Blackmere | walk to the Blackmere | travel to the Blackmere | # load the save from before, to try pour moon water on cat instead | walk to The Shore of the Blackmere | travel to The Shore of the Blackmere | walk to the Blackmere | travel to the Blackmere | where is The Shore of the Blackmere | bye | walk to The Shore of the Blackmere | walk to The Shore of the Blackmere | travel to The Shore of the Blackmere | walk to the Blackmere | travel to the Blackmere
+
+grey_cat_on_the_doorstep / honest: REACHED, 21 game hours, 50 lines
+  begin passed, missing passed, the_cat_is_fenna passed, the_widows_price passed
+  typed: go north | go west | talk Grietje Visser | bye | Find out what happened to Fenna Visser | look at cat | look at cat | # load the save from before, to try ask aaltje about cat instead | go east | go north | go west | Find out what happened to Fenna Visser | ask aaltje about cat | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | go east | go south | go north | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | walk to Aaltje's Cottage | walk to Aaltje's Cottage | walk to Aaltje's Cottage | walk to Aaltje's Cottage | walk to Aaltje's Cottage | go north | go west | ask aaltje for draught | drink draught | go east | go south | go west | talk to cat | walk to The Black Pools | walk to The Black Pools | go east | go south | tell widow the truth
+
+grey_cat_on_the_doorstep / burned: REACHED, 12 game hours, 33 lines
+  begin passed, missing passed, the_cat_is_fenna passed, the_widows_price passed
+  typed: go north | go west | talk Grietje Visser | bye | Find out what happened to Fenna Visser | look at cat | look at cat | # load the save from before, to try ask aaltje about cat instead | go east | go north | go west | Find out what happened to Fenna Visser | ask aaltje about cat | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | go east | go south | go north | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | burn hut
+
+grey_cat_on_the_doorstep / fen_closed: REACHED, 197 game hours, 77 lines
+  begin passed, missing passed, the_cat_is_fenna passed, the_widows_price passed
+  typed: go north | go west | talk Grietje Visser | bye | Find out what happened to Fenna Visser | look at cat | look at cat | # load the save from before, to try ask aaltje about cat instead | go east | go north | go west | Find out what happened to Fenna Visser | ask aaltje about cat | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | go east | go south | go north | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours
+
+grey_cat_on_the_doorstep / widow_dead: NOT TESTED at the_widows_price (it ends by a death or by what befalls a place (on_death, on_place), not by a deed), 12 game hours, 32 lines
+  begin passed, missing passed, the_cat_is_fenna passed, the_widows_price not tested
+  typed: go north | go west | talk Grietje Visser | bye | Find out what happened to Fenna Visser | look at cat | look at cat | # load the save from before, to try ask aaltje about cat instead | go east | go north | go west | Find out what happened to Fenna Visser | ask aaltje about cat | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | go east | go south | go north | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60
+
+the_vissers_to_safety / in_waagdam: NOT TESTED at begin (it begins from another story (The Grey Cat on the Doorstep), not by itself), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_vissers_to_safety / at_the_goose: NOT TESTED at begin (it begins from another story (The Grey Cat on the Doorstep), not by itself), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_vissers_to_safety / at_the_priory: NOT TESTED at begin (it begins from another story (The Grey Cat on the Doorstep), not by itself), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_vissers_to_safety / rescued_by_others: NOT TESTED at begin (it begins from another story (The Grey Cat on the Doorstep), not by itself), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_vissers_to_safety / lost: NOT TESTED at begin (it begins from another story (The Grey Cat on the Doorstep), not by itself), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+flour_for_veenhoek / flour_brought: REACHED, 13 game hours, 104 lines
+  begin passed, no_flour passed
+  typed: go north | go east | talk Mirte the baker | bye | go west | go northeast | go east | go east | go east | go east | go east | go east | go south | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | # load the save from before, to try give rye to mirte instead | go west | go northeast | go east | go east | go east | go east | go east | go east | go south | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | buy sack of rye | buy sack of rye | go north | go east | give rye to mirte
+
+flour_for_veenhoek / mill_turns: NOT TESTED at no_flour (object: a route cannot make it happen ({"object":"loc_molenend_mill/de_zwaan","state":{"broken":false}})), 0 game hours, 4 lines
+  begin passed, no_flour not tested
+  typed: go north | go east | talk Mirte the baker | bye
+
+flour_for_veenhoek / rumour_exposed: REACHED, 1 game hours, 13 lines
+  begin passed, no_flour passed
+  typed: go north | go east | talk Mirte the baker | bye | go west | go northeast | go east | go in | confront kobus | confront kobus | confront kobus | go out | expose rumour
+
+flour_for_veenhoek / market_day_passed: REACHED, 125 game hours, 27 lines
+  begin passed, no_flour passed
+  typed: go north | go east | talk Mirte the baker | bye | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours
+
+the_surveyors_lights / reported: REACHED, 13 game hours, 40 lines
+  begin passed, lights passed, the_stone passed
+  typed: go north | go northeast | go northeast | go east | talk Klaas the miller's lad | bye | go west | go west | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | Watch the lights in Harmen's Field | Watch the lights in Harmen's Field | go east | go southwest | go southwest | go north | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | wait 60 | report harmen
+
+the_surveyors_lights / blackmailed: REACHED, 12 game hours, 48 lines
+  begin passed, lights passed, the_stone passed
+  typed: go north | go northeast | go northeast | go east | talk Klaas the miller's lad | bye | go west | go west | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | Watch the lights in Harmen's Field | Watch the lights in Harmen's Field | go east | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | go west | go north | blackmail harmen | bye | blackmail harmen | bye | blackmail harmen | bye | blackmail harmen | bye | blackmail harmen | bye | blackmail harmen
+
+the_surveyors_lights / stone_back: REACHED, 29 game hours, 82 lines
+  begin passed, lights passed, the_stone passed
+  typed: go north | go northeast | go northeast | go east | talk Klaas the miller's lad | bye | go west | go west | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | Watch the lights in Harmen's Field | Watch the lights in Harmen's Field | go east | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | wait 60 | go east | go west | go north | tell harmen to put stone back | tell harmen to put stone back | tell harmen to put stone back | tell harmen to put stone back | tell harmen to put stone back | tell harmen to put stone back | go south | go west | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back | wait 60 | put stone back
+
+the_surveyors_lights / harmen_dead: NOT TESTED at the_stone (it ends by a death or by what befalls a place (on_death, on_place), not by a deed), 5 game hours, 19 lines
+  begin passed, lights passed, the_stone not tested
+  typed: go north | go northeast | go northeast | go east | talk Klaas the miller's lad | bye | go west | go west | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | wait 60 | Watch the lights in Harmen's Field | Watch the lights in Harmen's Field | Watch the lights in Harmen's Field
+
+what_the_haakman_wants / bargain: NOT TESTED at begin (it did not begin: it waits for the de_zwaan at The Mill De Zwaan to be not broken, which no deed of the stranger's does), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+what_the_haakman_wants / driven_off: NOT TESTED at begin (it did not begin: it waits for the de_zwaan at The Mill De Zwaan to be not broken, which no deed of the stranger's does), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+what_the_haakman_wants / named: NOT TESTED at begin (it did not begin: it waits for the de_zwaan at The Mill De Zwaan to be not broken, which no deed of the stranger's does), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+what_the_haakman_wants / revenge: NOT TESTED at begin (it did not begin: it waits for the de_zwaan at The Mill De Zwaan to be not broken, which no deed of the stranger's does), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+milk_for_the_kabouters / seven_nights: REACHED, 340 game hours, 578 lines
+  begin passed, mischief passed
+  typed: wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | go north | go west | talk Grietje Visser | bye | go east | go northeast | go east | go in | buy jug of milk | go out | go west | go southwest | go south | go west | go south | go southwest | go southwest | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | go northeast | go northeast | go north | go east | go north | go northeast | go east | go in | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | go out | go west | go southwest | go south | go west | go south | go southwest | go southwest | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | go northeast | go northeast | go north | go east | go north | go northeast | go east | go in | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | go out | go west | go southwest | go south | go west | go south | go southwest | go southwest | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | go northeast | go northeast | go north | go east | go north | go northeast | go east | go in | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | go out | go west | go southwest | go south | go west | go south | go southwest | go southwest | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | go northeast | go northeast | go north | go east | go north | go northeast | go east | go in | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | go out | go west | go southwest | go south | go west | go south | go southwest | go southwest | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | go northeast | go northeast | go north | go east | go north | go northeast | go east | go in | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | go out | go west | go southwest | go south | go west | go south | go southwest | go southwest | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | go northeast | go northeast | go north | go east | go north | go northeast | go east | go in | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | wait 60 | buy jug of milk | go out | go west | go southwest | go south | go west | go south | go southwest | go southwest | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk | wait 60 | leave milk
+
+milk_for_the_kabouters / pim_pays: REACHED, 210 game hours, 250 lines
+  begin passed, mischief passed
+  typed: wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | go north | go west | talk Grietje Visser | bye | ask pim about kabouters | go east | go northeast | go east | go in | buy jug of milk | buy jug of milk | buy jug of milk | buy jug of milk | buy jug of milk | buy jug of milk | buy jug of milk | go out | go west | go southwest | go west | ask pim to leave milk | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60
+
+milk_for_the_kabouters / apology: REACHED, 49 game hours, 56 lines
+  begin passed, mischief passed
+  typed: wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | go north | go west | talk Grietje Visser | bye | ask pim about kabouters | go east | ask aaltje to apologise | wait 60
+
+milk_for_the_kabouters / trapped: REACHED, 64 game hours, 96 lines
+  begin passed, mischief passed
+  typed: wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | go north | go west | talk Grietje Visser | bye | go east | go northeast | go east | go east | go east | go east | go north | buy coil of rope | wait 60 | buy coil of rope | wait 60 | buy coil of rope | wait 60 | buy coil of rope | wait 60 | buy coil of rope | wait 60 | buy coil of rope | wait 60 | buy coil of rope | wait 60 | buy coil of rope | wait 60 | buy coil of rope | wait 60 | buy coil of rope | wait 60 | buy coil of rope | wait 60 | buy coil of rope | wait 60 | buy coil of rope | go south | go west | go west | pay | go west | go west | go west | go west | go south | go southwest | go southwest | set trap
+
+the_goat_riders_toll / camp_broken: NOT TESTED at toll (the flag riders_broken is set by no deed of the story (the encounter goat_riders_camp sets it)), 1 game hours, 7 lines
+  begin passed, toll not tested
+  typed: go north | go northeast | go east | go in | go north | talk Trijntje the innkeeper | bye
+
+the_goat_riders_toll / exposed: REACHED, 13 game hours, 27 lines
+  begin passed, toll passed
+  typed: go north | go northeast | go east | go in | go north | talk Trijntje the innkeeper | bye | walk to The Goat-Riders' Camp | travel to The Goat-Riders' Camp | walk to the Rietdoolhof | travel to the Rietdoolhof | where is The Goat-Riders' Camp | walk to The Goat-Riders' Camp | where is the Rietdoolhof | bye | walk to the Rietdoolhof | walk to The Goat-Riders' Camp | travel to The Goat-Riders' Camp | walk to the Rietdoolhof | go south | go south | spy on camp | spy on camp | spy on camp | walk to The Drowned Goose, Common Room | go in | expose trick
+
+the_goat_riders_toll / legal_toll: REACHED, 15 game hours, 47 lines
+  begin passed, toll passed
+  typed: go north | go northeast | go east | go in | go north | talk Trijntje the innkeeper | bye | go south | go out | go east | go east | go east | go east | go northeast | go east | ask pen for toll letter | go west | ask aleid for toll letter | ask aleid for toll letter | ask aleid for toll letter | walk to Black Mathijs's Hut | travel to Black Mathijs's Hut | walk to the Rietdoolhof | travel to the Rietdoolhof | where is Black Mathijs's Hut | bye | walk to Black Mathijs's Hut | walk to Black Mathijs's Hut | travel to Black Mathijs's Hut | walk to the Rietdoolhof | go south | go south | go in | wait 60 | go in | wait 60 | go in | wait 60 | go in | wait 60 | go in | wait 60 | go in | wait 60 | wait 60 | wait 60 | give letter to mathijs
+
+the_goat_riders_toll / joined: NOT TESTED at toll (typing "join goat-riders" with Black Mathijs did not do the deed), 16 game hours, 45 lines
+  begin passed, toll not tested
+  typed: go north | go northeast | go east | go in | go north | talk Trijntje the innkeeper | bye | walk to Black Mathijs's Hut | travel to Black Mathijs's Hut | walk to the Rietdoolhof | travel to the Rietdoolhof | where is Black Mathijs's Hut | walk to Black Mathijs's Hut | where is the Rietdoolhof | bye | walk to the Rietdoolhof | walk to Black Mathijs's Hut | travel to Black Mathijs's Hut | walk to the Rietdoolhof | go south | go south | go in | wait 60 | go in | wait 60 | go in | wait 60 | go in | wait 60 | go in | wait 60 | go in | wait 60 | go in | wait 60 | wait 60 | wait 60 | join goat-riders | join goat-riders | join goat-riders | ask Black Mathijs to let you join the Goat-Riders | talk Black Mathijs | join goat-riders | talk Black Mathijs | ask Black Mathijs to let you join the Goat-Riders
+
+the_white_womens_riddle / solved: REACHED, 16 game hours, 35 lines
+  begin passed, the_riddle passed
+  typed: walk to The Giant-Bed at Reuzenrust | travel to The Giant-Bed at Reuzenrust | walk to Reuzenrust | travel to Reuzenrust | go north | go east | where is The Giant-Bed at Reuzenrust | bye | walk to The Giant-Bed at Reuzenrust | walk to The Giant-Bed at Reuzenrust | walk to The Giant-Bed at Reuzenrust | walk to Aaltje's Cottage | go north | go west | wait 60 | go west | wait 60 | go west | wait 60 | go west | wait 60 | go west | wait 60 | go west | wait 60 | go west | wait 60 | talk Old Aaltje | Tell me about the Night of the Water Wolf. | bye | walk to The Three Barrows | go east | answer riddle | answer riddle | answer riddle
+
+the_white_womens_riddle / offering: REACHED, 18 game hours, 35 lines
+  begin passed, the_riddle passed
+  typed: walk to The Giant-Bed at Reuzenrust | travel to The Giant-Bed at Reuzenrust | walk to Reuzenrust | travel to Reuzenrust | go north | go east | where is The Giant-Bed at Reuzenrust | bye | walk to The Giant-Bed at Reuzenrust | walk to The Giant-Bed at Reuzenrust | walk to The Giant-Bed at Reuzenrust | walk to The Bakery | go east | buy loaf of rye bread | wait 60 | buy loaf of rye bread | wait 60 | buy loaf of rye bread | wait 60 | buy loaf of rye bread | wait 60 | buy loaf of rye bread | wait 60 | buy loaf of rye bread | wait 60 | buy loaf of rye bread | wait 60 | buy loaf of rye bread | wait 60 | buy loaf of rye bread | wait 60 | buy loaf of rye bread | walk to The Three Barrows | go east | leave offering
+
+the_white_womens_riddle / walked_away: REACHED, 3 game hours, 12 lines
+  begin passed, the_riddle passed
+  typed: walk to The Giant-Bed at Reuzenrust | travel to The Giant-Bed at Reuzenrust | walk to Reuzenrust | travel to Reuzenrust | go north | go east | where is The Giant-Bed at Reuzenrust | bye | walk to The Giant-Bed at Reuzenrust | walk to The Giant-Bed at Reuzenrust | walk to The Giant-Bed at Reuzenrust | walk away
+
+the_drainage_question / charter: REACHED, 17 game hours, 52 lines
+  begin passed, the_survey passed
+  typed: go north | go northeast | go east | go in | talk Gerrit the peat-cutter | What do you need of me? | Tell me about the Holleveen. | Tell me about Graafhaven. | bye | talk Gerrit the peat-cutter | Tell me about the Fen Charter. | bye | go out | go west | go southwest | go north | go northwest | go northwest | go north | go north | search library | search library | search library | go south | go south | go southeast | go southeast | go south | go northeast | go east | go east | go east | go east | go east | go northeast | go east | wait 60 | go east | wait 60 | wait 60 | read charter | go west | present charter before council | walk to The Old Sluice | travel to The Old Sluice | walk to Oude Zijl | travel to Oude Zijl | where is The Old Sluice | bye | walk to The Old Sluice | walk to The Old Sluice | present charter before heemraad
+
+the_drainage_question / truth: NOT TESTED at the_survey (it needs 1 flask of moon water, and the stranger found none to take or buy (another story gives it: The Grey Cat on the Doorstep)), 1 game hours, 9 lines
+  begin passed, the_survey not tested
+  typed: go north | go northeast | go east | go in | talk Gerrit the peat-cutter | What do you need of me? | Tell me about the Holleveen. | Tell me about Graafhaven. | bye
+
+the_drainage_question / resistance: REACHED, 37 game hours, 72 lines
+  begin passed, the_survey passed
+  typed: go north | go northeast | go east | go in | talk Gerrit the peat-cutter | What do you need of me? | Tell me about the Holleveen. | Tell me about Graafhaven. | bye | go out | go west | go southwest | go south | go west | go south | go southwest | go southeast | pull stakes | wait 60 | pull stakes | wait 60 | pull stakes | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | pull stakes | go northwest | go northeast | go north | go east | go north | go northeast | go east | go in | go up | wait 60 | go up | wait 60 | go up | wait 60 | go up | wait 60 | go up | wait 60 | go up | wait 60 | go up | wait 60 | scare cornelis | scare cornelis | scare cornelis
+
+the_drainage_question / settlement: REACHED, 1 game hours, 18 lines
+  begin passed, the_survey passed
+  typed: go north | go northeast | go east | go in | talk Gerrit the peat-cutter | What do you need of me? | Tell me about the Holleveen. | Tell me about Graafhaven. | bye | propose settlement | propose settlement | propose settlement | propose settlement | propose settlement | propose settlement | propose settlement | propose settlement | propose settlement
+
+the_drainage_question / polder_comes_helped: NOT TESTED at the_survey (the stranger never found Cornelis de Wit awake and reachable in a day of looking), 289 game hours, 92 lines
+  begin passed, the_survey not tested
+  typed: go north | go northeast | go east | go in | talk Gerrit the peat-cutter | What do you need of me? | Tell me about the Holleveen. | Tell me about Graafhaven. | bye | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60
+
+the_drainage_question / polder_comes: REACHED, 264 game hours, 67 lines
+  begin passed, the_survey passed
+  typed: go north | go northeast | go east | go in | talk Gerrit the peat-cutter | What do you need of me? | Tell me about the Holleveen. | Tell me about Graafhaven. | bye | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours
+
+the_drainage_question / surveyor_dead: NOT TESTED at the_survey (it ends by a death or by what befalls a place (on_death, on_place), not by a deed), 1 game hours, 9 lines
+  begin passed, the_survey not tested
+  typed: go north | go northeast | go east | go in | talk Gerrit the peat-cutter | What do you need of me? | Tell me about the Holleveen. | Tell me about Graafhaven. | bye
+
+a_stall_at_the_market / council: REACHED, 14 game hours, 112 lines
+  begin passed, the_guild passed
+  typed: go north | go east | talk Mirte the baker | bye | go west | go northeast | go east | go east | go east | go east | go east | go east | go south | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | # load the save from before, to try give rye to mirte instead | go west | go northeast | go east | go east | go east | go east | go east | go east | go south | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | buy sack of rye | buy sack of rye | go north | go east | give rye to mirte | talk Mirte the baker | bye | go west | go west | go northeast | ask aleid | ask aleid | ask aleid
+
+a_stall_at_the_market / bribed: REACHED, 13 game hours, 109 lines
+  begin passed, the_guild passed
+  typed: go north | go east | talk Mirte the baker | bye | go west | go northeast | go east | go east | go east | go east | go east | go east | go south | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | # load the save from before, to try give rye to mirte instead | go west | go northeast | go east | go east | go east | go east | go east | go east | go south | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | buy sack of rye | buy sack of rye | go north | go east | give rye to mirte | talk Mirte the baker | bye | go west | go north | bribe baker
+
+a_stall_at_the_market / apprenticed: REACHED, 14 game hours, 111 lines
+  begin passed, the_guild passed
+  typed: go north | go east | talk Mirte the baker | bye | go west | go northeast | go east | go east | go east | go east | go east | go east | go south | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | # load the save from before, to try give rye to mirte instead | go west | go northeast | go east | go east | go east | go east | go east | go east | go south | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | buy sack of rye | buy sack of rye | go north | go east | give rye to mirte | talk Mirte the baker | bye | go west | go north | find a place | find a place | find a place
+
+a_stall_at_the_market / fair_passed: REACHED, 520 game hours, 192 lines
+  begin passed, the_guild passed
+  typed: go north | go east | talk Mirte the baker | bye | go west | go northeast | go east | go east | go east | go east | go east | go east | go south | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | buy sack of flour | wait 60 | # load the save from before, to try give rye to mirte instead | go west | go northeast | go east | go east | go east | go east | go east | go east | go south | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | wait 60 | buy sack of rye | buy sack of rye | buy sack of rye | go north | go east | give rye to mirte | talk Mirte the baker | bye | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours
+
+the_honest_scale / weighed: REACHED, 87 game hours, 136 lines
+  begin passed, accused passed
+  typed: go east | go east | go east | pay | go east | go east | go east | go north | go east | go west | go south | go south | talk Weighmaster Dirck | bye | go north | go north | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | go south | go west | go west | go northwest | go west | go west | go southwest | go north | go west | recruit Old Aaltje | go east | go south | go northeast | go east | go east | go east | go east | go east | go north | go south | go west | go west | go northwest | go west | go west | go southwest | go north | go west | wait 60 | go west | wait 60 | go west | wait 60 | go west | wait 60 | go west | wait 60 | go west | wait 60 | go west | wait 60 | go west | wait 60 | ask aaltje to be weighed | ask aaltje to be weighed | ask aaltje to be weighed | wait 60 | wait 60
+
+the_honest_scale / envoy_discredited: REACHED, 5 game hours, 24 lines
+  begin passed, accused passed
+  typed: go east | go east | go east | pay | go east | go east | go east | go north | go east | go west | go south | go south | talk Weighmaster Dirck | bye | go north | go west | go west | ask envoy | ask envoy | ask envoy | go east | go east | go north | expose envoy
+
+the_honest_scale / protected: REACHED, 2 game hours, 62 lines
+  begin passed, accused passed
+  typed: go east | go east | go east | pay | go east | go east | go east | go north | go east | go west | go south | go south | talk Weighmaster Dirck | bye | walk to Below the Hut on Stilts | travel to Below the Hut on Stilts | walk to the Kattenbroek | travel to the Kattenbroek | where is Below the Hut on Stilts | walk to Below the Hut on Stilts | where is the Kattenbroek | walk to the Kattenbroek | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | travel to the Kattenbroek | go west | where is The Black Pools | bye | walk to The Black Pools | go east | go south | ask widow about dirck | wait 60 | ask widow about dirck | wait 60 | ask widow about dirck | ask the widow about Dirck and her certificate from the Waag | talk the widow Kaatje | ask widow about dirck | talk the widow Kaatje | ask the widow about Dirck and her certificate from the Waag | # load the save from before, to try ask the widow about Dirck and her certificate from the Waag instead | ask dirck about widow | ask dirck about widow | ask dirck about widow | go north | go north | go up | burn ledger
+
+the_honest_scale / used: REACHED, 2 game hours, 59 lines
+  begin passed, accused passed
+  typed: go east | go east | go east | pay | go east | go east | go east | go north | go east | go west | go south | go south | talk Weighmaster Dirck | bye | walk to Below the Hut on Stilts | travel to Below the Hut on Stilts | walk to the Kattenbroek | travel to the Kattenbroek | where is Below the Hut on Stilts | walk to Below the Hut on Stilts | where is the Kattenbroek | walk to the Kattenbroek | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | wait 60 | walk to The Black Pools | travel to The Black Pools | walk to the Kattenbroek | travel to the Kattenbroek | go west | where is The Black Pools | bye | walk to The Black Pools | go east | go south | ask widow about dirck | wait 60 | ask widow about dirck | wait 60 | ask widow about dirck | ask the widow about Dirck and her certificate from the Waag | talk the widow Kaatje | ask widow about dirck | talk the widow Kaatje | ask the widow about Dirck and her certificate from the Waag | # load the save from before, to try ask the widow about Dirck and her certificate from the Waag instead | ask dirck about widow | ask dirck about widow | ask dirck about widow | threaten dirck
+
+the_honest_scale / hearing_lost: REACHED, 151 game hours, 40 lines
+  begin passed, accused passed
+  typed: go east | go east | go east | pay | go east | go east | go east | go north | go east | go west | go south | go south | talk Weighmaster Dirck | bye | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours | wait 6 hours
+
+the_brotherhoods_charter / recognised: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Gerrit Turfsteker has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_brotherhoods_charter / kept: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Gerrit Turfsteker has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_brotherhoods_charter / by_force: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Gerrit Turfsteker has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_apprentices_debt / reconciled: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Aaltje Hendriks has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_apprentices_debt / said_goodbye: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Aaltje Hendriks has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_apprentices_debt / a_letter: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Aaltje Hendriks has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_apprentices_debt / too_late: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Aaltje Hendriks has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+a_boat_and_a_bride / blessed: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Wouter Aalman has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+a_boat_and_a_bride / daughter_asked: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Wouter Aalman has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+a_boat_and_a_bride / eloped: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Wouter Aalman has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+a_boat_and_a_bride / no_boat: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Wouter Aalman has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_bell_of_kloosterveen / raised: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Wendela has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_bell_of_kloosterveen / faced: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Wendela has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_bell_of_kloosterveen / blessed: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Wendela has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_road_to_graafhaven / with_blessing: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Geesje Kroes has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_road_to_graafhaven / without: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Geesje Kroes has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+the_road_to_graafhaven / a_start: NOT TESTED at begin (it did not begin: a companion's own story: it opens when Geesje Kroes has travelled with the stranger to bond 3), 0 game hours, 0 lines
+  begin not tested
+  typed: 
+
+## Deepwell (other): 0 of 0 endings reached

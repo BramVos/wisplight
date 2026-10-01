@@ -1,4 +1,5 @@
 import type { Content, Location } from '../content'
+import { behindCodes } from '../exits'
 import { idWordsIn } from '../idwords'
 import { crossesLimits, readsAsInstruction } from '../safety'
 import { wordsOf } from '../said'
@@ -226,7 +227,10 @@ export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSket
     // M10.25: the harness found a deed at the market with an innkeeper who never leaves the inn: it moves to them.
     const who = withWho ? content.npcs.get(withWho) : undefined
     const at = scope.place(d.at)!
-    const where = who && ![who.home, who.work].includes(at) ? (who.work && scope.places.some((l) => l.id === who.work) ? who.work : who.home) : at
+    // Never behind a code nobody gave (M10.34 B: Sorell met on the Peregrine, behind the hangar code): at home instead.
+    const open = (id: string) => !behindCodes(content, id).length
+    const work = who?.work && scope.places.some((l) => l.id === who.work) && (open(who.work) || !open(who.home)) ? who.work : undefined
+    const where = who && ![who.home, who.work].includes(at) ? (work ?? who.home) : at
     return {
       id: key,
       say: [sayPattern(d.say)!],

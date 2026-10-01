@@ -7,11 +7,12 @@ import { recheckDraft, type Draft, type DraftChange } from './editor'
 import { worldPrefix } from './edit'
 import { storyReply, storySchema } from './growth/regionstory'
 import { DEED_RULE, endingProblems, placeThings, questFromSketch, readSketch, SKETCH_KINDS, type QuestSketch } from './quests/sketch'
+import { codeProblems } from './quests/playable'
 import { solvableProblems } from './quests/solvable'
 import { hasPlayed, type PlayedGame } from './played'
 import { worldText } from './safety'
 import { worldFixedPart } from './worldfixed'
-import { SECRET_PLACES_RULE, secretNote } from './exits'
+import { behindCodes, codeNote, SECRET_PLACES_RULE, secretNote } from './exits'
 
 // The step Stories of the world build (M10.30; the form set out with Bram on
 // 29 September 2026, after the Nethermarch: a main line from the stranger's
@@ -139,7 +140,7 @@ export function storiesRequest(files: ContentFile[], scope: StoryScope, fullness
     prompt: [
       `${scope.kind === 'main' ? 'THE WHOLE WORLD' : scope.kind === 'land' ? 'THE LAND BETWEEN' : 'THE SETTLEMENT'}: ${scope.name}. ${scope.areas.map((a) => content.areas.get(a)?.summary ?? '').filter(Boolean).join(' ')}`,
       'PLACES:',
-      ...cast.places.map((l) => `  ${key.place.get(l.id)} ${l.name}: ${l.summary ?? l.description.day.split(/(?<=[.!?])\s/)[0]}${codeHere(l)}${placeThings(content, l)}${secretNote(content, l.id)}`),
+      ...cast.places.map((l) => `  ${key.place.get(l.id)} ${l.name}: ${l.summary ?? l.description.day.split(/(?<=[.!?])\s/)[0]}${codeHere(l)}${codeNote(content, l.id)}${placeThings(content, l)}${secretNote(content, l.id)}`),
       'PEOPLE:',
       ...cast.people.map(person),
       `SKILLS: ${skills.length ? skills.join(', ') : 'none'}`,
@@ -152,7 +153,7 @@ export function storiesRequest(files: ContentFile[], scope: StoryScope, fullness
     maxTokens: scope.kind === 'main' ? 5000 : fullness === 'full' ? 6000 : fullness === 'story' ? 4000 : 2500,
     effort: 'medium',
     // The world's prefix: the gateway counts the call as the editor's (M10.26), not the game's.
-    meta: { stories: scope.kind, fullness, prefix: worldPrefix(files) || 'world', name: scope.name, ...(scope.kind === 'main' && hasPlayed(played) ? { played: playedWords(played, key) } : {}), people: cast.people.map((n) => ({ key: key.person.get(n.id), name: n.name, secret: n.secrets.length > 0 })), places: cast.places.map((l) => key.place.get(l.id)), skills, aftermath: [] },
+    meta: { stories: scope.kind, fullness, prefix: worldPrefix(files) || 'world', name: scope.name, ...(scope.kind === 'main' && hasPlayed(played) ? { played: playedWords(played, key) } : {}), people: cast.people.map((n) => ({ key: key.person.get(n.id), name: n.name, secret: n.secrets.length > 0 })), places: cast.places.map((l) => key.place.get(l.id)), codes: cast.places.filter((l) => behindCodes(content, l.id).length).map((l) => key.place.get(l.id)), skills, aftermath: [] },
   }
 }
 
@@ -209,7 +210,9 @@ export function storyChecks(files: ContentFile[], parts: { scope: StoryScope; te
       })
       if (!quest) return [`${sketch.name}: too little of it fits (a stage without a journal line, a deed, or a place of the keys given)`]
       const parsed = QuestSchema.safeParse(quest)
-      return [...endingProblems(sketch), ...(parsed.success ? solvableProblems({ ...content, quests: new Map(content.quests).set('story_check', parsed.data) }, parsed.data).map((p) => p.replace('quest story_check', sketch.name)) : [])]
+      // A deed behind a code nobody gives in this line (M10.34 B): the code told in a stage before it, or the deed elsewhere.
+      const coded = parsed.success ? codeProblems(content, parsed.data).map((p) => `${p.replace(/^quest story_check, deed \S+: /, `${sketch.name}: a deed `).replace(/: add a stage of this one to the secret's given_when$/, '')}: tell the code in a stage before it (its done), or put the deed somewhere open`) : []
+      return [...endingProblems(sketch), ...(parsed.success ? solvableProblems({ ...content, quests: new Map(content.quests).set('story_check', parsed.data) }, parsed.data).map((p) => p.replace('quest story_check', sketch.name)) : []), ...coded]
     })
     return problems.length ? [{ scope, problems }] : []
   })

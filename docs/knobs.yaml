@@ -109,6 +109,9 @@ numbers:
     MIN_SIZE_KM: 'code: the least a first map measures; the designer changes the size in the region file'
     DISAGREE: 'code: when the first map tells the designer that an exit and the map part ways (a note, not a rule)'
     FINE_UP_TO_KM: 'code: when a first map is drawn a hex a character; the region file holds its own (zone:)'
+  src/engine/newplayer.ts:
+    WAIT_HOURS: 'code: the longest a played route waits for one thing, a person or a door (a test tool)'
+    MAX_TYPED: 'code: the most a played route types before it is stopped and marked not tested (a test tool)'
   src/engine/news.ts:
     CHECKS_PER_HOUR: 'code: how often news is passed on in an hour (the grain of the simulation)'
     CONTACTS: 'code: how many others a teller meets in a crowd each quarter of an hour (speed)'

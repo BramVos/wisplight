@@ -1,4 +1,5 @@
 import type { Content, Quest } from '../content'
+import { behindCodes } from '../exits'
 
 // Every quest played as a new player (M10.33 AE; Bram, 30 September 2026:
 // "Compare the cargo manifests at the Arrival Lock: there is no manifest
@@ -7,7 +8,7 @@ import type { Content, Quest } from '../content'
 // names is there, or whether the Now line is what the player types. These two
 // checks do, for written quests and for what a model writes.
 
-type Refs = Pick<Content, 'quests' | 'locations' | 'npcs' | 'objectTypes' | 'items'>
+type Refs = Pick<Content, 'quests' | 'locations' | 'npcs' | 'objectTypes' | 'items'> & { world?: Pick<Content['world'], 'start'> }
 
 const PREPOSITIONS = new Set(['to', 'at', 'in', 'on', 'with', 'about', 'for', 'from', 'of', 'into', 'onto', 'by', 'over', 'through', 'under', 'behind', 'past', 'across', 'along', 'round', 'around'])
 /** Words that are never a thing to find at a place: "put the matter right", "let it slide". */
@@ -47,6 +48,32 @@ function movers(q: Quest, stage: NonNullable<Quest['stages']>[number]) {
 }
 
 /**
+ * A deed behind a door with a code (M10.34 B: the crates carried back to the
+ * hangar, whose code Tessa gave only for the other story): the code is given
+ * by right at a stage of this story, or told in it.
+ */
+export function codeProblems(c: Refs, q: Quest): string[] {
+  const out: string[] = []
+  const own = new Set((q.actions ?? []).flatMap((a) => a.effects.flatMap((e) => ('set' in e ? [String((e as { set: string }).set)] : []))))
+  const plain = (t: string) => t.toLowerCase().replace(/\s+/g, '')
+  const toldHere = plain(JSON.stringify([q.ask ?? '', (q.stages ?? []).map((s) => [s.text, s.asks ?? '']), (q.actions ?? []).map((a) => a.text)]))
+  for (const a of q.actions ?? []) {
+    for (const p of a.at.filter((id) => c.locations.has(id))) {
+      for (const word of behindCodes(c, p)) {
+        if (toldHere.includes(plain(word))) continue
+        const holders = [...c.npcs.values()].flatMap((n) => n.secrets.filter((s) => plain(s.text).includes(plain(word))).map((s) => ({ n, s })))
+        const ours = holders.some(({ s }) => {
+          const when = JSON.stringify(s.given_when)
+          return when.includes(`"${q.id}`) || [...own].some((f) => when.includes(`"${f}"`))
+        })
+        if (holders.length && !ours) out.push(`quest ${q.id}, deed ${a.id}: it is done at ${c.locations.get(p)!.name}, behind a code (${word}), and ${holders.map(({ n }) => n.name).join(' or ')} gives the code by right only in another story: add a stage of this one to the secret's given_when`)
+      }
+    }
+  }
+  return out
+}
+
+/**
  * Deeds whose words name a thing that is not at their place (a detail, an
  * object, a thing lying there or a person), and Now lines that are not what
  * the player types for the deed that moves their stage.
@@ -78,6 +105,7 @@ export function playableWarnings(c: Refs): string[] {
       if (there.includes(stem(head))) group.forEach((w) => handled.add(stem(w)))
       else if (!handled.has(stem(head))) out.push(`quest ${q.id}, deed ${a.id}: "${a.intent}" is done to ${group.join(' ')}, and there is no ${head} at ${a.at.map((p) => c.locations.get(p)?.name ?? p).join(' or ')} (no detail, object, thing or person by that word)`)
     }
+    out.push(...codeProblems(c, q))
     for (const s of q.stages ?? []) {
       const moving = movers(q, s).filter((a) => a.say.length)
       if (!moving.length) continue

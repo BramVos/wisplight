@@ -79,6 +79,44 @@ export function secretNote(content: Pick<Content, 'locations'>, location: string
   return ways.some(([f, d]) => content.locations.get(f)!.exits[d]!.hidden) ? ` (secret: found by searching in ${from})` : ` (shut: reached from ${from} once something opens the way)`
 }
 
+/**
+ * The codes that stand between the start and a place (M10.34 B): none when a
+ * way without a code reaches it, otherwise the words of the locked ways into
+ * the part of the world it lies in (the hangar, and the deck above it).
+ */
+export function behindCodes(c: Pick<Content, 'locations'> & { world?: Pick<Content['world'], 'start'> }, place: string): string[] {
+  const start = c.world?.start.location
+  if (!start || !c.locations.has(start)) return []
+  const reach = (from: string[], skip: (e: { lock?: { word?: string } }) => boolean) => {
+    const seen = new Set(from)
+    const queue = [...from]
+    while (queue.length) {
+      for (const e of Object.values(c.locations.get(queue.shift()!)?.exits ?? {})) {
+        if (!e || seen.has(e.to) || !c.locations.has(e.to) || skip(e)) continue
+        seen.add(e.to)
+        queue.push(e.to)
+      }
+    }
+    return seen
+  }
+  const open = reach([start], (e) => Boolean(e.lock?.word))
+  if (open.has(place)) return []
+  const words = new Set<string>()
+  for (const id of open) {
+    for (const e of Object.values(c.locations.get(id)!.exits)) {
+      // A locked way out of the open part, into the part that holds the place.
+      if (e?.lock?.word && !open.has(e.to) && reach([e.to], (x) => Boolean(x.lock?.word)).has(place)) words.add(e.lock.word)
+    }
+  }
+  return [...words]
+}
+
+/** A place behind a code, for the quest writers (M10.34 B): which code, and that a deed there needs it given first. */
+export function codeNote(content: Pick<Content, 'locations' | 'world'>, location: string): string {
+  const words = behindCodes(content, location)
+  return words.length ? ` (behind the code ${words.join(', ')}: a deed here needs a stage before it where the stranger is given the code)` : ''
+}
+
 /** The rule that goes with the notes, for every call that writes quests (M10.32). */
 export const SECRET_PLACES_RULE =
   'A PLACE MARKED secret is found in play, by searching where it is found from; nobody names it (in knows, the ask or a journal line) before a stage sends the stranger to look there, and a deed in it comes only after that stage. A place marked shut opens only once something happens there first: a deed in it needs a stage before it that opens the way.'

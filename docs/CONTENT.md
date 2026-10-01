@@ -192,7 +192,7 @@ A list; each has:
 
 `secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).
 
-`secrets[].given_when`: conditions as in a quest (the stage that needs it, `{ stage: quest_id:stage_id }`, a flag, an attitude) under which they give the secret to whoever asks about it (`about`), without a roll; without it only trust (Warm or better) or a won PERSUADE gets it, and a question that touches it gets the line "keeps that close". A code or password a quest needs has a way without a roll: Check names one told only in a secret without `given_when` or `about`.
+`secrets[].given_when`: conditions as in a quest (the stage that needs it, `{ stage: quest_id:stage_id }`, a flag, an attitude) under which they give the secret to whoever asks about it (`about`), without a roll; without it only trust (Warm or better) or a won PERSUADE gets it, and a question that touches it gets the line "keeps that close". A code or password a quest needs has a way without a roll: Check names one told only in a secret without `given_when` or `about`, and a deed behind a code whose secret is given by right only in another story (M10.34 B): its `given_when` names a stage of every story that needs the door.
 
 `call`: what people call them in running text when it is not the first word of the name: after a title (Dr Ilyan Sorell, `call: Ilyan`) or a byname (`call: Old Tamsin`); left out, the first word of the name that is no title.
 

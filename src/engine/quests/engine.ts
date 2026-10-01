@@ -714,7 +714,8 @@ export function plainWords(pattern: string): string {
     text = text.replace(/\(\?:[^()]*\)\?/g, '')
     text = text.replace(/\(\?:([^|()]*)(?:\|[^()]*)?\)(?!\?)/g, '$1')
   }
-  return text.replace(/ \?/g, ' ').replace(/\.\?|\.\*|\\s|\\b|[\\^$?]/g, '').replace(/\s+/g, ' ').trim()
+  // A class of letters is its first ("apologi[sz]e": apologise; M10.34 B found "APOLOGI[SZ]E" on the quest page).
+  return text.replace(/\[\^?([^\]\\])[^\]]*\]/g, '$1').replace(/ \?/g, ' ').replace(/\.\?|\.\*|\\s|\\b|[\\^$?]/g, '').replace(/\s+/g, ' ').trim()
 }
 
 /** Why an action cannot be done now: a text to say, '' to try other actions, undefined when it can. */

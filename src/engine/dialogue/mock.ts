@@ -173,7 +173,10 @@ export class MockLlm implements LlmClient {
     const c = people.slice(2).find((p) => !p.secret) ?? people.slice(1).find((p) => !p.secret)
     const [here, there] = [places[0] ?? '', places[1] ?? places[0] ?? '']
     // The step Stories of the world build (M10.30): lines in `quests`, with goals, who knows what, and for the main line a truth.
-    if (meta['stories']) return this.storyStep(String(meta['stories']), String(meta['fullness'] ?? 'story'), people, places, name, (meta['played'] as { key: string; words: string[] }[] | undefined)?.[0])
+    // As a model that keeps the rules: no deed behind a code nobody gives it (M10.34 B), while open places remain.
+    const codes = new Set((meta['codes'] as string[] | undefined) ?? [])
+    const open = places.filter((p) => !codes.has(p))
+    if (meta['stories']) return this.storyStep(String(meta['stories']), String(meta['fullness'] ?? 'story'), people, open.length ? open : places, name, (meta['played'] as { key: string; words: string[] }[] | undefined)?.[0])
     return JSON.stringify({
       why: `${name} lives by what comes in on its road, and not all of it is honest.`,
       quest: a

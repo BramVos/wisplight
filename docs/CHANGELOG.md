@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.34 deel: elke afloop langs een echte route (B), 1 oktober 2026
+
+- **Een proef zonder sluiproutes (B).** Oorzaak: de proef van M10.33 AE sprong met `@goto` en `@bring` en begon de quest met `@quest`. Hij stopte voor het laatste stadium, dus groen bewees niet dat een speler er komt. Nu speelt de speeltest elke afloop van elk verhaal van een nieuw spel af, met alleen wat een speler typt. De route loopt langs de uitgangen en zoekt een verborgen luik met zijn woorden. Hij typt de code zodra iemand hem gaf, vraagt de weg aan wie er is en wacht op een persoon. Hij betaalt tol of vlucht, koopt wat een daad nodig heeft en laat zich vertellen wat hij moet weten. Faalt een weg, dan laadt hij de save van ervoor en probeert de volgende. Wat niet lukt, staat als niet getest, met de reden.
+- **Uitkomst.** The Quiet Reach haalt 10 van 10 aflopen, Skerrow 4 van 4, de Nethermarch 32 van 67. In de Nethermarch is de rest een dood, een verhaal van een gezel op band 3, een gevecht, iets dat alleen een ander verhaal geeft, of de molen die niemand repareert.
+- **Wat de route vond.** De kratten van Short on the Count moesten terug naar de hangaar, maar Tessa gaf de code alleen voor de antenne. Oorzaak in de content en in de wereldbouwer. Tessa geeft de code nu ook als Sorell de onderdelen heeft toegegeven. Check noemt een daad achter een code die alleen in een ander verhaal gegeven wordt. De stap Verhalen ziet een plek achter een code gemarkeerd en krijgt zo'n daad terug. Een daad met iemand wiens werk achter een code ligt (Sorell op de Peregrine), legt de motor bij zijn huis. Verder toonde de questpagina APOLOGI[SZ]E; nu staat er APOLOGISE.
+
+Testen: `npm run playtest -- routes`, en lees `docs/playtest/routes.txt`. Tests in `tests/m1034routes.test.ts`.
+
+Kosten: geen nieuwe aanroep. De stap Verhalen en de wereldstappen krijgen zo'n 40 tokens meer (de markering en de regel).
+
+Wat de editor en de kroniekverteller leerden: een regel onder Check (een daad achter een code die alleen in een ander verhaal gegeven wordt). De stap Verhalen ziet welke plekken achter een code liggen, en de wereldgids en het contract zeggen dat `given_when` een stadium van elk verhaal noemt dat de deur nodig heeft. Geen nieuw veld.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 4, alinea "Stand na M10.34: elke afloop langs een echte route".
+
 ## M10.34 deel: een ontmoeting telt (F), 1 oktober 2026
 
 - **Eén gesprek en je bent ontmoet (F).** Oorzaak: "kennen" hing aan een drempel van `familiarity` (6), die met 1 per gesprek en 2 per regel groeit. Zo bleef je na twee korte gesprekken "a stranger; you have done nothing together", en begroette Sana je als nieuw. Het spel telt nu per persoon de gesprekken die je begon. De band is "never met" vóór het eerste gesprek, "met" daarna, en dan "spoken with a few times", "known" en "known well". De begroeting van de regels, LISTENER voor de stem en de aanspreekvorm volgen de band. Voor iemand die je één keer sprak, zegt LISTENER dat wat er tussen jullie gebeurde alleen in de herinneringen en het vorige gesprek staat, ook zonder relatiepunten. De telling staat in de save; een save van vóór de telling telt de gesprekken die het spel bewaarde, en een `familiarity` van 6 blijft "spoken with a few times". Opgelost in de motor, voor elke wereld.
@@ -47,6 +61,7 @@ Kosten: geen nieuwe soort aanroep. Een geweigerd effect kost één tweede improv
 Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
 
 Ontwerp: geen wijziging.
+
 
 ## M10.33 deel: de verhalen van de Nethermarch zeggen wat je nu kunt doen (bij E), 1 oktober 2026
 

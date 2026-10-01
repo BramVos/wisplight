@@ -556,3 +556,27 @@ if (!only || only === 'quests') {
   writeFileSync(resolve(dir, 'quests.txt'), report.join('\n'))
   stdout.write(`quests: every quest played by its Now lines; ${stuck} stage${stuck === 1 ? '' : 's'} stuck (docs/playtest/quests.txt)\n`)
 }
+
+// Every ending of every story played by a real route from a new game (M10.34 B): no build command, every rule kept.
+// What the route cannot do as a player does is "not tested", with why; never passed.
+if (!only || only === 'routes') {
+  const { playRoutes } = await import('../src/engine/newplayer')
+  const report: string[] = ['Every ending of every story, each played by a real route from a new game (M10.34 B; protocol: docs/PLAYTEST.md).', 'Nothing but what a player types: no build command. "# load the save" marks a way tried again from before.', '']
+  let reached = 0
+  let all = 0
+  for (const world of ['quietreach', 'isle', 'base', 'other']) {
+    const content = await loadContentFromDir(worldDir(world), world)
+    const runs = await playRoutes(content, new MockLlm('good'))
+    report.push(`## ${content.world.name} (${world}): ${runs.filter((r) => r.reached).length} of ${runs.length} endings reached`, '')
+    for (const r of runs) {
+      all++
+      if (r.reached) reached++
+      const open = r.stages.find((x) => x.status !== 'passed')
+      report.push(`${r.quest} / ${r.ending}: ${r.reached ? 'REACHED' : `NOT TESTED at ${open?.stage ?? '?'} (${open?.why ?? 'it ended otherwise'})`}, ${Math.round(r.minutes / 60)} game hours, ${r.typed.length} lines`)
+      report.push(`  ${r.stages.map((x) => `${x.stage} ${x.status === 'passed' ? 'passed' : 'not tested'}`).join(', ')}`)
+      report.push(`  typed: ${r.typed.join(' | ')}`, '')
+    }
+  }
+  writeFileSync(resolve(dir, 'routes.txt'), report.join('\n'))
+  stdout.write(`routes: ${reached} of ${all} endings reached by a real route; the rest not tested, with why (docs/playtest/routes.txt)\n`)
+}
