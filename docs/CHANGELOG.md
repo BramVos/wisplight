@@ -1,5 +1,29 @@
 # Changelog
 
+## M10.35 deel: de proef per soort (I), 1 oktober 2026
+
+- **Wat de bewakers vangen, per soort (I).** Een vaste proef van 22 zinnen die een model zou kunnen zeggen, de meeste uit Brams transcripten van 29 en 30 september. Elke zin gaat door het hele gesprek zoals het spel het speelt: het model zegt hem eerst, de bewakers sturen hem terug of laten hem door. Daarnaast vijf ware zinnen, die erdoor moeten.
+
+| Soort | Gevangen | Erdoor |
+|---|---|---|
+| Vindplaats (multimeter, luik, veldlamp, kabelrol) | 5 van 6 | "The last three run logs are on the slate by the briefing table": de woorden staan in de prompt, het verband niet |
+| Toestemming (wie je binnenlaat, wie de code heeft) | 5 van 5 | geen |
+| Oplossing (een handeling of opdracht die het spel niet kent) | 5 van 6 | Ilyans "Bring whatever you need for the ridge": een gever mag een eigen opdracht geven (M10.33 V), en de zin noemt niets om te zoeken |
+| Toezegging (afspraak, meenemen, brengen, doorvertellen, iets geven) | 5 van 5 | geen |
+
+- De ware zinnen gaan alle vijf door: "Tessa has the code", "Tessa can let you in", een gok over Sorell, "the wiring is old", "I have my notebook". Na een veranderde wereld (Niko's notebook bij Tessa) is "Niko has his notebook" fout en "Tessa has Niko's notebook" goed. In een tweede gesprek met Sana is het hetzelfde.
+- Op de 212 bewaarde echte antwoorden (B) stuurden de nieuwe bewakers niets terug.
+
+Testen: niets nieuws om te spelen; de proef draait in `tests/m1035i.test.ts`.
+
+Bekende gaten: een verband tussen gegeven woorden ("de logs liggen op de lei") toetst geen woordtoets en geen stand van het spel. Dat blijft voor de regel en de telling van E.
+
+Kosten: geen.
+
+Wat de editor en de kroniekverteller leerden: niets.
+
+Ontwerp: geen wijziging.
+
 ## M10.35 deel: oordeel eerst, woorden daarna (F), 1 oktober 2026
 
 - **Elke wens krijgt vooraf een oordeel (F).** Oorzaak: de motor besliste al over een aanbod (M10.3), een geheim (M10.33 U) en meegaan. Een wens waar geen aanbod bij hoort ("give me the key", "let me into the hangar", "what is the code") ging zonder oordeel naar de stem, en dan besliste het model. Nu zegt de motor nee voordat de stem iets zegt: "nothing lets you do that now", met het echte alternatief als het spel er een heeft. Dat is een aanbod waar het ja op zei ("you could walk ahead to the hangar instead") of een daad van een verhaal die met deze persoon gedaan wordt. Heeft het spel geen alternatief, dan zegt de stem eerlijk dat ze geen andere weg weet. Ook bij een aanbod met een nee gaat het alternatief mee. Kan de wens een daad uit QUEST ACTIONS zijn, dan gaat die voor. Een prijs met een nee blijft de regel van het aanbod zelf, zonder aanroep.
