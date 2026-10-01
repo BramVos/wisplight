@@ -198,6 +198,7 @@ So far:
   Tessa tells you, reluctantly, that a secret drive test ran on Nacre shortly before the transmission was first caught. It was powered with emergency heating and water parts that were entered as research stock. She gives you the test telemetry, and the hangar code, 7411, so you can take it to Sorell yourself. Set beside your raw copies, the removed segments carry the same pulse pattern as the test.
 - Dr Sorell hired you to say whether anyone had touched the data. Now you know who did, and you have to tell him.
   Sorell admits it. He cut the segments that matched the drive test and rewrote their timestamps, so that nobody would learn of the secret test or the stock he diverted, and so that the port would not ground the Peregrine. What made the signal, and why it carries the test's pattern, he cannot say. Neither can you.
+Evidence: the access sequence (from Niko), your copies of the recordings, the test telemetry (from the chief engineer).
 The report is made. The stranger delivers an investigation report built on the evidence: the complete recordings, the bypass, the edits and the match with the drive test. What the signal is remains unknown. What Port Vesper does about Sorell and the Peregrine is now the port's own argument.
 
 ==== END (Relay 20 Rainfall 186 CR, 09:19 (morning))

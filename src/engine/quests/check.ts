@@ -11,6 +11,9 @@ import type { PlanEffect } from './plans'
 
 type Refs = Omit<Content, 'world'>
 
+
+/** "She gives you the test telemetry", "hands you his edited copies": a deed text that gives the stranger a thing; not a look or a smile. */
+export const GIVES_YOU = /\b(?:gives|hands|passes|slides) you (?:the |a |an |his |her |their |its |some |a copy of )?(?!look\b|smile\b|nod\b|glance\b|shrug\b|wink\b|grin\b|hard look\b)[a-z'-]+(?: [a-z'-]+)?/i
 export function checkQuests(c: Refs): string[] {
   const problems: string[] = []
   const place = (id: string, where: string) => {
@@ -271,6 +274,12 @@ export function questWarnings(c: Refs): string[] {
       if (a.with) continue
       const verbs = placeVerbs(c, a.at)
       if (!a.say.some((p) => firstWords(p).some((w) => isGameVerb(w) || verbs.has(w)))) warnings.push(`quest ${q.id}, action ${a.id}: a deed on the world is only a sentence ("${a.intent ?? a.say[0]}"); give it the verb of a thing at its place (a detail's verbs), or the person it is done with (with)`)
+    }
+    // A deed that says it gives the stranger something gives it (M10.34 C: "She gives you the test telemetry" was only a
+    // line, and INVENTORY showed nothing): a thing, evidence, or what the stranger learns.
+    for (const a of q.actions ?? []) {
+      const gives = GIVES_YOU.exec(a.text)
+      if (gives && !a.effects.some((e) => 'give' in e || 'seize' in e || 'evidence' in e || 'learn' in e)) warnings.push(`quest ${q.id}, action ${a.id}: its text says "${gives[0]}", and nothing is given: add the thing (give) or evidence (evidence: id, name, text)`)
     }
     // What the giver wants at a stage (M10.33 E): a stage with something to do and nobody to say it opens no talk.
     if (q.givers.length) for (const s of q.stages) if (s.goal && !s.asks?.trim()) warnings.push(`quest ${q.id}, stage ${s.id}: the giver never says what they want here (asks), so they will not open a talk with it; write it in their voice`)

@@ -146,6 +146,8 @@ const VERB_ALIASES: Record<string, string> = {
   bribe: 'bribe',
   insight: 'insight',
   read: 'insight',
+  show: 'show',
+  toon: 'show',
   journal: 'journal',
   topics: 'journal',
   dagboek: 'journal',

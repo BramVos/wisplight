@@ -1,5 +1,6 @@
 import type { Content, Location } from '../content'
 import { behindCodes } from '../exits'
+import { GIVES_YOU } from './check'
 import { idWordsIn } from '../idwords'
 import { crossesLimits, readsAsInstruction } from '../safety'
 import { wordsOf } from '../said'
@@ -21,7 +22,7 @@ type Raw = Record<string, unknown>
  * rule for every call that writes a quest.
  */
 export const DEED_RULE =
-  'A DEED WITH NOBODY (with empty) is typed on a thing of its place: a verb of its Things in PLACES, or LOOK, SEARCH, READ, USE, OPEN, TAKE or GIVE ("read the manifests", "touch the splice"), never a sentence such as "trace the antenna fault", and its goal names that verb. A deed with someone (with) is what the stranger says to them ("ask niko about the station").'
+  'A DEED WITH NOBODY (with empty) is typed on a thing of its place: a verb of its Things in PLACES, or LOOK, SEARCH, READ, USE, OPEN, TAKE or GIVE ("read the manifests", "touch the splice"), never a sentence such as "trace the antenna fault", and its goal names that verb. A deed with someone (with) is what the stranger says to them ("ask niko about the station"). A deed that gives the stranger something to hold (a copy, a letter, a reading) names it in gives ("the test telemetry"), and its done says what it shows: the stranger can read and show it, and a later deed may need it.'
 
 /** The things of a place a deed can be done to, with their verbs, for the PLACES of a prompt (M10.33 AA). */
 export function placeThings(content: Pick<Content, 'objectTypes'>, location: Location): string {
@@ -46,6 +47,8 @@ export interface SketchStage {
   skill: string
   /** What the deed brings, one or two sentences. */
   done: string
+  /** What it gives the stranger to hold (M10.34 C): "the test telemetry"; evidence in the dossier, read with READ. */
+  gives?: string
   /** What the stranger can do now, one line, for the journal's "Now: ...". */
   goal?: string
   /** What the giver wants of the stranger at this stage, in their voice (M10.33 E): they open a talk with it. */
@@ -84,6 +87,8 @@ export interface SketchEnding {
   skill: string
   /** A word as the deed that ends it (M10.31 C), as a stage's word. */
   word?: string
+  /** What it gives the stranger to hold (M10.34 C), as a stage's gives. */
+  gives?: string
 }
 
 /** The ways an ending goes; `word` since M10.31: a code or a password said or typed. */
@@ -134,12 +139,12 @@ export function sketchSchema(): Record<string, unknown> {
       stages: {
         type: 'array',
         items: object(
-          { text, say: text, at: text, with: text, skill: text, done: text, goal: text, asks: text, knows: { type: 'array', items: object({ who: text, line: text }) }, lived: object({ who: text, words: { type: 'array', items: text } }), word: text },
-          ['goal', 'asks', 'knows', 'lived', 'word'],
+          { text, say: text, at: text, with: text, skill: text, done: text, goal: text, asks: text, knows: { type: 'array', items: object({ who: text, line: text }) }, lived: object({ who: text, words: { type: 'array', items: text } }), word: text, gives: text },
+          ['goal', 'asks', 'knows', 'lived', 'word', 'gives'],
         ),
       },
       outcome: object({ name: text, text }),
-      endings: { type: 'array', items: object({ name: text, text, solution: { type: 'boolean' }, way: { type: 'string', enum: [...ENDING_WAYS] }, say: text, at: text, with: text, skill: text, word: text }, ['word']) },
+      endings: { type: 'array', items: object({ name: text, text, solution: { type: 'boolean' }, way: { type: 'string', enum: [...ENDING_WAYS] }, say: text, at: text, with: text, skill: text, word: text, gives: text }, ['word', 'gives']) },
       begins: { type: 'string', enum: ['talk', 'place', 'start'] },
       lapses: object({ days: { type: 'integer' }, text }),
       truths: { type: 'array', items: object({ text, words: { type: 'array', items: text }, from: { type: 'integer' } }) },
@@ -244,6 +249,12 @@ export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSket
       once: false,
     }
   }
+  // What a deed gives the stranger to hold (M10.34 C): evidence in the dossier, under an id of its own in this line.
+  const held = (d: { gives?: string }, done: string | undefined): Raw[] => {
+    const name = fit(d.gives, 60)
+    const slug = name?.toLowerCase().replace(/^(?:the|a|an|some)\s+/, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 30)
+    return name && slug ? [{ evidence: `${id}_${slug}`, name, ...(done ? { text: done } : {}) }] : []
+  }
   good.forEach((s, i) => {
     const flag = `${id}_${i + 1}`
     const last = i === good.length - 1
@@ -253,20 +264,20 @@ export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSket
     const lived = livedWith && livedWords.length ? [{ when: [{ talked: livedWith, about: livedWords }], to: `s${i + 2}`, effects: [{ set: flag }] }] : []
     // A word as the deed: the stage passes when it is said, with what the deed brings.
     const word = spoken(s)
-    const next = !last ? [word ? { when: [word], to: `s${i + 2}`, effects: [{ set: flag }, { text: fit(s.done, 400)! }] } : { when: [{ flag }], to: `s${i + 2}` }, ...lived] : []
+    const next = !last ? [word ? { when: [word], to: `s${i + 2}`, effects: [{ set: flag }, { text: fit(s.done, 400)! }, ...held(s, fit(s.done, 400))] } : { when: [{ flag }], to: `s${i + 2}` }, ...lived] : []
     // What each person knows at this stage and may say (M10.30), by id.
     const knows = Object.fromEntries((s.knows ?? []).flatMap((k) => (scope.person(k.who) && fit(k.line, 300) ? [[scope.person(k.who)!, fit(k.line, 300)!]] : [])))
     const goal = fit(s.goal, 160)
     const asks = fit(s.asks?.replace(/^["“]|["”]$/g, ''), 240)
     stages.push({ id: `s${i + 1}`, text: fit(s.text, 240)!, ...(goal ? { goal } : {}), ...(asks ? { asks } : {}), ...(Object.keys(knows).length ? { knows } : {}), next })
     if ((last && endings.length) || word) return
-    actions.push(deed(`a${i + 1}`, s, fit(s.done, 400)!, [...(i > 0 ? [{ flag: `${id}_${i}` }] : []), { not_flag: flag }], [{ set: flag }]))
+    actions.push(deed(`a${i + 1}`, s, fit(s.done, 400)!, [...(i > 0 ? [{ flag: `${id}_${i}` }] : []), { not_flag: flag }], [{ set: flag }, ...held(s, fit(s.done, 400))]))
   })
   // The ways it ends: a deed each, after the stages before the last, to an outcome of its own; one ending only.
   const before = good.length > 1 ? [{ flag: `${id}_${good.length - 1}` }] : []
   const ended = endings.map((_, k) => ({ not_flag: `${id}_end_${k + 1}` }))
   endings.forEach((e, k) => {
-    if (!spoken(e)) actions.push(deed(`e${k + 1}`, e, fit(e.text, 400)!, [...before, ...ended], [{ set: `${id}_end_${k + 1}` }]))
+    if (!spoken(e)) actions.push(deed(`e${k + 1}`, e, fit(e.text, 400)!, [...before, ...ended], [{ set: `${id}_end_${k + 1}` }, ...held(e, fit(e.text, 400))]))
   })
   const name = fit(sketch.name, 80)
   const summary = fit(sketch.summary, 240)
@@ -325,6 +336,11 @@ export function endingProblems(sketch: QuestSketch): string[] {
   const most = main ? 3 : small ? 1 : 2
   const count = endings.length + (sketch.lapses ? 1 : 0)
   const problems: string[] = []
+  // A deed that says it gives the stranger something names it (M10.34 C): otherwise nothing is held.
+  for (const d of [...(Array.isArray(sketch.stages) ? sketch.stages.map((s) => ({ said: s.done, gives: s.gives })) : []), ...endings.map((e) => ({ said: e.text, gives: e.gives }))]) {
+    const given = typeof d.said === 'string' ? GIVES_YOU.exec(d.said) : null
+    if (given && !fit(d.gives, 60)) problems.push(`${sketch.name}: "${given[0]}": name what the stranger is given in gives, so they hold it`)
+  }
   if (count < least) problems.push(`${sketch.name}: ${count} ways to end, at least ${small ? 'two for a line of one stage' : 'three'} are needed (the lapse counts)`)
   if (solutions.length < most) problems.push(`${sketch.name}: ${solutions.length} solutions, at least ${most === 1 ? 'one is' : `${most} are`} needed${main ? ' for the main line' : ''}`)
   // Two solutions count as two only by different ways (talking, giving or paying, a deed), never as two versions of one talk.

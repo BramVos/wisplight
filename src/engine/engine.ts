@@ -1,3 +1,4 @@
+import { readEvidence, showEvidence } from './dossier'
 import { personColour } from './colour'
 import { planHere } from './plan'
 import { applyFull, fullDue, fullFixRequest, fullLayer, fullRequest, mergeFull, readFull, wantFull, type FullRound } from './growth/regionfull'
@@ -271,7 +272,7 @@ export interface EngineOptions {
 // In a conversation these words are commands; everything else is speech.
 const TALK_COMMANDS = new Set([
   'look', 'examine', 'inventory', 'list', 'buy', 'sell', 'give', 'wait', 'time', 'help', 'ask', 'tell', 'where',
-  'persuade', 'deceive', 'intimidate', 'bribe', 'insight', 'journal', 'topics', 'bye', 'talk', 'say', 'go',
+  'persuade', 'deceive', 'intimidate', 'bribe', 'insight', 'journal', 'topics', 'bye', 'talk', 'say', 'go', 'show',
 ])
 
 /**
@@ -1764,6 +1765,9 @@ export class Engine {
         // READ <stone> (M10.5): words on an object here, before reading a person.
         const inscribed = /^read\b/i.test(command.raw) ? inscribedHere(this.world, command.args.join(' ')) : undefined
         if (inscribed) return readInscription(this.host, inscribed)
+        // READ <evidence> (M10.34 C): what a story gave the stranger to hold.
+        const evidence = /^read\b/i.test(command.raw) && command.args.length ? readEvidence(this.world, command.args.join(' ')) : undefined
+        if (evidence) return [{ kind: 'text', text: evidence }]
         // READ <a thing you carry> (M10.29 N): the thing, before reading a person.
         const mine = /^read\b/i.test(command.raw) && command.args.length ? carried(this.world, command.args.join(' ')) : undefined
         if (mine) return [{ kind: 'text', text: doWithCarried(this.world, mine, 'read') }]
@@ -1773,6 +1777,14 @@ export class Engine {
         if (thing) return [{ kind: 'text', text: thing }]
         if (!npc) return [{ kind: 'error', text: 'Read whom?' }]
         return this.dialogue.insight(npc)
+      }
+      case 'show': {
+        // SHOW <evidence> [TO <someone>] (M10.34 C): to someone here, or whoever you are talking with.
+        const words = command.args.join(' ').replace(/^(?:him|her|them)\s+/i, '')
+        const to = /^(.+?)\s+(?:to|aan)\s+(.+)$/i.exec(words)
+        const npc = to ? findNpcHere(this.world, to[2]!) : (talk?.npc ?? this.onlyNpcHere())
+        if (to && !npc) return [{ kind: 'error', text: `There is nobody here called ${to[2]}.` }]
+        return [{ kind: 'text', text: showEvidence(this.world, to ? to[1]! : words, npc) }]
       }
       case 'journal':
       case 'topics':

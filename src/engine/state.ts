@@ -24,6 +24,20 @@ export type GoalType =
   // The rest of the catalogue (FO, chapter 7; M7.2).
   | 'Sell' | 'Deliver' | 'Meet' | 'Follow' | 'Guard' | 'Avoid' | 'Help' | 'Spread' | 'Court' | 'Celebrate' | 'Investigate' | 'Report' | 'Confront' | 'RecruitHelp' | 'Steal' | 'Sabotage' | 'Harm' | 'Flee'
 
+/** A piece of evidence the stranger holds (M10.34 C): the test telemetry Tessa gave. */
+export interface Evidence {
+  name: string
+  text: string
+  quest?: string
+  /** The deed that gave it, in plain words. */
+  deed?: string
+  /** Who gave it: the person the deed was done with. */
+  from?: string
+  t: number
+  /** Who saw the stranger get it, or were shown it since. */
+  seen: string[]
+}
+
 export interface Goal {
   id: string
   type: GoalType
@@ -565,6 +579,8 @@ export interface PlayerState {
   found?: string[]
   /** What the stranger wears of the clothes they carry (M10.33 AD): item ids tagged clothing. */
   worn?: string[]
+  /** Evidence the stranger holds (M10.34 C), by id: what it is, from whom, by which deed, and who saw it. */
+  dossier?: Record<string, Evidence>
   /** Where the stranger last gathered from a ground, `location/ground`, by game day (M10.5). */
   gathered?: Record<string, number>
   /** Time the stranger spends on what was just agreed in a talk (M10.5: a lesson), passed after the turn. */

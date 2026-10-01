@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.34 deel: bewijs is iets wat je hebt (C), 1 oktober 2026
+
+- **Een dossier (C).** Oorzaak: "Tessa gives you the test telemetry" was een regel tekst en verder niets. INVENTORY toonde niets, en je kon het bewijs niet lezen, tonen of gebruiken. Nu zet een daad bewijs in je dossier: wat het is, van wie, door welke daad en wie erbij stond. INVENTORY noemt het, READ geeft het, en SHOW <bewijs> TO <iemand> laat het zien. Die persoon onthoudt het, en in een gesprek hoort het volgende antwoord het. Een daad kan om bewijs vragen (`holds`), en de questpagina zegt welk bewijs een verhaal gaf.
+- **The Quiet Reach en Skerrow.** In The Quiet Reach krijg je Niko's toegangsreeks, je kopieën van de opnamen, de telemetrie van Tessa en Sorells bewerkte kopieën. De aflopen met de opnamen vragen erom. Op Skerrow houd je de raad van Tamsin.
+- **Bij de bron.** Check meldt een daad die zegt dat iemand je iets geeft terwijl er niets gegeven wordt. De stap Verhalen, de streekronde en de nachtronde schrijven bij zo'n daad wat je krijgt (`gives`), en de motor maakt er bewijs van; een daad zonder `gives` gaat terug.
+
+Testen: in The Quiet Reach twee keer `east`, `ask niko about the station`, dan `inventory`, `read the access sequence` en `journal the orison recordings`. In een gesprek: `show him the telemetry`. Tests in `tests/m1034evidence.test.ts`.
+
+Kosten: geen nieuwe aanroep. De streekronde en de stap Verhalen krijgen zo'n 125 tokens meer (de regel en het veld), de nachtronde 55, de wereldstappen 70 (het contract). Het antwoord na SHOW krijgt één regel mee.
+
+Wat de editor en de kroniekverteller leerden: het effect `evidence`, de voorwaarde `holds` en het schetsveld `gives`, met hun beschrijving in `docs/CONTENT.md`, een regel onder Check, en de stap Verhalen in de wereldgids en `docs/NEW-WORLD.md`. Skerrow heeft zijn eigen voorbeeld; Deepwell heeft geen verhalen, en een test speelt dat.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 14, alinea "Stand na M10.34: bewijs is iets wat je hebt".
+
 ## M10.35 deel: de wedervraag komt uit de content (D), 1 oktober 2026
 
 - **Een haak die het spel geeft (D).** Oorzaak: THIS TIME vroeg de stem één beurt op de drie om een vraag terug of een haak "in your own way". Wat de stem dan zelf bedacht, kon een vals spoor zijn. Nu geeft de motor de haken. Wie iets van de vreemdeling wil, krijgt het eigen verzoek of wat de gever nu wil. Wie in de volgende stap van een verhaal zit (de gever, of iemand met wie de stap gedaan wordt), krijgt de "Now"-regel. Wie het verhaal alleen kent, krijgt het verhaal zoals hij het kent. Verder kan het een aanbod zijn waar het spel ja op zei, nieuws dat de spreker hoorde, of een onderwerp uit KNOWLEDGE dat ze goed kent. Elke haak staat al elders in de prompt. Per beurt gaan er hoogstens twee mee, een van henzelf en een uit wat ze weten, en om de drie beurten een andere. De stem kiest er een en zegt hem in eigen woorden; "No other hook". Heeft het spel geen haak, dan vraagt de stem terug naar wat de vreemdeling zei, zonder iets nieuws aan te snijden. Opgelost in de motor, voor elke wereld.
@@ -14,6 +28,7 @@ Kosten: een paar woorden meer in de wisselende helft van een beurt op de drie, m
 Wat de editor en de kroniekverteller leerden: niets; de haken komen uit wat een wereld al heeft (`asks`, `knows`, `goal`, verzoeken, aanbiedingen, nieuws).
 
 Ontwerp: geen wijziging.
+
 
 ## M10.35 deel: gissen mag, weten niet (B), 1 oktober 2026
 
@@ -30,6 +45,7 @@ Kosten: geen.
 Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
 
 Ontwerp: geen wijziging.
+
 
 ## M10.34 deel: elke afloop langs een echte route (B), 1 oktober 2026
 

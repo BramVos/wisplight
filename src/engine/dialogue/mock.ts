@@ -232,7 +232,7 @@ export class MockLlm implements LlmClient {
       ...(main ? [{ name: 'Paid off', text: 'A payment closes the matter, if not the questions.', solution: true, way: 'give', say: 'pay the debt', at: at(0), with: giver.key, skill: '' }] : []),
       { name: 'Let slide', text: 'Nobody sees to it, and it goes wrong.', solution: false, way: 'fail', say: 'give up the matter', at: at(0), with: '', skill: '' },
     ]
-    const line = (kind: string, giver: { key: string; name: string }, title: string, stages: (ReturnType<typeof stage> & { lived?: unknown; word?: string })[], extra: Record<string, unknown> = {}) => ({
+    const line = (kind: string, giver: { key: string; name: string }, title: string, stages: (ReturnType<typeof stage> & { lived?: unknown; word?: string; gives?: string })[], extra: Record<string, unknown> = {}) => ({
       name: title,
       kind,
       summary: `${first(giver)} has a matter in ${name}.`,
@@ -249,7 +249,7 @@ export class MockLlm implements LlmClient {
         ? [
             line('main', a, 'The Long Silence', [
               // With a game under way (M10.30), the first stage is lived already: the stranger talked it through.
-              { ...stage('Something went quiet that should not have.', `ask ${first(a).toLowerCase()} about the silence`, at(0), a, 'You learn when it began, and the code of the record room: 4471.', `Ask ${first(a)} about the silence.`, [a]), ...(played ? { lived: { who: played.key, words: played.words } } : {}) },
+              { ...stage('Something went quiet that should not have.', `ask ${first(a).toLowerCase()} about the silence`, at(0), a, 'You learn when it began, and the code of the record room: 4471.', `Ask ${first(a)} about the silence.`, [a]), gives: 'a note of the code', ...(played ? { lived: { who: played.key, words: played.words } } : {}) },
               // A code as the deed (M10.31 C): typed at the place, given in the deed before.
               { ...stage('Someone kept a record of it.', '', at(1), undefined, 'The lock gives. A ledger, with a page cut out.', 'Type the code of the record room.', [a, b!]), word: '4471' },
               stage('The cut page says who.', `ask ${first(b).toLowerCase()} about the page`, at(2), b, 'The page is found, and with it the name.', `Ask ${first(b)} about the missing page.`, [b!]),

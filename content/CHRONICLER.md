@@ -244,6 +244,7 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `not_flag` `{ not_flag: text }`: A flag is not set.
 - `knows` `{ knows: text or { who: text, subject: text, key: text, value?: text or list of text, not?: text or list of text, level?: number, days?: number, doubting?: true/false } }`: The player knows a topic; or, with who, someone believes a claim (value, or anything but not), heard at least at this level, within so many days, perhaps doubting.
 - `has` `{ has: text, qty?: number }`: The player has a thing, so many of it.
+- `holds` `{ holds: text }`: The stranger holds a piece of evidence (M10.34 C), by the id an evidence effect gave it: the test telemetry, the copies of the recordings.
 - `money` `{ money: number }`: The player has at least this much money, in the smallest coin.
 - `attitude` `{ attitude: text, at_least: Hostile | Unfriendly | Wary | Neutral | Friendly | Warm | Devoted }`: Someone thinks at least this well of the player.
 - `clock` `{ clock: text, at_least: number }`: A progress clock has at least so many segments filled.
@@ -365,6 +366,7 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `send` `{ send: text, to: text, hours?: number = 24 }`: Someone walks to a place and waits there. Rules yes, brain no, chronicler no.
 - `vanish` `{ vanish: text }`: Someone leaves the world. Rules no, brain no, chronicler no.
 - `join` `{ join: text }`: The player joins a faction. Rules no, brain no, chronicler no.
+- `text` `{ evidence: text, name: text, text?: text }`: A line of narration. Rules no, brain no, chronicler no.
 - `seize` `{ seize: text, from: text, qty?: number = 1 }`: Something passes to the player. Rules no, brain no, chronicler no.
 - `close_route` `{ close_route: text, why?: text }`: A trade route stops running. Rules yes, brain no, chronicler no.
 - `open_route` `{ open_route: text }`: A trade route runs again. Rules yes, brain no, chronicler no.

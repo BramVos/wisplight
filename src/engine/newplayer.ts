@@ -561,7 +561,7 @@ class Route {
     const where = (c: Condition): boolean => 'at' in c || 'here' in c || ('any' in c && c.any.every(where))
     for (const c of [...a.when.filter((x) => !where(x)), ...a.when.filter(where)]) {
       const fresh = 'not' in c && typeof c.not === 'object' && c.not !== null && 'since' in c.not
-      if (allHold(me.world, [c], this.quest.id) || !('has' in c || 'flag' in c || 'knows' in c || 'any' in c || 'all' in c || 'count' in c || fresh || where(c))) continue
+      if (allHold(me.world, [c], this.quest.id) || !('has' in c || 'holds' in c || 'flag' in c || 'knows' in c || 'any' in c || 'all' in c || 'count' in c || fresh || where(c))) continue
       if (this.depth > 3) return `it needs ${JSON.stringify(c)} first, too many deeds deep`
       this.depth++
       const why = await this.one(c)
@@ -649,6 +649,12 @@ class Route {
       return first
     }
     if ('has' in c) return this.fetch(c.has, c.qty ?? 1)
+    // Evidence the story gives (M10.34 C): the deed that gives it.
+    if ('holds' in c) {
+      const giving = (quest.actions ?? []).filter((a) => a.effects.some((e) => 'evidence' in e && e.evidence === c.holds))
+      for (const a of giving) if (!(await this.deed(a)) && allHold(me.world, [c], quest.id)) return undefined
+      return `it needs the evidence ${c.holds}, and ${giving.length ? 'the deed that gives it did not' : 'no deed of the story gives it'}`
+    }
     // Within so many hours of something (the cat understood for three hours after the draught): a deed that stamps it.
     if ('not' in c && typeof c.not === 'object' && c.not !== null && 'since' in c.not) {
       const stamp = (c.not as { since: string }).since

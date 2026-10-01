@@ -316,6 +316,7 @@ quests:
           - { not_flag: story_the_orison_recordings_1 }
         effects:
           - { set: story_the_orison_recordings_1 }
+          - { evidence: access_sequence, name: the access sequence, text: "Niko's access sequence for the Listening Room, with his account of the failures: power drops, receiver drift, and the archive filling with noise." }
         text: "Niko gives you the access sequence for the Listening Room and a rough account of the failures: power drops, receiver drift, the archive filling with noise. He watches you closely while he talks about the antenna."
         once: false
       - id: a2
@@ -327,6 +328,8 @@ quests:
           - { not_flag: story_the_orison_recordings_2 }
         effects:
           - { set: story_the_orison_recordings_2 }
+          # Evidence you hold (M10.34 C): READ COPIES, SHOW COPIES TO SORELL.
+          - { evidence: recording_copies, name: your copies of the recordings, text: "Raw copies of the Orison recordings, taken from the buffer at the console. Several segments of the repeating transmission are missing from the archive, removed at this console, and their timestamps were rewritten to close the gaps." }
         text: The raw buffer copies across in fits and starts. When you compare it with the archive index, you find that several segments of the repeating transmission were removed at this console, and their timestamps were rewritten to close the gaps.
         once: false
       - id: a3
@@ -354,6 +357,7 @@ quests:
           - { not_flag: story_the_orison_recordings_4 }
         effects:
           - { set: story_the_orison_recordings_4 }
+          - { evidence: test_telemetry, name: the test telemetry, text: "Telemetry of a drive test on Nacre, run in secret shortly before the transmission was first caught, and powered with emergency heating and water parts entered as research stock. Its pulse pattern is the pattern of the removed segments." }
         text: Tessa tells you, reluctantly, that a secret drive test ran on Nacre shortly before the transmission was first caught. It was powered with emergency heating and water parts that were entered as research stock. She gives you the test telemetry, and the hangar code, 7411, so you can take it to Sorell yourself. Set beside your raw copies, the removed segments carry the same pulse pattern as the test.
         once: false
       - id: e1
@@ -367,6 +371,8 @@ quests:
           - { not_flag: story_the_orison_recordings_end_2 }
           - { not_flag: story_the_orison_recordings_end_3 }
           - { not_flag: story_the_orison_recordings_end_4 }
+          - { holds: recording_copies }
+          - { holds: test_telemetry }
         effects:
           - { set: story_the_orison_recordings_end_1 }
         text: Sorell admits it. He cut the segments that matched the drive test and rewrote their timestamps, so that nobody would learn of the secret test or the stock he diverted, and so that the port would not ground the Peregrine. What made the signal, and why it carries the test's pattern, he cannot say. Neither can you.
@@ -381,6 +387,8 @@ quests:
           - { not_flag: story_the_orison_recordings_end_2 }
           - { not_flag: story_the_orison_recordings_end_3 }
           - { not_flag: story_the_orison_recordings_end_4 }
+          - { holds: recording_copies }
+          - { holds: test_telemetry }
         effects:
           - { set: story_the_orison_recordings_end_2 }
         text: At the evening meal you put the raw copies and Tessa's telemetry up on the Commons screen and let the port see the gaps for itself. Sorell stands at the back and does not deny it.
@@ -396,6 +404,7 @@ quests:
           - { not_flag: story_the_orison_recordings_end_2 }
           - { not_flag: story_the_orison_recordings_end_3 }
           - { not_flag: story_the_orison_recordings_end_4 }
+          - { holds: recording_copies }
         effects:
           - { set: story_the_orison_recordings_end_3 }
         text: You give Niko the complete copies and a drawing of his own bypass. He takes the bypass out that night, and by morning the receiver has steadied.
@@ -413,6 +422,7 @@ quests:
           - { not_flag: story_the_orison_recordings_end_4 }
         effects:
           - { set: story_the_orison_recordings_end_4 }
+          - { evidence: edited_copies, name: Sorell's edited copies, text: "Sorell's copies of the Orison recordings, clean and continuous, with no gap anywhere: the record as he wants it read." }
         text: You tell Sorell you will say nothing. He thanks you quietly and hands you his edited copies to deliver as the originals.
         once: false
     outcomes:

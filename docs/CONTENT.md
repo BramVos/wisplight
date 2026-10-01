@@ -353,6 +353,8 @@ A stage may have `asks`, what the giver wants of the stranger at this stage, one
 
 A condition `talked`: the stranger talked with someone (npc id), and with `about`, about one of these words from either side, in the talks the game keeps: `{ talked: npc_niko_serrin, about: [signal, station] }`. A stage the stranger lived in a game from before the story was written passes by it (with `effects` setting the flag its deed would set); the step Stories writes it when it is shown that game, and loading a save from before a quest that begins with the game begins it where the stranger stands.
 
+An effect `evidence` (id, `name`, `text`) gives the stranger something to hold: a line in the dossier with what it is, from whom, by which deed and who saw it; READ and SHOW work on it by its name, and the condition `holds` (its id) asks for it. A deed whose text says someone gives or hands the stranger something gives it (`give` a thing, or `evidence`); Check names one that only says so.
+
 A quest may have `truths`: what the story keeps hidden (`text`), how a reply would name it (`words`, patterns as in an action's say) and when people may say it (`from` a stage, or `when` conditions hold; without either, once it has ended). Before that the guard refuses a reply or an improvisation that names it, unless the game gave it to the speaker: their knows line, or a secret they told. Keep a truth out of the ask and out of the journal lines before its stage.
 
 ## regions (regions/<region>/region.yaml)
@@ -517,7 +519,7 @@ A list; each has:
 | closed | When it does not go now, in words (its days and hours). | text | no |  |
 | off | When it does not run at all while its conditions fail (the Lamp out), in words. | text | no |  |
 | where | Where it stops, in words, for someone who asks. | text | no |  |
-| when | Only while these hold (the Lamp lit, the road open). | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no | [] |
+| when | Only while these hold (the Lamp lit, the road open). | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no | [] |
 | sights | What you may see on a journey of days. | list of text | no | [] |
 
 `legs`: minutes between two of its stops that the map cannot measure, keyed `<stop>><stop>` with a `>` between the ids (`loc_quay>kestrel_landing: 90`).
@@ -659,7 +661,7 @@ A list; each has:
 | event | A name for what happened, for an aftermath that answers only this event of the signal. | text | no |  |
 | fact | A new fact with a claim of this key, and of this value or kind if given. Its people: $subject, $value, $about. | a map: key, value, not, kind | no |  |
 | belief | Someone comes to believe a claim of this key (and value or kind): $a who believes it, $b who told them (M8.2). | a map: key, value, kind | no |  |
-| when | Conditions that come true: a signal each time they do. | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no |  |
+| when | Conditions that come true: a signal each time they do. | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no |  |
 | probe | A state the system works out: a house nobody has lived in for so many days ($place), a household that rose so many standings ($a and the rest of it). | one of: a map: house_empty \| a map: standing_rise \| a map: grudge \| a map: strangers_stay \| a map: friction \| a map: shortage \| a map: surplus \| a map: price_doubled \| a map: missing_trade \| a map: befriended \| a map: pulse | no |  |
 | who | Who it is about; for a fact, by default the subject and the value of its claim. | list of text | no |  |
 | place | Where it happens, when the conditions do not say. | text | no |  |
@@ -707,7 +709,7 @@ A list; each has:
 | id | The aftermath's id: a key, never changed once committed, and never shown to the player. | text | yes |  |
 | signal | The signal it follows. | text | yes |  |
 | event | Only for this event of the signal; left out, for every event. | text | no |  |
-| when | Only when these hold, with the bindings of the signal. | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no | [] |
+| when | Only when these hold, with the bindings of the signal. | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no | [] |
 | topic | One plan per person per topic: a second signal about the same does not start a second plan. | text | yes |  |
 | expires | Days after which what is left of it lapses. | number | no | 30 |
 | groups | The groups it moves, by area: everyone who lives there, alive and not travelling with the stranger. | a map of names to a map: areas, npcs, except | no | {} |
@@ -728,7 +730,7 @@ A list; each has:
 | id | The intention's id: a key, never changed once committed, and never shown to the player. | text | yes |  |
 | signal | The signal it answers. | text | yes |  |
 | event | Only for this event of the signal; left out, for every event. | text | no |  |
-| when | Who may choose it: conditions with $a the one who chooses. | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no | [] |
+| when | Who may choose it: conditions with $a the one who chooses. | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no | [] |
 | topic | What it is about: one plan per person per topic. | text | yes |  |
 | expires | Days after which what is left of it lapses. | number | no | 14 |
 | groups | The groups it moves, by area: everyone who lives there, alive and not travelling with the stranger. | a map of names to a map: areas, npcs, except | no | {} |

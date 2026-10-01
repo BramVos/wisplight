@@ -32,6 +32,9 @@ describe('M10.33 AF: the story so far and what you can do now', () => {
     const engine = new Engine(quiet, { seed: 3, builder: true })
     engine.start()
     Object.assign((engine.state.flags ??= {}), { story_the_orison_recordings_1: true, story_the_orison_recordings_2: true, story_the_orison_recordings_3: true, story_the_orison_recordings_4: true })
+    // And the evidence those deeds gave (M10.34 C): the endings ask for it.
+    const held = { text: 'x', quest: 'story_the_orison_recordings', t: 0, seen: [] }
+    engine.state.player.dossier = { recording_copies: { name: 'your copies of the recordings', ...held }, test_telemetry: { name: 'the test telemetry', ...held } }
     engine.tick(1)
     const lines = questPage(engine.world, 'story_the_orison_recordings')!.lines
     const ends = lines.slice(lines.indexOf('Ways it could end:') + 1)

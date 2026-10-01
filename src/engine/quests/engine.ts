@@ -20,6 +20,7 @@ import { mayLieAbout } from '../social/gates'
 import type { World } from '../world'
 import type { Condition, KnowsClaim, PlaceStateName, QuestAction, QuestEffect } from './schema'
 import { saidHolds, talkedHolds } from '../said'
+import { addEvidence, holdsEvidence, questEvidence } from '../dossier'
 
 // The quest engine (FO, chapter 14): a quest gives NPCs a part and goals and
 // lets the systems do the rest. Stages move on when their conditions hold,
@@ -76,6 +77,7 @@ export function holds(world: World, c: Condition, questId?: string): boolean {
   if ('not_flag' in c) return !f[c.not_flag]
   if ('knows' in c) return typeof c.knows === 'string' ? (player.journal ?? {})[c.knows] !== undefined || Boolean(f[`knows:${c.knows}`]) : knowsClaim(world, c.knows)
   if ('has' in c) return (player.inventory[c.has] ?? 0) >= (c.qty ?? 1)
+  if ('holds' in c) return holdsEvidence(world, c.holds)
   if ('money' in c) return player.money >= c.money
   if ('attitude' in c) return world.content.npcs.has(c.attitude) && ORDER.indexOf(attitude(world, c.attitude).band) >= ORDER.indexOf(c.at_least)
   if ('clock' in c) return ((world.state.clocks?.[c.clock] as Clock | undefined)?.filled ?? 0) >= c.at_least
@@ -184,9 +186,11 @@ function startMinute(world: World): number {
 
 // ---------------------------------------------------------------- effects
 
-export function applyEffects(world: World, host: QuestHost, questId: string | undefined, effects: QuestEffect[], out: Output[]): void {
+export function applyEffects(world: World, host: QuestHost, questId: string | undefined, effects: QuestEffect[], out: Output[], by?: QuestAction): void {
   for (const e of effects) {
     if ('set' in e) flags(world)[e.set] = e.value
+    // Evidence the stranger now holds (M10.34 C), from whom and by which deed.
+    else if ('evidence' in e) addEvidence(world, e, { ...(questId ? { quest: questId } : {}), ...(by ? { deed: (by.intent ?? plainWords(by.say[0] ?? '')).trim(), text: by.text, ...(by.with ? { with: by.with } : {}) } : {}) })
     else if ('unset' in e) delete flags(world)[e.unset]
     else if ('give' in e) add(world.state.player.inventory, e.give, e.qty)
     else if ('take' in e) {
@@ -623,7 +627,7 @@ function perform(world: World, host: QuestHost, questId: string, q: QuestState, 
     // A deed shows as a deed (M10.33 AA): what you did, and where the story stands, before what it brings.
     out.push({ kind: 'system', text: deedLine(world, questId, q, action) })
     out.push({ kind: 'narration', text: action.text })
-    applyEffects(world, host, questId, action.effects, out)
+    applyEffects(world, host, questId, action.effects, out, action)
   } else {
     out.push({ kind: 'narration', text: action.fail_text ?? 'It does not work.' })
     applyEffects(world, host, questId, action.fail, out)
@@ -770,6 +774,9 @@ export function questPage(world: World, questId: string): { name: string; lines:
   for (const a of actions.filter((x) => q.done.includes(x.id) && !told.has(x.id))) lines.push(`  ${a.text.trim()}`)
   // What the stranger can do now (M10.30), while it is open.
   const goal = q.ended ? undefined : quest.stages?.find((s) => s.id === q.stage)?.goal
+  // What the story gave the stranger to hold (M10.34 C).
+  const held = questEvidence(world, questId)
+  if (held) lines.push(held)
   if (goal) lines.push(`Now: ${goal}`)
   if (!q.ended) {
     // Who gave it and where its next deed is (M10.33 C), each a link to its page: the page says the way.

@@ -110,7 +110,8 @@ quests:
         when: [{ attitude: npc_tamsin, at_least: Neutral }]
         not_yet: Tamsin looks at you a long while with her gull's eyes, and talks about the weather instead.
         text: '"Into the old gentleman''s house?" Tamsin laughs until she coughs. "By day, when the sun''s on his back; he sleeps soundest then. Go barefoot, touch nothing but what you came for, and leave him a gift by the door. Salt fish. He likes salt fish."'
-        effects: [{ set: tamsin_counsel }, { learn: old_skarth }]
+        # What Tamsin told, to hold and READ again on the way (M10.34 C).
+        effects: [{ set: tamsin_counsel }, { learn: old_skarth }, { evidence: tamsins_counsel, name: "Tamsin's counsel", text: "Into the old gentleman's barrow by day, when the sun is on his back: barefoot, touching nothing but what you came for, and a gift of salt fish left by the door." }]
       - id: enter_barrow_with_gift
         say: ['(?:enter|search|explore|go into|creep into|sneak into|go down into) (?:the )?(?:barrow|mound|tomb|gap)(?: .*)?', '(?:take|get|find|fetch) (?:the )?(?:rune |stone |black )?key(?: .*)?']
         at: [loc_skerrow_wyrm_barrow]

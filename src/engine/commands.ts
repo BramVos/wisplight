@@ -1,3 +1,4 @@
+import { holdingLine } from './dossier'
 import { planHere, planText } from './plan'
 import { tellChronicler } from './wishes'
 import { framesLines, setFrame } from './frames'
@@ -134,7 +135,9 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
     case 'inventory': {
       // What you wear is said as worn (M10.33 AD).
       const worn = wornNow(world)
-      return [text(`You carry ${listItems(world.content, world.state.player.inventory)}, and ${world.money(world.state.player.money)}.${worn.length ? ` You wear ${worn.map((id) => `the ${itemName(world.content, id)}`).join(' and ')}.` : ''}`)]
+      // Evidence a story gave you (M10.34 C), after what you carry.
+      const held = holdingLine(world)
+      return [text(`You carry ${listItems(world.content, world.state.player.inventory)}, and ${world.money(world.state.player.money)}.${worn.length ? ` You wear ${worn.map((id) => `the ${itemName(world.content, id)}`).join(' and ')}.` : ''}${held ? ` ${held}` : ''}`)]
     }
     case 'take': {
       // TAKE <thing> FROM <chest> (M10.3): from an open chest; someone else's is theirs.

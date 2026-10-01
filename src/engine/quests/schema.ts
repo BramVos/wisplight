@@ -37,6 +37,7 @@ type Cond =
   | { not_flag: string }
   | { knows: string | KnowsClaim }
   | { has: string; qty?: number }
+  | { holds: string }
   | { money: number }
   | { attitude: string; at_least: z.infer<typeof BAND> }
   | { clock: string; at_least: number }
@@ -108,6 +109,7 @@ export const ConditionSchema: z.ZodType<Cond> = z.lazy(() =>
       .strict()
       .describe('The player knows a topic; or, with who, someone believes a claim (value, or anything but not), heard at least at this level, within so many days, perhaps doubting.'),
     z.object({ has: z.string(), qty: z.number().int().positive().optional() }).strict().describe('The player has a thing, so many of it.'),
+    z.object({ holds: z.string() }).strict().describe('The stranger holds a piece of evidence (M10.34 C), by the id an evidence effect gave it: the test telemetry, the copies of the recordings.'),
     z.object({ money: z.number().int() }).strict().describe('The player has at least this much money, in the smallest coin.'),
     z.object({ attitude: z.string(), at_least: BAND }).strict().describe('Someone thinks at least this well of the player.'),
     z.object({ clock: z.string(), at_least: z.number().int() }).strict().describe('A progress clock has at least so many segments filled.'),
@@ -230,6 +232,14 @@ export const QuestEffectSchema = z.union([
   z.object({ vanish: z.string() }).strict(),
   /** The player joins a faction. */
   z.object({ join: z.string() }).strict(),
+  z
+    .object({
+      evidence: Id.describe('Its id, for holds in a condition: test_telemetry.'),
+      name: z.string().describe('What the stranger calls it, to READ and SHOW it: "the test telemetry".'),
+      text: z.string().optional().describe('What it says when read; without it, the text of the deed that gave it.'),
+    })
+    .strict()
+    .describe('Evidence the stranger now holds (M10.34 C): a line in the dossier of the journal with what it is, from whom, by which deed and who saw it; READ and SHOW work on it, and holds asks for it. For a thing a deed text says it gives ("She gives you the test telemetry").'),
   /** Something an NPC carries comes to the player: a stolen chain, a bought chest. */
   z.object({ seize: z.string(), from: z.string(), qty: z.number().int().positive().default(1) }).strict(),
 ])
