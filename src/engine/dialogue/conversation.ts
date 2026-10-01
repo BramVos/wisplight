@@ -1088,6 +1088,7 @@ export class Dialogue {
       memories: ctx.memories,
       history: [],
       playerText: text,
+      proposals: (ctx.offers ?? []).filter((o) => o.decision === 'yes').map((o) => o.what),
     }
     const offered = ctx.offered ?? []
     const offers = ctx.offers ?? []

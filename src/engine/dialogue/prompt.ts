@@ -22,6 +22,7 @@ import { worldText } from '../safety'
 import { backgroundNow, knownFrom } from '../rules/player'
 import { storyLines } from '../quests/knows'
 import { doableLine } from '../doable'
+import { hookLine } from './hooks'
 
 // Prompts for the voice role (FO, chapter 10). The system part is byte-for-byte
 // stable per NPC so providers can cache it; everything that changes goes in
@@ -287,6 +288,8 @@ export interface TurnContext {
   memories: string[]
   history: { speaker: 'player' | 'npc'; text: string }[]
   playerText: string
+  /** What the game said yes to among the offers of this turn (M10.35 D): a hook for a question back. */
+  proposals?: string[]
 }
 
 /**
@@ -372,8 +375,9 @@ export function turnSections(world: World, ctx: TurnContext, voice: 'all' | 'tal
   if (ctx.check) add('check', `CHECK: the player tried to ${ctx.check.about}. Result: ${ctx.check.degree}.`, true)
   if (ctx.decision) add('decision', `DECISION (made by the game, follow it): ${ctx.decision}`, true)
   if (ctx.memories.length) add('memories', `MEMORIES of the player: ${ctx.memories.join(' ')}`)
-  // A question back now and then (M10.28, the read score: the talk seldom went on by itself), where it fits the speaker.
-  if (asksBack(world, ctx)) add('hook', 'THIS TIME: end with a question back to the stranger, or a hook they could ask about next, in your own way.', true)
+  // A question back now and then (M10.28, the read score: the talk seldom went on by itself), where it fits the speaker;
+  // to a hook the game gives (M10.35 D), never one of the model's own.
+  if (asksBack(world, ctx)) add('hook', hookLine(world, ctx), true)
   return parts
 }
 

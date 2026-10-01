@@ -1,5 +1,20 @@
 # Changelog
 
+## M10.35 deel: de wedervraag komt uit de content (D), 1 oktober 2026
+
+- **Een haak die het spel geeft (D).** Oorzaak: THIS TIME vroeg de stem één beurt op de drie om een vraag terug of een haak "in your own way". Wat de stem dan zelf bedacht, kon een vals spoor zijn. Nu geeft de motor de haken. Wie iets van de vreemdeling wil, krijgt het eigen verzoek of wat de gever nu wil. Wie in de volgende stap van een verhaal zit (de gever, of iemand met wie de stap gedaan wordt), krijgt de "Now"-regel. Wie het verhaal alleen kent, krijgt het verhaal zoals hij het kent. Verder kan het een aanbod zijn waar het spel ja op zei, nieuws dat de spreker hoorde, of een onderwerp uit KNOWLEDGE dat ze goed kent. Elke haak staat al elders in de prompt. Per beurt gaan er hoogstens twee mee, een van henzelf en een uit wat ze weten, en om de drie beurten een andere. De stem kiest er een en zegt hem in eigen woorden; "No other hook". Heeft het spel geen haak, dan vraagt de stem terug naar wat de vreemdeling zei, zonder iets nieuws aan te snijden. Opgelost in de motor, voor elke wereld.
+- In The Quiet Reach krijgt Niko bij het begin "their next step: Ask Niko about the station", Ilyan wat hij wil, en Sana, Mara, Tessa en Edda het verhaal zoals zij het kennen. Op Skerrow krijgt Maren wat ze wil, en Pip vraagt terug naar wat er gezegd werd.
+
+Testen: praat een paar regels met Niko of Sana. De vraag terug gaat over iets wat zij weten of willen, niet over iets nieuws. Tests in `tests/m1035d.test.ts`.
+
+Bekende gaten: een verhaal uit iemands eigen bank (A) wordt een haak zodra A er is. Dat bouwt de andere bouwer; de plek is `knownHooks` in `src/engine/dialogue/hooks.ts`. Of de gesprekken minder vaak een vals spoor krijgen en even vaak doorlopen (onward in de leesscore), meet ik samen met B op een sleutel, na Brams akkoord.
+
+Kosten: een paar woorden meer in de wisselende helft van een beurt op de drie, minder dan een honderdste cent per gesprek.
+
+Wat de editor en de kroniekverteller leerden: niets; de haken komen uit wat een wereld al heeft (`asks`, `knows`, `goal`, verzoeken, aanbiedingen, nieuws).
+
+Ontwerp: geen wijziging.
+
 ## M10.35 deel: gissen mag, weten niet (B), 1 oktober 2026
 
 - **Een gok als gok (B).** Oorzaak: de regels kenden alleen een feit of "ik weet het niet". Wat het model erbij bedacht, kwam dus als feit op het scherm. Niko's "the multimeter under the bench" en Tessa's "an access hatch from the workshop side into the ship's belly" waren borduursel, en Bram zocht ze allebei. De regel zegt nu: alleen feiten uit KNOWLEDGE, SCENE en de eigen kaart; anders zeg je dat je het niet weet, verwijs je door, of gis je hardop over het verhaal of de mensen als je eigen gok ("I'd guess"), nooit als feit of opdracht. De regel over `mentioned_topics` stond ook in het schema en staat nu alleen daar, zodat dit binnen het budget past (4999 van de 5016 tekens).
