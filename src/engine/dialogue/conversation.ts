@@ -35,6 +35,7 @@ import { askLine, askNow, knownRequests, requestName, visited } from '../request
 import { questsOf } from '../life'
 import { hiddenNamed, wantsNow } from '../quests/knows'
 import { falseHint } from './hints'
+import { rightClaimed, rightLine, verdictFor, wantOf } from './verdict'
 import { doableHere } from '../doable'
 import type { Npc } from '../content'
 import { allHold } from '../quests/engine'
@@ -725,10 +726,16 @@ export class Dialogue {
     // "Come with me to the dyke" (M10.6): somewhere or to someone is a lead on offer, not joining the stranger's travels.
     const leads = act === 'Recruit' && !options.check ? offersFor(world, npcId, topics, text).filter((o) => o.kind === 'lead') : []
     const recruiting = act === 'Recruit' && leads.length === 0
-    const decision = [recruiting ? recruitDecision(world, npcId, band.band) : undefined, believed, reaction?.decision, flirted?.decision, amended?.decision, kept].filter(Boolean).join(' ') || undefined
     const offered = options.echo || options.check ? [] : (this.questOptions?.(npcId) ?? [])
     // What this person can do for the player now (M10.3): the game decides, the voice chooses and words it.
     const offers = options.check || secret || recruiting ? [] : leads.length ? leads : offersFor(world, npcId, topics, text)
+    // Verdict first (M10.35 F): a wish no offer answers is the game's no too, with a real other way or none, and a right
+    // the stranger claims that the game does not back is no reason to act or to think better of them.
+    const answered = askedFor(offers, text)
+    const verdict = options.check || secret || kept || recruiting ? undefined : verdictFor(world, npcId, wantOf(text), offers, answered, offered.length > 0)
+    const unbacked = options.check ? undefined : rightClaimed(world, npcId, text)
+    // An offer's own no the rules may say as before (a price, by rule); its other way goes along when the voice answers.
+    const decision = [recruiting ? recruitDecision(world, npcId, band.band) : undefined, believed, reaction?.decision, flirted?.decision, amended?.decision, kept, answered ? undefined : verdict, unbacked ? rightLine(unbacked) : undefined].filter(Boolean).join(' ') || undefined
     // Asked about someone who matters: news with witnesses, before anyone answers (M10.3).
     const made = talkFact(world, npcId, topics, act)
     if (made) (talk.facts ??= []).push(made.id)
@@ -736,7 +743,7 @@ export class Dialogue {
     const busy = Boolean(options.check || secret || said || decision || reaction || flirted || amended || offered.length || claimable.length)
     const rule = this.llm() ? byRule(world, npcId, { act, text, topics, history: talk.history, offers, busy, state: answerState(world, npcId) }) : undefined
     if (rule) this.llm()?.byRule?.({ role: 'voice', why: rule.why, said: text })
-    const reply = rule ? undefined : await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret, decision, allows: Boolean(recruiting || reaction || flirted || amended || believed), spokenTopics: this.topics.recognise(text), offered, offers, claimable })
+    const reply = rule ? undefined : await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret, decision: [decision, answered ? verdict : undefined].filter(Boolean).join(' ') || undefined, allows: Boolean(recruiting || reaction || flirted || amended || believed), spokenTopics: this.topics.recognise(text), offered, offers, claimable })
     // A claim the voice read: the engine judges it and books it as heard from the stranger; the stance sounds next turn.
     const read = reply?.claim && reply.claim.subject !== 'none' && claimable.includes(reply.claim.subject) ? { subject: reply.claim.subject, key: reply.claim.key, value: reply.claim.value } : undefined
     if (read && claimValid(world, read) && (talk.claims = (talk.claims ?? 0) + 1) <= knob(this.world, 'talk.max_claims')) {
@@ -791,10 +798,10 @@ export class Dialogue {
     // What this turn was about (M10.8): a quest waiting in this talk starts when its subject comes up.
     this.touched = [...new Set([...topics, ...packet.known.map((k) => k.topic), ...this.topics.recognise(text), ...this.topics.recognise(replyText)])]
 
-    // 4. Effects, bounded by the system.
+    // 4. Effects, bounded by the system; never better on a right the stranger only claims (M10.35 F).
     if (reply) {
       for (const effect of reply.effects.slice(0, 1)) {
-        const delta = Math.max(-3, Math.min(3, effect.delta))
+        const delta = Math.max(-3, Math.min(unbacked && effect.type !== 'fear' ? 0 : 3, effect.delta))
         const room = knob(this.world, 'talk.max_effect') - Math.abs(talk.effects)
         const applied = Math.sign(delta) * Math.min(Math.abs(delta), Math.max(0, room))
         if (applied !== 0) {

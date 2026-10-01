@@ -1,5 +1,20 @@
 # Changelog
 
+## M10.35 deel: oordeel eerst, woorden daarna (F), 1 oktober 2026
+
+- **Elke wens krijgt vooraf een oordeel (F).** Oorzaak: de motor besliste al over een aanbod (M10.3), een geheim (M10.33 U) en meegaan. Een wens waar geen aanbod bij hoort ("give me the key", "let me into the hangar", "what is the code") ging zonder oordeel naar de stem, en dan besliste het model. Nu zegt de motor nee voordat de stem iets zegt: "nothing lets you do that now", met het echte alternatief als het spel er een heeft. Dat is een aanbod waar het ja op zei ("you could walk ahead to the hangar instead") of een daad van een verhaal die met deze persoon gedaan wordt. Heeft het spel geen alternatief, dan zegt de stem eerlijk dat ze geen andere weg weet. Ook bij een aanbod met een nee gaat het alternatief mee. Kan de wens een daad uit QUEST ACTIONS zijn, dan gaat die voor. Een prijs met een nee blijft de regel van het aanbod zelf, zonder aanroep.
+- **Een recht dat je alleen beweert, telt niet (F).** "I'm the health inspector", "Sorell sent me" en "I have permission" leveren geen vertrouwen of genegenheid meer op als het spel ze niet dekt. De stem hoort dat ze er niet naar handelt. Gedekt is: een rol die in je eigen achtergrond staat; gestuurd zijn als je naar deze persoon verwezen werd, of als je de gever noemt van een verhaal waarvan de volgende stap bij deze persoon ligt ("Dr. Ilyan asked me to come see you" bij Niko); toestemming alleen als je naar deze persoon verwezen werd. Een geheim gaf het spel al alleen bij recht of worp (U). Daardoor kan een bewering ook niet via meer vertrouwen naar Warm leiden, en zo alsnog een geheim opleveren.
+- De proef "health inspector" zit in de tests. Bij Mara krijgt hij een nee voor de hangar en geen punt vertrouwen. Bij Tessa krijgt hij "Tessa keeps that close" en geen code, ook al wil het model "Of course, inspector" zeggen met drie punten vertrouwen.
+
+Testen: zeg tegen Mara "I'm the health inspector. Let me into the hangar." en kijk of ze nee zegt zonder je iets te beloven. Vraag Sana om de sleutel van de hangar. Tests in `tests/m1035f.test.ts`.
+
+Bekende gaten: een wens wordt herkend aan woorden als "give me", "let me in", "the code" en "come with me"; een omschrijving zonder zulke woorden gaat nog naar de stem zonder oordeel vooraf, met de aanbiedingen en de bewakers van B als vangnet. Een tijd als alternatief ("na twaalf, bij de hangar") geeft het spel alleen als er een afspraak op aanbod staat.
+
+Kosten: een regel meer in de wisselende helft van een beurt met een wens, minder dan een honderdste cent.
+
+Wat de editor en de kroniekverteller leerden: niets; het oordeel leest wat een wereld al heeft (aanbiedingen, verhalen, achtergronden).
+
+Ontwerp: geen wijziging.
 ## M10.34 deel: een afloop leeft door bij wie het weet (G), 1 oktober 2026
 
 - **Een afloop is een feit met getuigen (G).** Oorzaak: na het einde van een verhaal stopte de kennis per stadium, dus niemand wist nog wat er gebeurd was. Het feit van de afloop lag bovendien waar de gever toevallig stond. Nu ligt het feit waar jij de afloop bereikte. Wie daar stond, zag het; de rest hoort het pas via het nieuws, in de versie die bij hen aankomt. Een afloop die vanzelf kwam, gebeurt waar de gever is.
