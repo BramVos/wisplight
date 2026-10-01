@@ -40,7 +40,7 @@ describe('M10.29 H: the way, and where people are', () => {
     expect(mill.prompt).toMatch(/THE WAY: from here, The Mill De Zwaan is \w+, about \d+ minutes' walk\./)
     const harmen = await askMirte('Where is Harmen?')
     expect(harmen.prompt).toMatch(/THE WAY: right now: .*Harmen/)
-    expect(mill.system).toMatch(/THE WAY is all you know of a way: never make up a road, turning, quay or door\./)
+    expect(mill.system).toMatch(/THE WAY is all you know of a way: make up no road, turning, quay or door\./)
   })
 
   it('says nothing of the way when nobody asks it', async () => {

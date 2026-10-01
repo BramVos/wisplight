@@ -34,6 +34,7 @@ import { attitude, applyEffect, moodOf, relation, type Attitude } from './relati
 import { askLine, askNow, knownRequests, requestName, visited } from '../requests'
 import { questsOf } from '../life'
 import { hiddenNamed, wantsNow } from '../quests/knows'
+import { falseHint } from './hints'
 import { doableHere } from '../doable'
 import type { Npc } from '../content'
 import { allHold } from '../quests/engine'
@@ -1249,12 +1250,20 @@ export class Dialogue {
         prompt += `\nNOTE: your last reply asked the stranger to ${act}, which cannot be done here. Ask only for what DOABLE HERE, THE STORY or a REQUEST gives, or for nothing.`
         continue
       }
-      // Guessing is allowed, knowing is not (M10.35 B): a thing, a way or a need said as fact with words nothing given holds.
-      // What was given is the call as first asked, without the rules and without a NOTE that would give the words back.
+      // A hint about the world is no guess (M10.35 B): a thing, a way or a need with words nothing given holds, "maybe" or
+      // not. What was given is the call as first asked, without the rules and without a NOTE that would give the words back.
       const claim = unfoundedClaim(fitted, givenWords(withoutRules(`${block.shared}\n${block.block}\n${(talk?.thread ?? []).map((t) => t.text).join('\n')}\n${message.text}\n${text}`)))
       if (claim) {
-        this.refused('invented', llm, `said as fact: ${claim.phrase}`)
-        prompt += `\nNOTE: your last reply said as fact "${claim.phrase}", but nothing you know gives ${claim.missing.map((w) => `"${w}"`).join(', ')}. Leave it out, or say it only as your own guess.`
+        this.refused('invented', llm, `a hint nothing gives: ${claim.phrase}`)
+        prompt += `\nNOTE: your last reply said "${claim.phrase}", but nothing you know gives ${claim.missing.map((w) => `"${w}"`).join(', ')}. Leave it out: of things, places and ways say only what you know.`
+        continue
+      }
+      // And who has a thing, where it lies and who lets the stranger in, against the state of the game: the names alone can
+      // both exist and the hint be false ("Mara has the key"). The voice hears that it is not so, never what is.
+      const hint = falseHint(world, fitted, (s) => this.topics.recognise(s), npcId)
+      if (hint) {
+        this.refused('invented', llm, `a false hint: ${hint.phrase} (${hint.why})`)
+        prompt += `\nNOTE: your last reply said "${hint.phrase}", which is not so. Never guess who has a thing, where it is or who lets someone in: say only what KNOWLEDGE gives, or that you don't know.`
         continue
       }
       // A time they keep in their own words is no meeting (M10.33 AG): a meeting is an offer of the game they propose.

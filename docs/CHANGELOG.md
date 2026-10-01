@@ -1,5 +1,20 @@
 # Changelog
 
+## M10.35 deel: gissen over mensen, nooit over de wereld (B aangescherpt), 1 oktober 2026
+
+- **Een aanwijzing is geen gok (B).** De onderzoeker scherpte B aan. "Misschien ligt er iets onder die bank" stuurt de speler toch zoeken, en "Mara heeft de sleutel" kan onwaar zijn terwijl Mara en de sleutel allebei bestaan. Oorzaak blijft de regel, die alleen feit of "ik weet het niet" kende; mijn eerste versie liet een als gok gemarkeerde zin over dingen door, en dat was te ruim. De regel zegt nu: gissen mag over de beweegredenen van mensen ("I'd guess"), nooit over waar iets is, wie iets heeft, wie je binnenlaat of wat helpt. De bewaker laat een "maybe" niet meer door bij dingen, plekken en wegen. Hij toetst wie iets heeft, waar het ligt en wie je binnenlaat aan de stand van het spel: wat mensen bij zich hebben, wat er op de grond ligt, en wie de sleutel of het woord van een slot kent (een geheim, de eigen feiten of de kennisregel van een verhaal). Dat geldt ook nadat de wereld veranderde. Is een aanwijzing niet zo, dan hoort de stem alleen dat ze niet klopt en nooit wat wel waar is, want dat zou ze doorvertellen. Een zin met "if" en een gok over een mens gaan door. Opgelost in de motor (`src/engine/dialogue/hints.ts`), voor elke wereld.
+- **Gemeten.** Op dezelfde 212 bewaarde echte antwoorden met hun herbouwde prompt sturen beide toetsen niets terug. Uit Brams log van 30 september vangt hij nu ook Tessa's tegenstrijdige "Sorell has the code" en "Mara has the code". "Mara can let you in to the hangar", "Ask Sorell for the code" en "You'll need Mara's permission" worden ook gevangen. De logs op de lei, "Mara needs the sign-off" en "maintenance until handover" blijven buiten bereik: daarvoor is er geen stand in het spel.
+- Om binnen het budget te blijven (5005 van 5016 tekens) zegt THE WAY "make up no road" en PRIVATE "only to those you trust"; de betekenis is gelijk.
+
+Testen: vraag Sana hoe je in de hangar komt. Ze mag gissen naar Tessa, maar zegt niet dat Mara je binnenlaat. Tests in `tests/m1035b.test.ts`.
+
+Bekende gaten: wat voortgang oplevert en wat bewijs is, toetst de bewaker nog niet aan het spel; dat komt met F en I. De meting op een sleutel wacht nog op Brams akkoord.
+
+Kosten: geen.
+
+Wat de editor en de kroniekverteller leerden: niets; de toets leest wat een wereld al heeft (sloten met `key` en `word`, geheimen, `knows`, voorwerpen).
+
+Ontwerp: geen wijziging.
 ## M10.34 deel: bewijs is iets wat je hebt (C), 1 oktober 2026
 
 - **Een dossier (C).** Oorzaak: "Tessa gives you the test telemetry" was een regel tekst en verder niets. INVENTORY toonde niets, en je kon het bewijs niet lezen, tonen of gebruiken. Nu zet een daad bewijs in je dossier: wat het is, van wie, door welke daad en wie erbij stond. INVENTORY noemt het, READ geeft het, en SHOW <bewijs> TO <iemand> laat het zien. Die persoon onthoudt het, en in een gesprek hoort het volgende antwoord het. Een daad kan om bewijs vragen (`holds`), en de questpagina zegt welk bewijs een verhaal gaf.
