@@ -191,8 +191,7 @@ What the main line keeps hidden until its stage (a fixed truth of this world):
 
 | Settlement | Kind | People | The ground | Workshops |
 | --- | --- | --- | --- | --- |
-| Port Vesper | village | 30 |  | growing_modules, commons_kitchen |
-| Vesper Works | hamlet | 4 |  | purification_plant, filter_assembly, electronics_work, fabrication |
+| Port Vesper | village | 34 |  | growing_modules, commons_kitchen, purification_plant, filter_assembly, electronics_work, fabrication |
 | The Coastal Traverse | route | 0 | coastal_beds, wrack_line, tide_pools, basalt_outcrop |  |
 
 ## 7. The starting region
@@ -200,10 +199,9 @@ What the main line keeps hidden until its stage (a fixed truth of this world):
 | Area | Kind | What it is | Sound |
 | --- | --- | --- | --- |
 | Orison Ridge | wilderness | A bare volcanic ridge above the coast, where an abandoned listening station has been receiving a repeating transmission for weeks. | wind |
-| Port Vesper | village | A compact colony of connected pressure modules with shared facilities: the landing pad, the Commons, the guest quarters and the medical bay. | hum |
+| Port Vesper | village | A compact colony of connected pressure modules with shared facilities: the landing pad, the Commons, the guest quarters and the medical bay, and beside them the workshop and the locked hangar of the Peregrine. | hum |
 | The Coastal Traverse | route | An exposed maintenance route along the black coast between Port Vesper and Orison Ridge. | wind |
 | Vesper Coast | wilderness | The open land between the places of Vesper Coast. |  |
-| Vesper Works | hamlet | The workshop and research complex beside the port, with repairs, scarce parts and the locked hangar of the Peregrine. | workshop |
 
 ### Seasons and weather
 
@@ -240,13 +238,13 @@ Ways: down to Ridge Shelter; in to Cable Gallery (secret).
 
 Steel walls drip from the pumps, and seawater pools in the grooves of the floor grating. Crates from the supply ship line one wall, each label stamped [Harrow Station]. The cold tastes of salt and oil; a pressure pump thuds behind the panels. By the inner door, a desk scanner reads assignments and your terminal chirps, taking the local map. A corridor leads east, a cargo passage northeast.
 
-Ways: east to Commons; northeast to Workshop.
+Ways: east to Lock Corridor; northeast to Workshop.
 
 **Commons** (public, social)
 
-Bolted tables and benches fill a long, low hall, warm after the lock and loud with trays. The smell of soup and strong tea hangs under the ceiling ducts. By the serving hatch a shift roster and a board of arrival notices are patched with handwritten corrections. The far window looks out on grey swell and black rock. A heavy outside door opens onto the coast; a connection runs east.
+Bolted tables and benches fill a long, low hall, warm and loud with trays. The smell of soup and strong tea hangs under the ceiling ducts. By the serving hatch a shift roster and a board of arrival notices are patched with handwritten corrections. The far window looks out on grey swell and black rock. A heavy outside door opens onto the coast; a connection runs northwest to the workshops.
 
-Ways: north to Guest Quarters; south to Medical Bay; east to Workshop; out to Coastal Service Path; west to Arrival Lock. Here: water tap.
+Ways: north to Guest Quarters; south to Medical Bay; northwest to Workshop; out to Coastal Service Path; west to Lock Corridor. Here: water tap.
 
 **Guest Quarters** (lodging, rest)
 
@@ -254,11 +252,35 @@ Narrow bunks stack behind sliding doors, each with a small reading lamp and a cu
 
 Ways: south to Commons. Here: water tap.
 
+**Lock Corridor** (public)
+
+A short corridor of ribbed steel runs from the lock towards the Commons, its floor still wet from boots coming in. Along one wall, coat hooks hang over a boot rack, under a board of safety notices. The air warms as you go east, and it smells of soup and strong tea. Behind you is the [Arrival Lock]; ahead, the [Commons] is loud with voices.
+
+Ways: west to Arrival Lock; east to Commons.
+
 **Medical Bay** (public, medical)
 
 Three plastic chairs and a counter face a glass partition just inside the door. Beyond it stand treatment couches, locked cabinets and, under pale light, the long shell of the recovery cradle. Everything smells of antiseptic, and a monitor keeps a soft, even beep. A notice asks visitors to wait and touch nothing past the glass. The door north leads back to the Commons.
 
 Ways: north to Commons.
+
+**Peregrine — Common Deck** (ship, restricted)
+
+Tight and curved, built for six, this deck holds a briefing table bolted down with six strapped chairs around it. A terminal in the table glows with expedition data cleared for the crew. The air is dry and recycled, tasting faintly of new plastic, and the hull ticks now and then as it settles. The airlock leads back down the ramp to the Hangar.
+
+Ways: down to Peregrine Hangar.
+
+**Peregrine Hangar** (restricted, landmark)
+
+Cold and cavernous, this hangar is filled almost entirely by the ship, its scarred hull resting on landing struts with maintenance panels hanging open. Cables snake to diagnostic carts, and the air hums deep enough to feel in your teeth. A yellow barrier marks off the drive section towards the stern. A boarding ramp climbs to the airlock; the door out leads back to the Workshop.
+
+Ways: up to Peregrine — Common Deck; out to Workshop.
+
+**Workshop** (public, work)
+
+Workbenches, tool racks and crates of salvaged parts crowd this high room under hard white lamps. Solder, cold metal and Nacre's damp hang in the air. At the counter by the door a clipboard lists what may be signed out and what is reserved for the [Peregrine]. The sealed hangar door at the back is stencilled RESTRICTED. Passages run southeast to the Commons and southwest to the Arrival Lock.
+
+Ways: in to Peregrine Hangar; southwest to Arrival Lock; southeast to Commons. Here: Electronics Bench, Fabrication Bench.
 
 ### The Coastal Traverse
 
@@ -275,28 +297,6 @@ Ways: northeast to Ridge Shelter; in to Commons.
 Bolted to the rock where the path meets the climb, this box holds a bench, a heater and a door that seals tight against the wind. An emergency radio sits on a shelf beside a route board chalked with conditions. A relay cabinet stands open, casing buckled, smelling of burnt insulation. The route climbs up towards [Orison Ridge]; the path runs southwest to Port Vesper.
 
 Ways: up to Orison Listening Room; southwest to Coastal Service Path.
-
-### Vesper Works
-
-<!-- picture:area_vesper_works -->
-
-**Peregrine — Common Deck** (ship, restricted)
-
-Tight and curved, built for six, this deck holds a briefing table bolted down with six strapped chairs around it. A terminal in the table glows with expedition data cleared for the crew. The air is dry and recycled, tasting faintly of new plastic, and the hull ticks now and then as it settles. The airlock leads back down the ramp to the Hangar.
-
-Ways: down to Peregrine Hangar.
-
-**Peregrine Hangar** (restricted, landmark)
-
-Cold and cavernous, this hangar is filled almost entirely by the ship, its scarred hull resting on landing struts with maintenance panels hanging open. Cables snake to diagnostic carts, and the air hums deep enough to feel in your teeth. A yellow barrier marks off the drive section towards the stern. A boarding ramp climbs to the airlock; the door out leads back to the Workshop.
-
-Ways: up to Peregrine — Common Deck; out to Workshop.
-
-**Workshop** (public, work)
-
-Workbenches, tool racks and crates of salvaged parts crowd this high room under hard white lamps. Solder, cold metal and Nacre's damp hang in the air. At the counter by the door a clipboard lists what may be signed out and what is reserved for the [Peregrine]. The sealed hangar door at the back is stencilled RESTRICTED. Passages run west to Commons and southwest to Arrival Lock.
-
-Ways: in to Peregrine Hangar; southwest to Arrival Lock; west to Commons. Here: Electronics Bench, Fabrication Bench.
 
 ## 9. People
 
@@ -1158,7 +1158,7 @@ What the chronicler said:
 >
 > - The Service Path runs northeast to the Ridge Shelter, and the station is `up` from there.
 >
-> - **Area kinds.** Port Vesper is a village. Vesper Works is a hamlet, because it is its own area. In the Economy step that means the Works needs a ledger of its own for its workshops. The Traverse is a route and Orison Ridge is a wilderness.
+> - **Area kinds.** Port Vesper is a village. Vesper Works is a hamlet, because it is its own area. In the Economy step that means the Works needs a ledger of its own for its workshops. (M10.33, 1 October 2026: Bram had the Works go up in Port Vesper. An area is what you walk through indoors, so one station is one settlement; the Workshop, the hangar and the Common Deck are Port Vesper's, its ledger holds the Works' workshops, and a short Lock Corridor stands between the lock and the Commons.) The Traverse is a route and Orison Ridge is a wilderness.
 >
 > - **Storm on the Ridge.** Orison Ridge is barred in a storm. Only the steep climb is closed, and the Ridge Shelter is named as the place to wait. You can never be cut off without shelter, and you can always turn back to Port Vesper.
 >

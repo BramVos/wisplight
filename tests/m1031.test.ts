@@ -8,7 +8,7 @@ import { regionMap } from '../src/engine/map/region'
 import { entranceOn } from '../src/engine/map/travel'
 import { planHere } from '../src/engine/plan'
 import { loadContentFromDir } from '../src/node/content'
-import { content } from './helpers'
+import { content, worksApart } from './helpers'
 
 const quietReach = await loadContentFromDir(join(import.meta.dirname, '../content'), 'quietreach')
 const isle = await loadContentFromDir(join(import.meta.dirname, '../content'), 'isle')
@@ -33,7 +33,9 @@ describe('M10.31 F: what everyone in the Nethermarch knows', () => {
 
 describe('M10.31 D: walking to a place you only heard of', () => {
   it('goes as far as the places you know, then says which way you were pointed; a place never heard of stays unknown', async () => {
-    const engine = new Engine(quietReach, { seed: 7 })
+    // In an area of its own, as the hangar was before Vesper Works went into Port Vesper (M10.33 L): a place of the
+    // area you stand in is known by having been there.
+    const engine = new Engine(worksApart(quietReach), { seed: 7 })
     engine.start()
     const heard = (id: string) => ((engine.state.player.journal ??= {})[id] = engine.world.now)
     expect(said(await engine.handle('walk to the hangar'))).toBe('You know no such place.')

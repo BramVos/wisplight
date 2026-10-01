@@ -8,15 +8,13 @@ ids:
   quietreach/areas/orison_ridge/locations.yaml:
     location: [loc_orison_listening_room, loc_orison_cable_gallery]
   quietreach/areas/port_vesper/locations.yaml:
-    location: [loc_arrival_lock, loc_commons, loc_guest_quarters, loc_medical_bay]
+    location: [loc_arrival_lock, loc_lock_corridor, loc_commons, loc_guest_quarters, loc_medical_bay, loc_workshop, loc_peregrine_hangar, loc_peregrine_common_deck]
   quietreach/areas/port_vesper/npcs.yaml:
     npc: [npc_mara_venn, npc_ilyan_sorell, npc_tessa_rook, npc_niko_serrin, npc_edda_vale, npc_sana_holt]
-  quietreach/areas/vesper_works/locations.yaml:
-    location: [loc_workshop, loc_peregrine_hangar, loc_peregrine_common_deck]
   quietreach/data/aftermath.yaml:
     aftermath: [am_holding_the_name, am_return_check, am_retrieval, am_count_first, am_open_stores, am_handover, am_released_for_use, am_safe_return, am_word_kept, am_passing_on, am_second_observation]
   quietreach/data/areas.yaml:
-    area: [port_vesper, vesper_works, coastal_traverse, orison_ridge, vesper_coast]
+    area: [port_vesper, coastal_traverse, orison_ridge, vesper_coast]
   quietreach/data/crafts.yaml:
     craft: [field_electronics]
   quietreach/data/creatures.yaml:
@@ -38,7 +36,7 @@ ids:
   quietreach/data/resources.yaml:
     resource: [coastal_beds, wrack_line, tide_pools, basalt_outcrop]
   quietreach/data/settlements.yaml:
-    settlement: [port_vesper, vesper_works, coastal_traverse]
+    settlement: [port_vesper, coastal_traverse]
   quietreach/data/topics.yaml:
     topic: [night_of_the_open_door, winter_supplies, answer_before_the_question, vesper_settlement_compact, harbour_record, beltborn, nacreans, transit_families, kestrel_landing, meridian_anchorage, harrow_station, echo_nine, return_check, open_stores, safe_return, passing_on, second_observation, sailbacks, maintenance_drones, belt_credits, the_survey_cairn]
   quietreach/data/watchers.yaml:
@@ -49,5 +47,7 @@ ids:
     background: [systems_engineer, signal_linguist, navigator, expedition_medic, expedition_hand]
     patron: [the_remembered, the_witness]
 tombstones:
+  - { kind: area, id: vesper_works, into: port_vesper }
+  - { kind: settlement, id: vesper_works, into: port_vesper }
   - { kind: location, id: loc_first_place }
   - { kind: area, id: first_area }

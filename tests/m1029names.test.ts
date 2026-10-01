@@ -65,13 +65,13 @@ describe('M10.29 F: the journal', () => {
     const player = engine.state.player
     ;(player.journal ??= {})['loc_peregrine_hangar'] = 1
     player.journal['loc_workshop'] = 1
-    player.journal['area_vesper_works'] = 1
+    player.journal['area_port_vesper'] = 1
     player.seen = [...(player.seen ?? []).filter((id) => id !== 'loc_peregrine_hangar'), 'loc_workshop']
     const names = engine.status().journal.places.map((p) => p.name)
     expect(names).toContain('Peregrine Hangar (heard of)')
     expect(names).toContain('Workshop')
     expect(names.indexOf('Peregrine Hangar (heard of)')).toBeGreaterThan(names.indexOf('Workshop'))
-    const links = journalPage(engine.world, engine.topics, 'area_vesper_works')!.links
+    const links = journalPage(engine.world, engine.topics, 'area_port_vesper')!.links
     expect(links.find((l) => l.id === 'loc_peregrine_hangar')?.label).toBe('heard of')
     expect(links.find((l) => l.id === 'loc_workshop')?.label).toBe('place')
   })

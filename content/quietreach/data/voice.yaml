@@ -24,7 +24,7 @@ voice:
         - "A green light isn't a second opinion."
     - id: port_folk
       name: "Port Vesper"
-      areas: [port_vesper, vesper_works]
+      areas: [port_vesper]
       oaths:
         - "Hold pressure."
       sayings:

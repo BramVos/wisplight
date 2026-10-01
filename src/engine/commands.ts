@@ -707,9 +707,11 @@ function go(host: CommandHost, args: string[]): Output[] {
     })?.[0]
     // By the words of its name, its other names, then what it is (M10.29 V: GO COMMON ROOM for the Commons).
     direction ??= exits.find(([, exit]) => placeWords(wanted, [world.location(exit.to).name, ...world.location(exit.to).aliases]))?.[0]
+    // The name of where you stand before what a place next door is (M10.33 M: GO COMMON ROOM in the Commons took the
+    // Lock Corridor, "between the Arrival Lock and the Commons").
+    if (!direction && placeWords(args.join(' '), [location.name, ...location.aliases])) return [text(`You are here already: ${location.name}.`)]
     direction ??= exits.find(([, exit]) => placeWords(wanted, [world.location(exit.to).summary ?? '']))?.[0]
   }
-  if (!direction && args.length > 0 && placeWords(args.join(' '), [location.name, ...location.aliases])) return [text(`You are here already: ${location.name}.`)]
   if (!direction) return [error('Go where? Try a direction such as north, or the name of a place you can see.')]
   // Out where there is no door called out (M10.29 V): the way that leads out onto the land.
   if (direction === 'out' && !location.exits.out) {

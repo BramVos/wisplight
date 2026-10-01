@@ -2,20 +2,12 @@ areas:
   - id: port_vesper
     name: Port Vesper
     kind: village
-    aliases: [Vesper, the port, the settlement]
-    summary: "A compact colony of connected pressure modules with shared facilities: the landing pad, the Commons, the guest quarters and the medical bay."
+    aliases: [Vesper, the port, the settlement, the Works, the workshops, Vesper Works]
+    # One station, one settlement (M10.33 L, Bram, 1 October 2026): the Works went up in the port.
+    summary: "A compact colony of connected pressure modules with shared facilities: the landing pad, the Commons, the guest quarters and the medical bay, and beside them the workshop and the locked hangar of the Peregrine."
     fame: 2
     sound: { kind: hum, level: 0.4 }
     pos: [1.63, 1.73]
-
-  - id: vesper_works
-    name: Vesper Works
-    kind: hamlet
-    aliases: [the Works, the workshops]
-    summary: The workshop and research complex beside the port, with repairs, scarce parts and the locked hangar of the Peregrine.
-    fame: 1
-    sound: { kind: workshop, level: 0.5, night: hum }
-    pos: [1.81, 1.9]
 
   - id: coastal_traverse
     name: The Coastal Traverse

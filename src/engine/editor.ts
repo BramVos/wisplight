@@ -5,7 +5,7 @@ import { parseDocument, stringify } from 'yaml'
 import { DEFAULT_PALETTE, LANDS, MapPaletteSchema, MAX_SIGNS, SIGN_SHAPES, signsOf, SURFACE, TERRAIN_ORDER, type Level, type MapPalette } from './map/palette'
 import { previewMapData, type HexMapData } from './map/view'
 import { ContentError, loadContent, type Content, type ContentFile, type Direction } from './content'
-import { descriptionCheck, placeMeasures, regionPreview, sceneryWarnings, warnings } from './builder'
+import { descriptionCheck, directionProblems, placeMeasures, regionPreview, sceneryWarnings, warnings } from './builder'
 import { applyEdits, entities, entityYaml, ENTITY_KINDS, landHome, landOfFile, landsIn, landYaml, LISTS, locate, parseEntityYaml, patchLand, patchRules, patchWorld, voiceYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type FileChange, type Raw } from './edit'
 import { worldFrame } from './dialogue/prompt'
 import { frameOf } from './lands'
@@ -680,7 +680,11 @@ function checkedDraft(files: ContentFile[], parts: DraftParts): Draft {
     if (!read.raw) problems.push(`${change.id}: ${read.problem}`)
   }
   const result = problems.length ? undefined : draftResult(files, parts)
-  return { ...parts, ...(result ? { result } : {}), problems: [...problems, ...(result?.problems ?? [])] }
+  // Ways that do not fit one plan, and one settlement cut in two (M10.33 L), go back with the proposal like a problem
+  // that keeps it from loading: the Quiet Reach's station was built so, and only Check said it, afterwards.
+  const places = new Set(parts.changes.filter((c) => c.kind === 'location').map((c) => c.id))
+  const crooked = result?.ok && result.content && places.size ? directionProblems(result.content, places) : []
+  return { ...parts, ...(result ? { result } : {}), problems: [...problems, ...(result?.problems ?? []), ...crooked] }
 }
 
 /**

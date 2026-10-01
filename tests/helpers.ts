@@ -37,6 +37,19 @@ export function homeStart(engine: Engine): Engine {
   return engine
 }
 
+/**
+ * The Quiet Reach as the world build made it, before Vesper Works went into
+ * Port Vesper (M10.33 L): the Workshop, the hangar and its deck an area of
+ * their own beside the station, for the tests of what joins two areas.
+ */
+export function worksApart(quiet: Content): Content {
+  const areas = new Map(quiet.areas)
+  areas.set('vesper_works', { ...quiet.areas.get('port_vesper')!, id: 'vesper_works', name: 'Vesper Works', aliases: ['the Works', 'Works'] })
+  const locations = new Map(quiet.locations)
+  for (const id of ['loc_workshop', 'loc_peregrine_hangar', 'loc_peregrine_common_deck']) locations.set(id, { ...locations.get(id)!, area: 'vesper_works' })
+  return { ...quiet, areas, locations }
+}
+
 export function eventsBy(engine: Engine, actor: string): string[] {
   return engine.state.events.filter((e) => e.actor === actor).map((e) => e.text)
 }

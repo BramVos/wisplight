@@ -1,8 +1,9 @@
 settlements:
+  # The Works' ledger is the port's since M10.33 (one station, one settlement).
   - id: port_vesper
-    people: 30
-    use: { hot_meal: 55, herbal_tea: 20, coffee: 2, drinking_water: 30, dressing_pack: 0.3 }
-    keep: { field_ration: 120, drinking_water: 150, dressing_pack: 20, grain: 80 }
+    people: 34
+    use: { hot_meal: 55, herbal_tea: 20, coffee: 2, drinking_water: 30, dressing_pack: 0.3, battery_cell: 0.5, seal_ring: 0.5, bracket: 0.2 }
+    keep: { field_ration: 120, drinking_water: 150, dressing_pack: 20, grain: 80, water_filter: 4, seal_ring: 10, connector_parts: 20 }
     stock:
       grain: 400
       cooking_oil: 40
@@ -14,6 +15,15 @@ settlements:
       vegetables: 30
       cultured_protein: 30
       tea_herbs: 10
+      insulated_wire: 40
+      connector_parts: 60
+      filter_media: 12
+      polymer_stock: 30
+      battery_cell: 40
+      field_lamp: 6
+      measurement_cable: 4
+      water_filter: 6
+      seal_ring: 12
     workshops:
       - id: growing_modules
         name: Growing Modules
@@ -28,22 +38,6 @@ settlements:
         uses: { vegetables: 11, cultured_protein: 9, grain: 8, cooking_oil: 1, tea_herbs: 2, drinking_water: 20 }
         workers: 2
         named: [npc_sana_holt]
-
-  - id: vesper_works
-    people: 4
-    use: { battery_cell: 0.5, seal_ring: 0.5, bracket: 0.2 }
-    keep: { water_filter: 4, seal_ring: 10, connector_parts: 20 }
-    stock:
-      insulated_wire: 40
-      connector_parts: 60
-      filter_media: 12
-      polymer_stock: 30
-      battery_cell: 40
-      field_lamp: 6
-      measurement_cable: 4
-      water_filter: 6
-      seal_ring: 12
-    workshops:
       - id: purification_plant
         name: Purification Plant
         at: loc_workshop

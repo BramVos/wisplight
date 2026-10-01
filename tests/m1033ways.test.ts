@@ -137,6 +137,8 @@ describe('M10.33 M: someone is there when the stranger comes in', () => {
     const at = (id: string) => engine.state.npcs[id]!.location
     expect(at('npc_mara_venn')).toBe('loc_arrival_lock')
     for (const id of ['npc_tessa_rook', 'npc_niko_serrin', 'npc_edda_vale', 'npc_ilyan_sorell', 'npc_sana_holt']) expect(at(id)).toBe('loc_commons')
+    // Through the Lock Corridor, the threshold between the cold lock and the warm room (M10.33 M).
+    expect(said(await engine.handle('east'))).toMatch(/^Lock Corridor\n/)
     expect(said(await engine.handle('east'))).toMatch(/Here: .*(Tessa|the chief engineer)/)
     // Fed, they linger at the table until the meal is over (07:45).
     engine.tick(30)
@@ -162,9 +164,21 @@ describe('M10.33 L: directions and areas fit', () => {
   // say how areas and directions go.
   it('names the ways that do not fit one plan, and one settlement in two areas', async () => {
     const { directionProblems } = await import('../src/engine/builder')
-    const found = directionProblems(quiet)
-    expect(found).toContain('Commons east to Workshop, which lies north of it by the other ways: the ways do not fit one plan')
+    // The Quiet Reach as the world build made it: the Commons went east to the Workshop, in an area of its own.
+    const crooked = { ...quiet, locations: new Map(quiet.locations), areas: new Map(quiet.areas) }
+    const commons = crooked.locations.get('loc_commons')!
+    const { northwest, ...ways } = commons.exits
+    crooked.locations.set(commons.id, { ...commons, exits: { ...ways, east: northwest! } })
+    crooked.areas.set('vesper_works', { ...quiet.areas.get('port_vesper')!, id: 'vesper_works', name: 'Vesper Works' })
+    crooked.locations.set('loc_workshop', { ...crooked.locations.get('loc_workshop')!, area: 'vesper_works' })
+    const found = directionProblems(crooked)
+    expect(found).toContain('Commons east to Workshop, which lies northwest of it by the other ways: the ways do not fit one plan')
     expect(found).toContain('Port Vesper and Vesper Works: one settlement in two areas (Arrival Lock and Workshop, 4 minutes indoors); an area is what you walk through indoors')
+    // A world step is sent back for its own places only, not for what was there before.
+    expect(directionProblems(crooked, new Set(['loc_guest_quarters']))).toEqual([])
+    expect(directionProblems(crooked, new Set(['loc_commons']))).toContain('Commons east to Workshop, which lies northwest of it by the other ways: the ways do not fit one plan')
+    // Merged, with the corridor between the lock and the Commons (Bram, 1 October 2026), the Quiet Reach fits.
+    expect(directionProblems(quiet)).toEqual([])
     const { content } = await import('./helpers')
     const isle = await loadContentFromDir(join(import.meta.dirname, '../content'), 'isle')
     expect(directionProblems(content)).toEqual([])
@@ -204,6 +218,7 @@ describe('M10.33 R: the rough edges', () => {
     const engine = game()
     expect(weatherLine(engine.world, 'overcast', true, { from: 'east', force: 2 })).toMatch(/An east wind pushes at you\./)
     expect(weatherLine(engine.world, 'overcast', true, { from: 'north', force: 3 })).toMatch(/A north gale leans on you\./)
+    await engine.handle('east')
     await engine.handle('east')
     const out = said(await engine.handle('talk sana'))
     expect(out).toMatch(/You are talking with/)

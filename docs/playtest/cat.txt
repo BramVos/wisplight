@@ -150,12 +150,15 @@ Aaltje nods. "Evening."
 Aaltje scratches an ear. "A [grey cat] with one white paw has sat on the [Vissers]' doorstep every day since [Fenna] vanished."
 
 > ask about the cat
+You ask Aaltje what she knows about the grey cat, Fenna or the widow. (The Grey Cat on the Doorstep, 1 of 4)
 Aaltje sits down heavily. "One white paw? That's her. That's Kaatje's work, the widow out in the Kattenbroek. She was my teacher once." She looks at her hands. "There are ways back. Pay what she asks. Or moon water from the Blackmere, drawn at night, and the right words over it; I can give you those. Or you could ask the girl herself what she did, if you could talk cat."
 The Grey Cat on the Doorstep: The grey cat is Fenna, turned by the widow of the Kattenbroek. You could pay the widow's price, break the curse, burn the witch with Jan, or find a way to talk to the cat.
+Now: Pay the widow's price, break the curse, or find another way to bring Fenna home.
 
 # Aaltje named four ways. The honest one: her draught, and talk to the cat.
 
 > ask for a draught
+You ask Aaltje for a draught that lets you talk to cats. (The Grey Cat on the Doorstep, 2 of 4)
 Aaltje takes a small bottle from the rafters and wipes the dust off. "Valerian, cat's-ear and river mud. Drink it on the doorstep. It won't last long, and you'll want to chase birds for a day after."
 
 > bye
@@ -179,9 +182,11 @@ Exits: east
 Here: Grietje, Visser; Pim.
 
 > drink the draught
+You drink draught. (The Grey Cat on the Doorstep, 2 of 4)
 It tastes of valerian and mud. The edges of the world go sharp, and every small sound suddenly means something.
 
 > talk to the cat
+You talk to cat. (The Grey Cat on the Doorstep, 2 of 4)
 "It was me," the cat says, and it's a girl's voice under the purring. "I told the widow I had nobody, no mother, nobody to miss me, so she'd sell me a charm cheap. For Klaas. A lie is a debt, she said. Tell her I'm sorry. Tell her I'll work it off, whatever she wants."
 
 # To the widow in the Kattenbroek, to tell her what the cat said: ask Aaltje the way, and go by daylight.
@@ -318,9 +323,11 @@ Kaatje arrives from the south.
 Kaatje stops and looks you over.
 Time passes. It is Woensdag 15 Herfstmaand 211 AW, 12:01 (midday).
 The Grey Cat on the Doorstep: The widow Kaatje names her price for Fenna: the Count's survey must lie still for seven days, or someone must bring her the measuring chest of Jacob van Dam.
+Now: Keep the Count's survey still for seven days, or bring the widow Jacob van Dam's measuring chest.
 The widow looks at you a long time. "The girl lied to me. A lie is a debt, and debts are paid. Here is mine: that surveyor's chains lie still for seven days. Or bring me the chest of the one who came before him, Jacob van Dam. Then she can go home."
 
 > tell the widow that fenna is sorry
+You tell the widow that Fenna is sorry and will work off her debt. (The Grey Cat on the Doorstep, 3 of 4)
 The widow listens with her head on one side, like a bird. "Sorry," she says. "She said sorry." Something in her face gives. "Then she can come home, and work her debt off here: one day a week, all winter, cutting reed. Tell her that."
 The Grey Cat on the Doorstep: Honest. Fenna is home, and one day a week all winter she walks out to the Kattenbroek to cut the widow's reed. Nobody quite knows why, and she won't say.
 +400 experience: The Grey Cat on the Doorstep.

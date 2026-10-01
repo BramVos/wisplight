@@ -103,7 +103,7 @@ As you set off, you think of what you leave behind. Flour for Veenhoek: Mirte ne
 You leave the Holleveen behind and go on across country for Graafhaven. It takes a day and 20 hours. On the first day, a hard stretch of the way costs you half a day and most of your temper. On the second day, mist lies over everything and muffles every sound. You come to The Gate of Graafhaven.
 The Gate of Graafhaven
 You come to the gate of Graafhaven after 2 days on the road from the Holleveen. The walls are higher than any you have seen at home, and the air smells of tar, smoke and wet stone. Carts stand in line to be let in, and the gatekeepers call out to each other in a quick, flat speech. The market lies ahead, and the road back to the Holleveen runs southeast.
-Exits: southeast, in
+Exits: southeast (The Old Sluice), in
 +10 experience: you found The Gate of Graafhaven.
 +30 experience: you came to Graafhaven.
 
@@ -113,7 +113,7 @@ Exits: southeast, in
 [build] You are at The Market of Graafhaven.
 The Market of Graafhaven
 You stand in the market of Graafhaven, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
-Exits: out, in
+Exits: out (The Gate of Graafhaven), in
 +10 experience: you found The Market of Graafhaven.
 
 > @time 11   [build command: a shortcut]
@@ -139,7 +139,7 @@ Hendrikje lifts a hand. "Go on, then."
 > look
 The Market of Graafhaven
 You stand in the market of Graafhaven, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
-Exits: out, in, west, south, north, east, northeast
+Exits: out (The Gate of Graafhaven), in, west, south, north, east, northeast
 Here: Hendrikje Hofstede, the merchant (at work).
 
 > north

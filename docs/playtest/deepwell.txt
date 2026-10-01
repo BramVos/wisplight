@@ -73,7 +73,7 @@ You tap your card for 3 ch, and the tram slides off along its rail. After 25 min
 > look
 The Works Platform
 The rail ends here against a buffer of packed ice, and the platform opens into a hall full of sleds and hoses. Your breath smokes, and the cold gets in through the seams of your clothes. A board lists the day's cut in tonnes. The cutting face is further in; the service tunnel runs back west to the Domes, and a hatch stencilled KESSLER leads east to the Claim.
-Exits: in, west, east
+Exits: in, west (The Dome Platform), east
 
 > take the tram
 You tap your card for 3 ch, and the tram slides off along its rail. After 25 minutes it stops at The Dome Platform.

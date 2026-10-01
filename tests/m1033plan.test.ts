@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { Engine, type Output } from '../src/engine'
 import { planHere } from '../src/engine/plan'
 import { loadContentFromDir } from '../src/node/content'
+import { worksApart } from './helpers'
 
 // M10.33 I, the plan and the exits say where a way goes (three findings of
 // Bram: the Workshop, of Vesper Works, was never on the plan of Port Vesper;
@@ -13,8 +14,10 @@ const quiet = await loadContentFromDir(join(import.meta.dirname, '../content'), 
 const exits = (out: Output[]) => out.map((o) => o.text).join('\n').split('\n').find((l) => l.startsWith('Exits:'))
 
 describe('M10.33 I: where a way goes', () => {
+  // Vesper Works went into Port Vesper (M10.33 L, 1 October 2026); what joins two areas is played in the Quiet Reach
+  // as the world build made it.
   it('puts the Workshop on the plan of Port Vesper once seen, with its own area by it', async () => {
-    const engine = new Engine(quiet, { seed: 3, builder: true })
+    const engine = new Engine(worksApart(quiet), { seed: 3, builder: true })
     engine.start()
     for (const c of ['@goto loc_workshop', '@goto loc_commons']) await engine.handle(c)
     const workshop = planHere(engine.world)!.boxes.find((b) => b.id === 'loc_workshop')
@@ -22,7 +25,7 @@ describe('M10.33 I: where a way goes', () => {
   })
 
   it('names where in, out and a way into another area go, once the stranger knows it', async () => {
-    const engine = new Engine(quiet, { seed: 3, builder: true })
+    const engine = new Engine(worksApart(quiet), { seed: 3, builder: true })
     engine.start()
     expect(exits(await engine.handle('look'))).toBe('Exits: east, northeast')
     ;(engine.state.player.journal ??= {})['loc_workshop'] = engine.world.now

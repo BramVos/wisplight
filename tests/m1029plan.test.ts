@@ -35,44 +35,46 @@ describe('M10.29 I: a plan of here', () => {
     expect(planText(heard)[0]).toBe('Port Vesper, as you know it (2 places; * where you are, ( ) only heard of):')
     expect(heard.boxes.find((b) => b.id === 'loc_guest_quarters')).toMatchObject({ kind: 'heard' })
     expect(heard.links).toEqual([])
-    for (const step of ['e', 'n', 's', 's', 'n']) await engine.handle(step)
+    for (const step of ['e', 'e', 'n', 's', 's', 'n']) await engine.handle(step)
     const plan = planHere(engine.world)!
-    expect(plan.known).toBe(4)
-    // The area's own places lie as they always did; what joins across the edge (M10.33 I) takes the cells left.
+    expect(plan.known).toBe(5)
+    // The area's own places lie as they always did, with the Lock Corridor between the lock and the Commons (M10.33 M).
     expect(planText(plan).slice(1, 6)).toEqual([
-      '                   [Guest Quarters]',
-      '                     |',
-      '[Arrival Lock]-----[Commons*]',
-      '                     |',
-      '                   [Medical Bay]',
+      '                                      [Guest Quarters]',
+      '                                        |',
+      '[Arrival Lock]-----[Lock Corridor]----[Commons*]',
+      '                                        |',
+      '                                      [Medical Bay]',
     ])
-    // A way out of the settlement is a way not taken, with only its direction; out is a word at the box.
-    expect(plan.stubs).toEqual(expect.arrayContaining([{ from: 'loc_commons', direction: 'east' }]))
+    // A way not taken is a stub with only its direction; out is a word at the box.
+    expect(plan.stubs).toEqual(expect.arrayContaining([{ from: 'loc_commons', direction: 'northwest' }]))
     expect(plan.boxes.find((b) => b.id === 'loc_commons')!.words).toEqual(['out'])
   })
 
-  it('draws no plan outside a settlement, and one for Vesper Works with its three places', async () => {
+  it('draws no plan outside a settlement, and one of Port Vesper from the Workshop', async () => {
     const engine = stranger()
     engine.state.player.location = 'loc_coastal_service_path'
     expect(planHere(engine.world)).toBeUndefined()
     expect(await said(engine, 'plan')).toMatch(/^There is no plan of here/)
     engine.state.player.location = 'loc_workshop'
-    // Joined across the edge (M10.33 I): the Arrival Lock, of Port Vesper, stands on the plan of Vesper Works.
+    // The workshops are part of Port Vesper (M10.33 L): the Arrival Lock stands on the same plan, of no other area.
     const plan = planHere(engine.world)!
-    expect(plan.area).toBe('Vesper Works')
-    expect(plan.boxes.find((b) => b.id === 'loc_arrival_lock')).toMatchObject({ kind: 'seen', other: 'Port Vesper' })
+    expect(plan.area).toBe('Port Vesper')
+    expect(plan.boxes.find((b) => b.id === 'loc_arrival_lock')).toMatchObject({ kind: 'seen' })
+    expect(plan.boxes.find((b) => b.id === 'loc_arrival_lock')!.other).toBeUndefined()
   })
 
   it('a click on a place you have seen walks there along the exits; PLAN and the area page give the text', async () => {
     const engine = stranger()
-    for (const step of ['e', 's']) await engine.handle(step)
+    for (const step of ['e', 'e', 's']) await engine.handle(step)
     const walked = await said(engine, 'walk to Arrival Lock')
     expect(engine.state.player.location).toBe('loc_arrival_lock')
     expect(walked.match(/^Arrival Lock$/gm)).toHaveLength(1)
     expect(walked).not.toMatch(/^Commons$/m)
-    expect(await said(engine, 'plan')).toMatch(/\[Arrival Lock\*\]-+\[Commons\]/)
+    expect(walked).not.toMatch(/^Lock Corridor$/m)
+    expect(await said(engine, 'plan')).toMatch(/\[Arrival Lock\*\]-+\[Lock Corridor\]-+\[Commons\]/)
     const page = journalPage(engine.world, engine.topics, 'area_port_vesper')
-    expect(page?.planText?.[0]).toMatch(/^Port Vesper, as you know it \(3 places/)
+    expect(page?.planText?.[0]).toMatch(/^Port Vesper, as you know it \(4 places/)
   })
 
   it('shows people you know as dots in their colour where you last saw them, the same colour everywhere', async () => {

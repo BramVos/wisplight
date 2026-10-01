@@ -76,7 +76,7 @@ describe('M10.29 V (b): going by the words Bram used', () => {
     await engine.handle('go outside')
     expect(engine.state.player.location).toBe('loc_coastal_service_path')
     await engine.handle('go in')
-    await engine.handle('go east')
+    await engine.handle('go northwest')
     expect(engine.state.player.location).toBe('loc_workshop')
     await engine.handle('go common room')
     expect(engine.state.player.location).toBe('loc_commons')
@@ -86,8 +86,8 @@ describe('M10.29 V (b): going by the words Bram used', () => {
   it('WALK TO a place a door away goes by the door, and WALK TO a map cell from indoors goes out first', async () => {
     const engine = await inPortVesper('loc_commons')
     // Bram had been in the Workshop: it is a place he knows.
-    await engine.handle('go east')
-    await engine.handle('go west')
+    await engine.handle('go northwest')
+    await engine.handle('go southeast')
     const walked = said(await engine.handle('walk to workshop'))
     expect(engine.state.player.location).toBe('loc_workshop')
     expect(walked).not.toMatch(/You make your way/)

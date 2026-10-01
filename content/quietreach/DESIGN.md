@@ -365,7 +365,7 @@
     - From the Commons, the Guest Quarters are north, the Medical Bay south and the Workshop east. The coast is through the outside door, as `out`.
     - From the Workshop, the Hangar is `in`. From the Hangar, the Common Deck is `up` the boarding ramp.
     - The Service Path runs northeast to the Ridge Shelter, and the station is `up` from there.
-  - **Area kinds.** Port Vesper is a village. Vesper Works is a hamlet, because it is its own area. In the Economy step that means the Works needs a ledger of its own for its workshops. The Traverse is a route and Orison Ridge is a wilderness.
+  - **Area kinds.** Port Vesper is a village. Vesper Works is a hamlet, because it is its own area. In the Economy step that means the Works needs a ledger of its own for its workshops. (M10.33, 1 October 2026: Bram had the Works go up in Port Vesper. An area is what you walk through indoors, so one station is one settlement; the Workshop, the hangar and the Common Deck are Port Vesper's, its ledger holds the Works' workshops, and a short Lock Corridor stands between the lock and the Commons.) The Traverse is a route and Orison Ridge is a wilderness.
   - **Storm on the Ridge.** Orison Ridge is barred in a storm. Only the steep climb is closed, and the Ridge Shelter is named as the place to wait. You can never be cut off without shelter, and you can always turn back to Port Vesper.
   - **Sounds.**
     - Port Vesper hums.

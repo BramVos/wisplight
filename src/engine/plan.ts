@@ -94,16 +94,31 @@ function layout(world: World, own: string[], across: string[] = []): Map<string,
     const east = Math.max(-1, ...[...cells.values()].map(([c]) => c)) + 2
     put(start, cells.size ? [east, 0] : [0, 0])
     const queue = [start]
-    while (queue.length) {
+    // The ways with a direction first, so a place one goes in or up to takes a cell left over, not the cell of a place
+    // that lies north (M10.33 M: the hangar, in from the Workshop, pushed the Guest Quarters a row up).
+    const later: [string, string][] = []
+    while (queue.length || later.length) {
+      if (!queue.length) {
+        const [from, to] = later.shift()!
+        if (cells.has(to)) continue
+        const [c, r] = cells.get(from)!
+        let at = ASIDE.map(([dc, dr]) => [c + dc, r + dr] as [number, number]).find(free)
+        for (let n = 2; !at && n < 12; n++) at = ASIDE.map(([dc, dr]) => [c + dc * n, r + dr * n] as [number, number]).find(free)
+        put(to, at!)
+        queue.push(to)
+        continue
+      }
       const id = queue.shift()!
       const [c, r] = cells.get(id)!
       for (const [dir, exit] of Object.entries(world.content.locations.get(id)?.exits ?? {}) as [Direction, { to: string }][]) {
         if (cells.has(exit.to) || !places.includes(exit.to)) continue
         const step = STEP[dir]
-        let at: [number, number] | undefined
-        if (step) {
-          for (let n = 1; n < 6 && !at; n++) if (free([c + step[0] * n, r + step[1] * n])) at = [c + step[0] * n, r + step[1] * n]
+        if (!step) {
+          later.push([id, exit.to])
+          continue
         }
+        let at: [number, number] | undefined
+        for (let n = 1; n < 6 && !at; n++) if (free([c + step[0] * n, r + step[1] * n])) at = [c + step[0] * n, r + step[1] * n]
         at ??= ASIDE.map(([dc, dr]) => [c + dc, r + dr] as [number, number]).find(free)
         for (let n = 2; !at && n < 12; n++) at = ASIDE.map(([dc, dr]) => [c + dc * n, r + dr * n] as [number, number]).find(free)
         put(exit.to, at!)

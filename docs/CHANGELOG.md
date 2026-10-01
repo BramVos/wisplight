@@ -1,5 +1,22 @@
 # Changelog
 
+## M10.33 deel: één station en een drempel (L, en de drempel van M), 1 oktober 2026
+
+- **Vesper Works ging op in Port Vesper (L).** Oorzaak: de wereldbouw sneed één station in twee gebieden, vier minuten binnendoor uit elkaar, en de richtingen pasten niet op één plattegrond. Op jouw keuze is het nu één gebied en één nederzetting. De Workshop ligt noordwest van de Commons, de hangaar en zijn dek erachter. Het gebied en de nederzetting houden een grafsteen in `ids.lock`, zodat oude saves laden. Check is voor The Quiet Reach nu leeg.
+- **Bij de bron (L).** Een voorstel van de stap Plekken krijgt de richtingfouten van zijn eigen plekken terug, net als een voorstel dat niet laadt. De kroniekverteller zet ze recht voordat er iets wordt bewaard. Wat er al stond, telt niet mee.
+- **De Lock Corridor (M).** Tussen de sluis en de Commons ligt een korte gang met jassen, een laarzenrek en een bord met mededelingen. Je komt eerst door de gang en dan in de warme zaal.
+- **Twee kleine fouten die de gang liet zien.** GO COMMON ROOM in de Commons liep de gang in, omdat de samenvatting daarvan de Commons noemt; nu zegt het dat je er al bent. Op de plattegrond schoof de hangaar (in vanuit de Workshop) de Guest Quarters een rij op; nu krijgen plekken met een windrichting eerst hun plaats.
+
+Testen, in The Quiet Reach: twee keer `east` vanaf de sluis, `plan` in de Commons, `go common room` daar, en `walk to the workshop`. Tests in `tests/m1033ways.test.ts`; tests die de oude splitsing nodig hebben, spelen in `worksApart` (`tests/helpers.ts`).
+
+Kosten: geen aanroep.
+
+Wat de editor en de kroniekverteller leerden: de stap Plekken krijgt de richtingfouten van zijn eigen voorstel terug als probleem. De regel zelf stond al in de stap en het contract.
+
+Bekend: de speeltest van de Orison-lijn typt nog "trace the antenna fault" in de Listening Room, sinds AA het spoor naar de Cable Gallery verplaatste; dat ligt bij de andere bouwer.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 4, alinea "Stand na M10.33: richtingen en gebieden kloppen".
+
 ## M10.33 deel: verzonnen feiten meetbaar (W, zonder de meting), 30 september 2026
 
 - **De leesscore telt verzonnen feiten (W).** Oorzaak: de regel "only facts from KNOWLEDGE, SCENE and your own card" werd nooit gemeten, dus de keuze van model en inspanning voor de stem was een gok. De leesscore krijgt nu per antwoord mee wat de spreker gegeven werd (GIVEN, het wisselende deel van de aanroep). Hij telt per antwoord de feiten die GIVEN en de kaart niet dragen: een gebeurtenis, een besluit, een plan, een tijd, een reden. Kleur over het eigen werk en de plek telt niet. Het verslag van een proef noemt het gemiddelde per antwoord.

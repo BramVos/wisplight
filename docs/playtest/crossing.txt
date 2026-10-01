@@ -48,7 +48,7 @@ Off Skerrow: A ship for the light. Two nights after the Lamp of Skerrow was lit 
 [build] You are at Skerrow Hythe, the Harbour.
 Skerrow Hythe, the Harbour
 A curved wall of piled stone keeps the sea out of a harbour no bigger than a barn floor. Brannoc's boat, the Kittiwake, lies on the slip with her mast bare, and nets hang drying from every post. It smells of fish, wet rope and woodsmoke. Steps go up north to the green; west, the rocks lead back to the [Tidepools], and a low door by the slip opens into a cottage.
-Exits: north, west, in
+Exits: north, west (The Tidepools), in
 Here: Brannoc the boatman (at work), a fisherwoman (at work).
 +10 experience: you found Skerrow Hythe, the Harbour.
 +30 experience: you came to Skerrow Hythe.
@@ -297,7 +297,7 @@ Maren keeps her strongbox at The Salt Kettle under lock, and the key close.
 > look
 Skerrow Hythe, the Harbour
 A curved wall of piled stone keeps the sea out of a harbour no bigger than a barn floor. Brannoc's boat, the Kittiwake, lies on the slip with her mast bare, and nets hang drying from every post. It smells of fish, wet rope and woodsmoke. Steps go up north to the green; west, the rocks lead back to the [Tidepools], and a low door by the slip opens into a cottage.
-Exits: north, west, in
+Exits: north, west (The Tidepools), in
 Here: Brannoc the boatman (at work), a fisherwoman (at work).
 
 > inventory
@@ -341,7 +341,7 @@ The harbour bell rings for six, once for the boats.
 > look
 Skerrow Hythe, the Harbour
 A curved wall of piled stone keeps the sea out of a harbour no bigger than a barn floor. Brannoc's boat, the Kittiwake, lies on the slip with her mast bare, and nets hang drying from every post. It smells of fish, wet rope and woodsmoke. Steps go up north to the green; west, the rocks lead back to the [Tidepools], and a low door by the slip opens into a cottage.
-Exits: north, west, in
+Exits: north, west (The Tidepools), in
 Here: Brannoc the boatman (at work), a fisherwoman (at work).
 
 > talk brannoc the boatman

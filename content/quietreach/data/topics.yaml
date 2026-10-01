@@ -44,7 +44,7 @@ topics:
     kind: fact
     common: true
     aliases: [the Compact, the law, the hearing]
-    summary: The local agreement under the Belt Charter that governs Port Vesper, Vesper Works and Orison Ridge, kept by the Settlement Marshal.
+    summary: The local agreement under the Belt Charter that governs Port Vesper and Orison Ridge, kept by the Settlement Marshal.
     details: The Settlement Marshal controls access, investigates complaints and may take temporary measures, and the harbour watch on duty helps. Serious cases go to a hearing of three uninvolved residents. There is no death penalty, and nobody is put outside without protection. Debt may be worked off, and emergency care is never refused. Aboard ship on an expedition, the appointed captain holds authority, and that is not automatically the research lead.
     origin: port_vesper
     fame: 2
@@ -171,7 +171,7 @@ topics:
     summary: On a coast months from spare parts, a skill taught is counted as worth more than a part given.
     details: Whoever teaches properly, hands on until the work holds, is spoken of well at supper, and the story grows each time it is told.
     story: There is an old saying at the benches that every repair you teach is one you will never be woken for at night.
-    origin: vesper_works
+    origin: port_vesper
     fame: 1
 
   - id: second_observation
@@ -198,7 +198,7 @@ topics:
     summary: Tracked work drones that inspect and clear the coast path and the ridge. They are tools, and they follow their work orders.
     details: A faulty drone does what a bad work order tells it, blocking a passage or tearing at something it takes for debris. Stop it by remote, cut its power or restrain it. Breaking it is the last resort, and the Cooperative will want to know why.
     story: When a drone goes wrong, the first question in the Workshop is never sabotage. It is who wrote the last order, and when the unit was last serviced.
-    origin: vesper_works
+    origin: port_vesper
     fame: 2
 
   # What everyone in the Lantern Belt knows (M10.29 P): the money.

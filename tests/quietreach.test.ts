@@ -25,17 +25,15 @@ describe('The Quiet Reach, as Bram built it in the app', () => {
     expect(reach.world.calendar).toMatchObject({ era: 'CR', weekdays: ['Primeday', 'Span', 'Relay', 'Anchor', 'Restday'] })
     expect(reach.world.money?.units.map((u) => [u.name, u.value])).toEqual([['credit', 100], ['bit', 1]])
     expect(reach.world.faiths.map((f) => f.id)).toEqual(['keeping', 'open_sky'])
-    expect(reach.locations.size).toBe(11) // with the cable gallery behind the hatch (M10.31)
+    expect(reach.locations.size).toBe(12) // with the cable gallery behind the hatch (M10.31) and the Lock Corridor (M10.33 M)
     expect([...reach.npcs.keys()]).toEqual(['npc_mara_venn', 'npc_ilyan_sorell', 'npc_tessa_rook', 'npc_niko_serrin', 'npc_edda_vale', 'npc_sana_holt'])
     expect(reach.passages.size).toBe(3)
     expect(reach.world.law).toMatchObject({ npc: 'npc_mara_venn' })
     // The imports wait for the supply ship and the far places have no origin yet; its two small storylines (M10.30) have two
     // solutions and a way it goes wrong, as the rule for a made line asks, which Check still names as advice: nothing else.
     const advice = /^quest (story_short_on_the_count|story_a_second_opinion): 2 solutions, the design asks/
-    // The station cut in two areas (M10.33 L) waits for Bram's choice: Vesper Works into Port Vesper, or the ways put right.
-    // Orison s3's Now line waits for M10.33 AA, which moves the trace to the splice.
-    const station = /do not fit one plan|one settlement in two areas/
-    expect(warnings(reach).filter((w) => !/made nowhere and brought by no route|no origin, so nobody knows where it belongs/.test(w) && !advice.test(w) && !station.test(w))).toEqual([])
+    // Vesper Works went into Port Vesper (M10.33 L, Bram's choice of 1 October 2026): the ways fit one plan.
+    expect(warnings(reach).filter((w) => !/made nowhere and brought by no route|no origin, so nobody knows where it belongs/.test(w) && !advice.test(w))).toEqual([])
   })
 
   it('keeps its contract: every kind is filled or takes its neutral default', () => {
@@ -48,15 +46,17 @@ describe('The Quiet Reach, as Bram built it in the app', () => {
   it('plays: look, wait, a talk with Mara, the walk to the Commons, all in its own words', async () => {
     const engine = new Engine(reach, { seed: 3, llm: new MockLlm('good') })
     const out = [said(engine.start())]
-    for (const c of ['look', 'wait', 'talk to mara', 'hello', 'bye', 'east', 'inventory', 'time']) out.push(said(await engine.handle(c)))
+    for (const c of ['look', 'wait', 'talk to mara', 'hello', 'bye', 'east', 'east', 'inventory', 'time']) out.push(said(await engine.handle(c)))
     expect(out[0]).toContain('This is Nacre, at the far edge of the Lantern Belt')
     expect(out[1]).toMatch(/^Arrival Lock\nSteel walls drip from the pumps/)
     // The stranger comes in at breakfast (M10.33 M).
     expect(out[2]).toMatch(/It is Primeday 18 Rainfall 186 CR, 07:\d\d/)
     expect(out[3]).toContain('You are talking with the port coordinator.')
-    expect(out[6]).toMatch(/^Commons\n/)
+    // Through the Lock Corridor, the threshold between the lock and the Commons (M10.33 M).
+    expect(out[6]).toMatch(/^Lock Corridor\n/)
+    expect(out[7]).toMatch(/^Commons\n/)
     // The starting kit of Bram's money chapter (M10.20: proposed again once the money step could make items).
-    expect(out[7]).toBe('You carry a short-range communicator, a personal credit chip, 2 field rations, a multitool, a pocket terminal, a research bag, a pair of sturdy boots, a refillable water bottle and a weatherproof coat, and 120 cr.')
+    expect(out[8]).toBe('You carry a short-range communicator, a personal credit chip, 2 field rations, a multitool, a pocket terminal, a research bag, a pair of sturdy boots, a refillable water bottle and a weatherproof coat, and 120 cr.')
     expect(engine.state.player.location).toBe('loc_commons')
     for (const text of out) expect(text).not.toMatch(NETHERMARCH)
   })

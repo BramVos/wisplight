@@ -28,7 +28,7 @@ npcs:
       - Heating parts are heating parts. They don't turn into research stock because someone writes that on a form.
       - Count the people, not the lights. We learned that the hard way.
     money: 18000
-    knows_areas: [port_vesper, vesper_works, coastal_traverse, orison_ridge]
+    knows_areas: [port_vesper, coastal_traverse, orison_ridge]
     relations:
       - to: npc_ilyan_sorell
         role: acquaintance
@@ -80,7 +80,7 @@ npcs:
       - Every week we argue about spare parts is a week the signal might stop.
       - Tessa is right to be careful. She is also, forgive me, careful about everything.
     money: 40000
-    knows_areas: [port_vesper, vesper_works, orison_ridge]
+    knows_areas: [port_vesper, orison_ridge]
     relations:
       - { to: npc_mara_venn, role: acquaintance, bond: 0, note: Thinks her a necessary obstacle. }
       - { to: npc_tessa_rook, role: acquaintance, bond: 1, note: Respects her work and resents her caution. }
@@ -122,7 +122,7 @@ npcs:
       - A mistake you tell me about is a repair. A mistake you hide is a failure waiting.
       - Hold pressure. Then we talk.
     money: 15000
-    knows_areas: [port_vesper, vesper_works, coastal_traverse]
+    knows_areas: [port_vesper, coastal_traverse]
     relations:
       - to: npc_ilyan_sorell
         role: acquaintance
@@ -220,7 +220,7 @@ npcs:
       - Whether someone is fit to fly is my call. A departure date doesn't change a scan.
       - If you're ever in the cradle, someone will sit with you and say your name. That's how it's done here.
     money: 22000
-    knows_areas: [port_vesper, vesper_works]
+    knows_areas: [port_vesper]
     relations:
       - { to: npc_ilyan_sorell, role: acquaintance, bond: -1, note: Resists his pressure on crew fitness. }
       - { to: npc_sana_holt, role: friend, bond: 1 }
@@ -254,7 +254,7 @@ npcs:
       - Edda's in the Medical Bay till supper. Sorell keeps his own hours; you'll hear him before you see him.
       - That's his to tell, love, not mine.
     money: 8000
-    knows_areas: [port_vesper, vesper_works, coastal_traverse]
+    knows_areas: [port_vesper, coastal_traverse]
     relations:
       - { to: npc_mara_venn, role: friend, bond: 2 }
       - { to: npc_niko_serrin, role: friend, bond: 2, note: Sees that he sleeps badly and does not know why. }

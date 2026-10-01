@@ -31,14 +31,17 @@ Here: the port coordinator (at work).
 
 > quests
 Open:
-  The Orison Recordings: Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone. Now: Ask Niko about the station
+  The Orison Recordings: Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone. Now: Ask Niko about the station You could: ASK NIKO ABOUT STATION.
 
 > journal the orison recordings
 The Orison Recordings
+So far:
 - Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
 Given by [Dr Ilyan Sorell].
 Now: Ask Niko about the station
-Where: [Orison Listening Room].
+With: [Niko Serrin].
+You could:
+- ASK NIKO ABOUT STATION
 
 > talk the port coordinator
 You are talking with the port coordinator. Type what you want to say, pick a number, or BYE to stop.
@@ -73,37 +76,40 @@ Niko stops and gives you a nod, curious about the stranger.
 It is Primeday 18 Rainfall 186 CR, 08:07 (morning).
 
 > ask niko about the station
+You ask Niko about the station. (The Orison Recordings, 1 of 5)
 Niko gives you the access sequence for the Listening Room and a rough account of the failures: power drops, receiver drift, the archive filling with noise. He watches you closely while he talks about the antenna.
 The Orison Recordings: The originals are in the archive of the Orison Listening Room, and every day the station fails a little more.
+Now: Copy the original recordings in the Orison Listening Room
 
 > copy the original recordings
+You copy the original recordings. (The Orison Recordings, 2 of 5)
 The raw buffer copies across in fits and starts. When you compare it with the archive index, you find that several segments of the repeating transmission were removed at this console, and their timestamps were rewritten to close the gaps.
 The Orison Recordings: Someone cut the recordings, but that does not explain why the station itself is failing. The fault lies somewhere in the antenna system.
+Now: Trace the antenna feed where it runs under the floor
 
 > trace the antenna fault
-Behind a service panel you find an unofficial bypass wired into the antenna feed. It was fitted to keep the measurements running, and it has been overloading the receiver ever since. That bypass is why the station is failing. It has nothing to do with the cut segments.
-The Orison Recordings: The cut segments and the missing parts point to the same place: the Peregrine and the tests nobody talks about.
+You trace and wait. For a moment nothing stirs. Then the air seems to settle, as if something had been noticed.
 
 > quests
 Open:
-  The Orison Recordings: The cut segments and the missing parts point to the same place: the Peregrine and the tests nobody talks about. Now: Ask Tessa about the drive test
-  Short on the Count: Mara Venn says three crates of emergency heating and water spares are missing from her count. Cargo comes in through the Arrival Lock, and the manifests are logged there. Now: Compare the cargo manifests at the Arrival Lock
+  The Orison Recordings: Someone cut the recordings, but that does not explain why the station itself is failing. The fault lies somewhere in the antenna system. Now: Trace the antenna feed where it runs under the floor You could: TRACE FEED.
+  Short on the Count: Mara Venn says three crates of emergency heating and water spares are missing from her count. Cargo comes in through the Arrival Lock, and the manifests are logged there. Now: Compare the cargo manifests at the Arrival Lock You could: COMPARE CARGO MANIFESTS.
 
 # Shortcut: back down to the Workshop, to Tessa.
 
 > @goto loc_workshop   [build command: a shortcut]
 [build] You are at Workshop.
 Workshop
-Workbenches, tool racks and crates of salvaged parts crowd this high room under hard white lamps. Solder, cold metal and Nacre's damp hang in the air. At the counter by the door a clipboard lists what may be signed out and what is reserved for the [Peregrine]. The sealed hangar door at the back is stencilled RESTRICTED. Passages run west to Commons and southwest to Arrival Lock.
-Exits: in, southwest, west
+Workbenches, tool racks and crates of salvaged parts crowd this high room under hard white lamps. Solder, cold metal and Nacre's damp hang in the air. At the counter by the door a clipboard lists what may be signed out and what is reserved for the [Peregrine]. The sealed hangar door at the back is stencilled RESTRICTED. Passages run southeast to the Commons and southwest to the Arrival Lock.
+Exits: in, southwest, southeast
 Here: the chief engineer (at work).
 
 > wait for tessa
 Tessa is here.
 
 > ask tessa about the drive test
-Tessa tells you, reluctantly, that a secret drive test ran on Nacre shortly before the transmission was first caught. It was powered with emergency heating and water parts that were entered as research stock. She gives you the test telemetry, and the hangar code, 7411, so you can take it to Sorell yourself. Set beside your raw copies, the removed segments carry the same pulse pattern as the test.
-The Orison Recordings: Dr Sorell hired you to say whether anyone had touched the data. Now you know who did, and you have to tell him.
+You: "What do you know about the drive test?"
+Tessa looks up. "Mm. That so?"
 
 # Tessa gave the hangar code. Through the hangar to the Peregrine, where Sorell works.
 
@@ -111,67 +117,85 @@ The Orison Recordings: Dr Sorell hired you to say whether anyone had touched the
 The door is locked. It wants a code. (TYPE the code or SAY the word, HACK IN to get past the lock, FORCE IN to break it open.)
 
 > type 7411
-The keypad blinks green, and the heavy door slides back on its rail with a hiss of air.
+Tessa looks up. "Mm. That so?"
 
 > in
-Peregrine Hangar
-Cold and cavernous, this hangar is filled almost entirely by the ship, its scarred hull resting on landing struts with maintenance panels hanging open. Cables snake to diagnostic carts, and the air hums deep enough to feel in your teeth. A yellow barrier marks off the drive section towards the stern. A boarding ramp climbs to the airlock; the door out leads back to the Workshop.
-Exits: up, out
-Peregrine Hangar
-The Peregrine fills the hangar almost wall to wall, her scarred hull on its struts and her panels hanging open. The hum of her diagnostics goes into your teeth, and a yellow barrier keeps everyone away from the drive.
+The door is locked. It wants a code. (TYPE the code or SAY the word, HACK IN to get past the lock, FORCE IN to break it open.)
 
 > up
-Peregrine — Common Deck
-Tight and curved, built for six, this deck holds a briefing table bolted down with six strapped chairs around it. A terminal in the table glows with expedition data cleared for the crew. The air is dry and recycled, tasting faintly of new plastic, and the hull ticks now and then as it settles. The airlock leads back down the ramp to the Hangar.
-Exits: down
+You can't go up from here.
 
 > wait for sorell
-Ilyan has not come. It is Primeday 18 Rainfall 186 CR, 18:32 (evening).
+Niko arrives from the southeast.
+Niko leaves southeast.
+Ilyan has not come. It is Primeday 18 Rainfall 186 CR, 18:19 (evening).
 
 # On Primeday he is up at the Listening Room; on other days he is on the deck in the morning.
 
 > wait 14 hours
-Time passes. It is Span 19 Rainfall 186 CR, 04:32 (night).
+Time passes. It is Span 19 Rainfall 186 CR, 04:19 (night).
 
 > wait for sorell
 Ilyan is here.
-Ilyan arrives from below.
-Ilyan stops and gives you a nod, curious about the stranger.
-It is Span 19 Rainfall 186 CR, 09:12 (morning).
+Ilyan comes from the southeast, on his way to Peregrine — Common Deck.
+It is Span 19 Rainfall 186 CR, 09:04 (morning).
 
 > confront sorell about the recordings
-Sorell admits it. He cut the segments that matched the drive test and rewrote their timestamps, so that nobody would learn of the secret test or the stock he diverted, and so that the port would not ground the Peregrine. What made the signal, and why it carries the test's pattern, he cannot say. Neither can you.
-The Orison Recordings: The report is made. The stranger delivers an investigation report built on the evidence: the complete recordings, the bypass, the edits and the match with the drive test. What the signal is remains unknown. What Port Vesper does about Sorell and the Peregrine is now the port's own argument.
+Tessa looks up. "He leads the research programme at [Port Vesper] and hired the stranger. He works at the [Orison Listening Room] on field days, and does his analysis and holds his meetings on the Peregrine [Common Deck]."
 
 > quests
-Open:
-  Short on the Count: Mara Venn says three crates of emergency heating and water spares are missing from her count. Cargo comes in through the Arrival Lock, and the manifests are logged there. Now: Compare the cargo manifests at the Arrival Lock
-Over:
-  The Orison Recordings: The report is made.
+Tessa looks up. "Mm. That so?"
+Tessa turns back to her own business. "That's enough talk for now. I've things to do."
 
-==== AFTER (Span 19 Rainfall 186 CR, 09:17 (morning))
+==== AFTER (Span 19 Rainfall 186 CR, 09:06 (morning))
 
 [24 hours pass]
-Ilyan goes downstairs.
-Ilyan arrives from below.
-Ilyan goes downstairs.
+Ilyan walks on inside.
+Tessa leaves southeast.
+Ilyan comes from inside, on his way to Arrival Lock.
+Ilyan stops and gives you a nod, curious about the stranger.
+Ilyan walks on to the southwest.
+Ilyan comes from the southwest, on his way to Peregrine — Common Deck.
+Ilyan walks on inside.
+Ilyan comes from inside, on his way to Commons.
+Ilyan walks on to the southeast.
+Tessa comes from the southeast, on her way to Peregrine Hangar.
+Tessa walks on inside.
+Tessa comes from inside, on her way to Guest Quarters.
+Tessa walks on to the southeast.
+Tessa comes from the southeast, on her way to Peregrine Hangar.
+Tessa stops and looks you over.
+Niko arrives from the southeast.
+Niko stops and gives you a nod, curious about the stranger.
+Niko nods to Tessa.
+Tessa walks on inside.
+Tessa comes from inside, on her way to Commons.
+Tessa walks on to the southeast.
+Niko leaves southeast.
+Tessa arrives from the southeast.
+Tessa stops and looks you over.
 
 > look
-Peregrine — Common Deck
-Tight and curved, built for six, this deck holds a briefing table bolted down with six strapped chairs around it. A terminal in the table glows with expedition data cleared for the crew. The air is dry and recycled, tasting faintly of new plastic, and the hull ticks now and then as it settles. The airlock leads back down the ramp to the Hangar.
-Exits: down
+Workshop
+Workbenches, tool racks and crates of salvaged parts crowd this high room under hard white lamps. Solder, cold metal and Nacre's damp hang in the air. At the counter by the door a clipboard lists what may be signed out and what is reserved for the [Peregrine]. The sealed hangar door at the back is stencilled RESTRICTED. Passages run southeast to the Commons and southwest to the Arrival Lock.
+Exits: in, southwest, southeast
+Here: Tessa Rook, the chief engineer (at work).
 
 > journal the orison recordings
 The Orison Recordings
+So far:
 - Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
+  Niko gives you the access sequence for the Listening Room and a rough account of the failures: power drops, receiver drift, the archive filling with noise. He watches you closely while he talks about the antenna.
 - The originals are in the archive of the Orison Listening Room, and every day the station fails a little more.
+  The raw buffer copies across in fits and starts. When you compare it with the archive index, you find that several segments of the repeating transmission were removed at this console, and their timestamps were rewritten to close the gaps.
 - Someone cut the recordings, but that does not explain why the station itself is failing. The fault lies somewhere in the antenna system.
-- The cut segments and the missing parts point to the same place: the Peregrine and the tests nobody talks about.
-- Dr Sorell hired you to say whether anyone had touched the data. Now you know who did, and you have to tell him.
-The report is made. The stranger delivers an investigation report built on the evidence: the complete recordings, the bypass, the edits and the match with the drive test. What the signal is remains unknown. What Port Vesper does about Sorell and the Peregrine is now the port's own argument.
+Given by [Dr Ilyan Sorell].
+Now: Trace the antenna feed where it runs under the floor
+You could:
+- TRACE FEED
 
-==== END (Relay 20 Rainfall 186 CR, 09:17 (morning))
-Quests: story_the_orison_recordings: end1; story_short_on_the_count: open, stage s1
+==== END (Relay 20 Rainfall 186 CR, 09:06 (morning))
+Quests: story_the_orison_recordings: open, stage s3; story_short_on_the_count: open, stage s1
 
 ######## CONTROL: THE PLAYER DOES NOTHING
 The Quiet Reach
@@ -204,14 +228,17 @@ Here: the port coordinator (at work).
 
 > quests
 Open:
-  The Orison Recordings: Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone. Now: Ask Niko about the station
+  The Orison Recordings: Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone. Now: Ask Niko about the station You could: ASK NIKO ABOUT STATION.
 
 > journal the orison recordings
 The Orison Recordings
+So far:
 - Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
 Given by [Dr Ilyan Sorell].
 Now: Ask Niko about the station
-Where: [Orison Listening Room].
+With: [Niko Serrin].
+You could:
+- ASK NIKO ABOUT STATION
 
 > talk the port coordinator
 You are talking with the port coordinator. Type what you want to say, pick a number, or BYE to stop.
@@ -241,10 +268,13 @@ Here: Mara Venn, the port coordinator (at work).
 
 > journal the orison recordings
 The Orison Recordings
+So far:
 - Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
 Given by [Dr Ilyan Sorell].
 Now: Ask Niko about the station
-Where: [Orison Listening Room].
+With: [Niko Serrin].
+You could:
+- ASK NIKO ABOUT STATION
 
 ==== END (Span 19 Rainfall 186 CR, 07:07 (morning))
 Quests: story_the_orison_recordings: open, stage s1; story_short_on_the_count: open, stage s1

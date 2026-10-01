@@ -53,7 +53,9 @@ const OUTSIDE_TAGS = ['outdoor', 'route', 'edge', 'wilderness']
  * areas; any other way whose direction is more than one wind off the layout
  * is named, with where the place lies by the others.
  */
-export function directionProblems(content: Content): string[] {
+export function directionProblems(content: Content, only?: ReadonlySet<string>): string[] {
+  // A proposal's own places (M10.33 L): only what touches them, so a step is not sent back for what was there before.
+  const mine = (...ids: string[]) => !only || ids.some((id) => only.has(id))
   const at = new Map<string, [number, number]>()
   const out: string[] = []
   // Settlements only: a way across the land is as long as the land, and lies on the map, not on a plan.
@@ -84,7 +86,7 @@ export function directionProblems(content: Content): string[] {
       if (!dx && !dy) continue
       // More than one wind off: the angle between the way and where the place lies is over 45 degrees.
       const cos = (dx * step[0] + dy * step[1]) / (Math.hypot(dx, dy) * Math.hypot(step[0], step[1]))
-      if (cos < Math.cos(Math.PI / 4) - 1e-9) out.push(`${l.name} ${dir} to ${content.locations.get(exit!.to)!.name}, which lies ${wind(dx, dy) ?? 'elsewhere'} of it by the other ways: the ways do not fit one plan`)
+      if (cos < Math.cos(Math.PI / 4) - 1e-9 && mine(l.id, exit!.to)) out.push(`${l.name} ${dir} to ${content.locations.get(exit!.to)!.name}, which lies ${wind(dx, dy) ?? 'elsewhere'} of it by the other ways: the ways do not fit one plan`)
     }
   }
   // One settlement cut in two: two settled areas joined indoors by a short way.
@@ -94,7 +96,7 @@ export function directionProblems(content: Content): string[] {
       if (!exit || !other || other.area === l.area || l.id > other.id) continue
       const settled = [l.area, other.area].every((a) => SETTLED_KINDS.has(content.areas.get(a)?.kind ?? ''))
       const indoors = ![l, other].some((p) => p.tags.some((t) => OUTSIDE_TAGS.includes(t)))
-      if (settled && indoors && exit.minutes < 10) out.push(`${content.areas.get(l.area)!.name} and ${content.areas.get(other.area)!.name}: one settlement in two areas (${l.name} and ${other.name}, ${exit.minutes} minutes indoors); an area is what you walk through indoors`)
+      if (settled && indoors && exit.minutes < 10 && mine(l.id, other.id)) out.push(`${content.areas.get(l.area)!.name} and ${content.areas.get(other.area)!.name}: one settlement in two areas (${l.name} and ${other.name}, ${exit.minutes} minutes indoors); an area is what you walk through indoors`)
     }
   }
   return [...new Set(out)]
